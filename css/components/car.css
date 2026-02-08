@@ -1,0 +1,76 @@
+@property --displayName {
+  syntax: "*";
+  initial-value: "me";
+  inherits: true;
+}
+
+.car {
+  --size: 256;
+  width: calc(var(--size) * 1px);
+  height: calc(var(--size) * 1px);
+  
+  position: absolute;
+  inset: 0;
+  
+  display: grid;
+  place-content: center;
+  
+  --displayName: attr(id);
+
+    &::after {
+      content: var(--displayName);
+      position: absolute;
+      inset: 0;
+      color: white;
+      background: #0003;
+      outline: 1px solid white;
+      inset: 0;
+    }
+
+  /* 
+  So in order to limit the paint rectangle size for every player 
+  we wrap them in a box (.car) that pmuch only does the `translate`.
+
+  Inside .car we can then put a (slightly smaller) player entity 
+  in all the complicated html we may want. 
+    
+  We need to separate an entity into layers like this because if 
+  we add a drop shadow filter, it would rotate with the player breaking
+  the 'rotating sun' immersion. So the shadow goes on the wrapper
+  element, which any translated elements inside then 'inherit'
+  (in reality they of course help _determine_ whatever the parent's filter paints).  
+  */
+
+  translate: 
+    calc((var(--x) - var(--size) * .5) * 1px) 
+    calc((var(--y) - var(--size) * .5)  * 1px);
+
+  > .car-body {
+    width: 172px;
+    height: 96px;
+    rotate: calc(var(--angle) * 1rad );
+
+    &::after {
+      content: '';
+      outline: 2px dashed white;
+      position: absolute;
+      inset: 50%;
+      width: calc(var(--radius) * 2px);
+      height: calc(var(--radius) * 2px);
+      z-index: 2;
+      border-radius: 50%;
+      translate: -50% -50%;
+    }
+
+    &.player {
+      background-color: rgb(68, 68, 68);
+    }
+  
+    &.opponent {
+      background-color: var(--bg-color, red);
+    }
+  }
+
+
+
+}

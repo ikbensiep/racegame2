@@ -1,0 +1,15 @@
+@import url('./blocks/layout.css');
+@import url('./components/animations.css');
+@import url('./components/car.css');
+@import url('./utils/tiles.css');
+@import url('./utils/debug.css');
+
+*, *::after, *::before {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: aquamarine;
+  overflow: hidden;
+}

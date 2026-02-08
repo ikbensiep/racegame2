@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>tiling with intersection observer</title>
+  <link rel="stylesheet" href="css/style.css" type="text/css"/>
+  <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+</head>
+<body>
+  <header></header>
+  <main id="canvas" class="tiles grid">
+    
+    <!-- this is for dev only so we can 'live paint' the svg while developing -->
+    <!-- eventually we'll only dislpay the map as a css background image!-->
+    <div id="worldmap"></div>
+    <section class="elevated"></section>
+  </main>
+  <aside id="debug">
+
+  </aside>
+  <footer></footer>
+  <template id="racecar">
+    <div class="car racecar" data-team data-drivernum><div class="car-body player">player</div></div>
+  </template>
+  <script src="js/main.js" type="module"></script>
+</body>
+</html>

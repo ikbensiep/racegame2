@@ -1,0 +1,223 @@
+import Vehicle from './Vehicle.js';
+
+export default class Player extends Vehicle {
+  constructor(id, color = 'red', isLocal = false, game) {
+    super(id, color, game);
+    this.game = game;
+
+    this.id = id;
+    this.isLocal = isLocal;
+
+    this.angle = 0; 
+    this.speed = 0;
+    this.x = 10500;
+    this.y = 10000;
+    this.vx = 0;
+    this.vy = 0;
+    this.radius = 64;
+    
+    // Constants (jouw drift settings)
+    this.maxSpeed = 500;
+    this.accel = 0.5;         // Hoe snel we optrekken
+    this.friction = 0.98;   // Rolweerstand (0.95 = 5% verlies per frame)
+    this.steerSpeed = 0.05;   // Hoe scherp de auto draait
+    this.drift = 0.15;      // Hoeveel de auto "glijdt" (0.1 = veel grip, 0.9 = ijs)
+    this.isBraking = false;
+
+    this.xp = 0;
+    this.canScore = true;
+
+  }
+
+  _applyPhysics (gamepad, dt) {
+    const gas = gamepad.buttons[7].value;   // R2
+    const brake = gamepad.buttons[6].value; // L2
+    const handbrake = gamepad.buttons[5].pressed; // R1
+
+    brake ? this.isBraking = true : this.isBraking = false;
+
+        // 1. Versnelling: accel * dt
+    if (gas > 0) this.speed += (gas * this.accel) * dt;
+    if (brake > 0) this.speed -= (brake * this.accel) * dt;
+
+    // 2. Wrijving: dit is een lastige. 
+    // Bij 60fps doe je: speed *= 0.96. 
+    // Met deltaTime wordt dat: speed *= Math.pow(0.96, dt);
+    // this.speed *= Math.pow(this.friction, dt);
+    this.speed *= (1 - (1 - this.friction) * dt);
+
+    // 3. Sturen: steerSpeed * dt
+    if (Math.abs(gamepad?.axes[0]) > 0.1) {
+      const speedFactor = Math.min(Math.abs(this.speed) / 5, 1.0); 
+      const steerAmount = (gamepad.axes[0] * this.steerSpeed * speedFactor) * dt;
+      
+      this.angle += steerAmount;
+    }
+
+    // 4. Grip & Drift: ook hier Math.pow gebruiken voor de 'weerstand'
+    const grip = handbrake ? 0.05 : 0.2;
+    const targetVX = Math.cos(this.angle) * this.speed;
+    const targetVY = Math.sin(this.angle) * this.speed;
+
+    // Lineaire interpolatie (lerp) met dt
+    this.vx += (targetVX - this.vx) * (1 - Math.pow(1 - grip, dt));
+    this.vy += (targetVY - this.vy) * (1 - Math.pow(1 - grip, dt));
+
+    // 5. Beweging: vx * dt
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+
+  }
+
+  _resolveCollision(hit, gamepad) {
+    const hitRadius = hit.r !== undefined ? hit.r : hit.radius;
+    
+    const dx = this.x - hit.x;
+    const dy = this.y - hit.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // Voorkom delen door nul als objecten exact op elkaar staan
+    if (distance === 0) return;
+
+    const angle = Math.atan2(dy, dx);
+    const minDist = this.radius + hitRadius;
+
+    // 1. Positionele correctie (NaN-veilig)
+    this.x = hit.x + Math.cos(angle) * (minDist + 1);
+    this.y = hit.y + Math.sin(angle) * (minDist + 1);
+
+    // 2. Physics aanpassing
+    this.speed *= -1;
+    this.vx *= 0.75;
+    this.vy *= 0.75;
+      
+    this.handleCollision(gamepad);
+    this.isColliding = true;
+  }
+
+  handleCollision (gamepad) {
+    // 1. Controller Trillen (Rumble)
+    // De meeste moderne gamepads ondersteunen 'dual-rumble'
+    if (gamepad && gamepad.hapticActuators && gamepad.hapticActuators[0]) {
+        gamepad.hapticActuators[0].playEffect("dual-rumble", {
+            startDelay: 0,
+            duration: 200,      // Kort maar krachtig
+            weakMagnitude: 0.5, // De lichte trilmotor
+            strongMagnitude: 0.8 // De zware trilmotor (voor de klap)
+        });
+    }
+
+    // 2. Geluid afspelen
+    // We gebruiken een simpele Audio-object check
+    // const crashSound = document.getElementById('sfx-crash');
+    // if (crashSound) {
+    //     crashSound.currentTime = 0; // Reset naar begin (voor snelle herhaling)
+    //     crashSound.play().catch(e => {}); // Catch om browser-autostart fouten te voorkomen
+    // }
+
+    // this.game.world.element.classList.add('shake-it');
+    // setTimeout(() => this.game.world.element.classList.remove('shake-it'), 200);
+
+  }
+
+  onLevelUp() {
+    // Voorbeeld: elke 500 XP gaat je topsnelheid omhoog
+    const level = Math.floor(this.xp / 500);
+    this.maxSpeed = 10 + (level * 0.5);
+    
+    // Update eventueel de visual van de auto
+    if (level > 2) {
+        this.element.classList.add('pro-spoiler');
+    }
+}
+
+  update(gamepad, dt) {
+    
+    if (!this.isLocal || !gamepad) return;
+    
+    const surface = this.game.world.getSurfaceType(this.x, this.y);
+
+    if(this.activeSurface !== surface) {
+      this.activeSurface = surface;
+      console.log(surface);
+    }
+
+    if (surface === 'grass') {
+        this.maxSpeed = 400;        // Drastisch trager
+        this.friction = 0.92;     // Veel meer weerstand (auto stopt snel)
+        this.accel = 0.5;         // Moeizamer optrekken
+    } else {
+        this.maxSpeed = 500;       // Standaard asfalt waarden
+        this.friction = 0.98;
+        this.accel = 0.75;
+    }
+
+    if (surface === 'finish') {
+        if (this.canScore) {
+            this.xp += 100;
+            this.canScore = false; // Voorkom dubbel scoren in dezelfde ronde
+            console.log(`Race voltooid! XP: ${this.xp}`);
+            this.onLevelUp(); // Check voor upgrades
+        }
+    } else if (surface === 'asphalt') {
+        this.canScore = true; // Reset zodra je weer op het circuit bent (na de lijn)
+    }
+
+
+    this._applyPhysics(gamepad, dt)
+
+    const oldPos = { x: this.x, y: this.y };
+
+    if (this.game.world.isOutOfBounds(this.x, this.y, this.radius)) {
+      this.x = oldPos.x;
+      this.y = oldPos.y;
+      this.speed *= -0.5; // "Bouncen" tegen de omheining van de wereld
+    }
+
+    const wallHit = this.game.world.getCollision(this.x, this.y, this.radius);
+
+    if (wallHit && !this.isColliding) {
+
+      console.log("HIT", wallHit)
+
+      this._resolveCollision(wallHit, gamepad)
+      
+    } else if (!wallHit) {
+      this.isColliding = false;
+    }
+
+    this.game.opponents.forEach(opp => {
+      const dx = this.x - opp.x;
+      const dy = this.y - opp.y;
+      const distanceSq = dx * dx + dy * dy;
+      const minDistance = this.radius + opp.radius;
+
+      if (distanceSq < minDistance * minDistance) {
+        // We hebben een botsing met een andere speler!
+        this._resolveCollision(opp, gamepad);
+        this.game.network.send({
+          id: this.id,
+          x: this.x,
+          y: this.y,
+          angle: this.angle,
+          impact: true // Een vlaggetje zodat zij ook sfx kunnen afspelen
+        });
+      } 
+    });
+
+  }
+
+  draw() {
+    if (!this.game?.world) return;
+
+    super.draw();
+
+    this.game.world.element.style.setProperty('--player-x', Math.floor(this.x));
+    this.game.world.element.style.setProperty('--player-y', Math.floor(this.y));
+    this.game.world.element.style.setProperty('--player-angle', Math.floor(this.angle));
+
+    if (this.isLocal) {
+      this.element.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
+    }
+  }
+}
