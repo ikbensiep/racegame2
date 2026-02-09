@@ -13,7 +13,7 @@ export default class World {
     this.collisionPaths = [];
     this.collidibles = [];
 
-    this.logicCanvas = document.createElement('canvas');
+    this.logicCanvas = document.createElement('canvas', { willReadFrequently: true });
     this.logicCanvas.width = 1080; 
     this.logicCanvas.height = 1080;
     this.logicCtx = this.logicCanvas.getContext('2d');
