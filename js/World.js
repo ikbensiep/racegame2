@@ -6,7 +6,7 @@ export default class World {
     this.scene = scene;
     this.width = 0;
     this.height = 0;
-    this.element = document.getElementById('canvas')
+    this.element = document.querySelector('main#canvas');
     this.svgElement = undefined;
 
     this.spawnPoints = [];
@@ -14,8 +14,8 @@ export default class World {
     this.collidibles = [];
 
     this.logicCanvas = document.createElement('canvas');
-    this.logicCanvas.width = 0; 
-    this.logicCanvas.height = 0;
+    this.logicCanvas.width = 1080; 
+    this.logicCanvas.height = 1080;
     this.logicCtx = this.logicCanvas.getContext('2d');
 
     this.trackPath = null; // The racetrack path
