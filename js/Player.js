@@ -26,7 +26,10 @@ export default class Player extends Vehicle {
 
     this.xp = 0;
     this.canScore = true;
-
+    
+    this.lastSectorId = null; // Om herhaling te voorkomen terwijl je op het vlak staat
+    this.currentSector = 2; // Begin op 2, zodat s0 de eerstvolgende logische stap is
+    this.lapStartTime = performance.now();
   }
 
   _applyPhysics (gamepad, dt) {
@@ -120,6 +123,26 @@ export default class Player extends Vehicle {
 
   }
 
+  handleSectorPass(num) {
+    const now = performance.now();
+    const splitTime = now - this.game.world.lapTimer.lastSectorTime;
+    
+    if (num === 0) { // Finishlijn gepasseerd (Sector 0)
+      if (this.currentSector === 2) { // Alleen als we s1 en s2 hebben gehad
+        const lapTime = now - this.lapStartTime;
+        this.xp += 500; // Bonus voor voltooide ronde
+        console.log(`Ronde voltooid in: ${(lapTime/1000).toFixed(2)}s`);
+        this.lapStartTime = now;
+      }
+    } else {
+      this.xp += 50; // Kleine XP bonus voor tussen-sector
+      console.log(`Sector ${num} split: ${(splitTime/1000).toFixed(2)}s`);
+    }
+
+    this.currentSector = num;
+    this.game.world.lapTimer.lastSectorTime = now;
+  }
+
   onLevelUp() {
     // Voorbeeld: elke 500 XP gaat je topsnelheid omhoog
     const level = Math.floor(this.xp / 500);
@@ -129,7 +152,7 @@ export default class Player extends Vehicle {
     if (level > 2) {
         this.element.classList.add('pro-spoiler');
     }
-}
+  }
 
   update(gamepad, dt) {
     
@@ -152,17 +175,29 @@ export default class Player extends Vehicle {
         this.accel = 0.75;
     }
 
-    if (surface === 'finish') {
-        if (this.canScore) {
-            this.xp += 100;
-            this.canScore = false; // Voorkom dubbel scoren in dezelfde ronde
-            console.log(`Race voltooid! XP: ${this.xp}`);
-            this.onLevelUp(); // Check voor upgrades
-        }
-    } else if (surface === 'asphalt') {
-        this.canScore = true; // Reset zodra je weer op het circuit bent (na de lijn)
-    }
+    const sectorId = this.game.world.lapTimer.checkSectors(this.x, this.y);
 
+    if (sectorId) {
+      if (sectorId !== this.lastSectorId) {
+        const sectorNum = parseInt(sectorId.replace('s', ''));
+        
+        // Bereken wat de volgende sector zou moeten zijn
+        // s0 -> s1, s1 -> s2, s2 -> s0
+        const nextSector = (this.currentSector + 1) % 3;
+
+        if (sectorNum === nextSector) {
+          console.log("Sector gehaald!", sectorId);
+          this.currentSector = sectorNum;
+          this.handleSectorPass(sectorNum);
+        }
+        
+        // Voorkom dat we deze frame nog een keer checken voor ditzelfde vlak
+        this.lastSectorId = sectorId;
+      }
+    } else {
+      // We rijden niet meer op een sector-vlak
+      this.lastSectorId = null;
+    }
 
     this._applyPhysics(gamepad, dt)
 

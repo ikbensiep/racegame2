@@ -22,7 +22,7 @@ main {
 
   /* FIXME: re-enable background after testing */ 
   background:
-    /* url(/levels/assen/assen.svg#track) 0 0 / calc(4 * 8192px) calc(4 * 8192px), */
+    url(/levels/assen/assen.svg#track) 0 0 / calc(4 * 8192px) calc(4 * 8192px),
     var(--gradient) 0 0 / var(--checker-width) var(--checker-height),
     var(--gradient) calc(var(--checker-width) / 2) calc(var(--checker-height) / 2) / var(--checker-width) var(--checker-height);
   background-attachment: local;

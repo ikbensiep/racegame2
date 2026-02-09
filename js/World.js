@@ -1,21 +1,22 @@
+import LapTimer from "./LapTimer.js";
+
 export default class World {
   constructor(scene) {
+    this.isLoaded = false;
     this.scene = scene;
     this.width = 0;
     this.height = 0;
-
     this.element = document.getElementById('canvas')
     this.svgElement = undefined;
 
     this.spawnPoints = [];
     this.collisionPaths = [];
     this.collidibles = [];
-    this.isLoaded = false;
 
     this.logicCtx = document.createElement('canvas').getContext('2d');
     this.trackPath = null; // The racetrack path
     this.trackElement = null;
-    this.finishPath = null; // timing sector v0.1
+    this.trackWidth = 500;
 
     // TODO
     // these should all probably contain arrays with 0 or more paths
@@ -29,7 +30,10 @@ export default class World {
       pitlane: null,     // stroke, vehicle dynamics (speed limiter)
       racetrack: null,   // stroke, vehicle dynamics detection
       tunnel: null,      // fill, sfx (reverb) detection
+      sectors: new Map()
     }
+
+    this.lapTimer = null;
 
     this._initWorld();
   }
@@ -64,22 +68,26 @@ export default class World {
     
     // TODO: appending this for development only, allowing for live painting while dev/debuggonmg
     this.svgElement = svgDoc.querySelector('svg');
-
+    //this.element.querySelector('#worldmap').appendChild(this.svgElement);
     console.log(this.svgElement);
-
-    this.element.querySelector('#worldmap').appendChild(this.svgElement);
 
     this.width = parseInt(this.svgElement.getAttribute('width'));
     this.height = parseInt(this.svgElement.getAttribute('height'));
 
     const trackElement = this.svgElement.getElementById('racetrack');
     this.trackElement = trackElement;
-    const finishElement = this.svgElement.getElementById('s0');
+    const timingGroup = this.svgElement.getElementById('timing');
+    console.info(timingGroup)
 
-    if (trackElement && finishElement) {
+    if (trackElement && timingGroup) {
       // Maak een herbruikbaar Path2D object van de SVG data
       this.trackPath = new Path2D(trackElement.getAttribute('d'));
-      this.finishPath = new Path2D(finishElement.getAttribute('d'))
+
+      const paths = timingGroup.querySelectorAll('path');
+      paths.forEach(path => {
+          this.paths.sectors.set(path.id, new Path2D(path.getAttribute('d')));
+      });
+
       // We halen ook de stroke-width op uit de SVG (belangrijk voor de breedte van de baan!)
       this.trackWidth = parseFloat(window.getComputedStyle(trackElement).strokeWidth) || 520;
     }
@@ -93,6 +101,8 @@ export default class World {
     console.time('finding-walls');
     await this.findWalls();
     console.timeEnd('finding-walls');
+
+    this.lapTimer = new LapTimer(this, [...this.paths.sectors]);
 
     this.isLoaded = true;
 
@@ -162,7 +172,6 @@ export default class World {
     );
   }
 
-
   // Geeft de cirkel terug waarmee je in botsting bent gekomen (precise language matters piepol), of null
   getCollision(px, py, pr) {
     for (let i = 0; i < this.collidibles.length; i++) {
@@ -188,15 +197,10 @@ export default class World {
     if (!this.trackPath) return 'off-road';
 
     const ctx = this.logicCtx;
-    ctx.lineWidth = 0;
-    if (this.finishPath && ctx.isPointInPath(this.finishPath, x, y)) {
-        return 'finish';
-    }
 
     // Check of de auto zich op de 'stroke' (de lijn) van het pad bevindt
     // De dikte van de lijn in de SVG bepaalt hier de breedte van de baan
     ctx.lineWidth = this.trackWidth;
-    
     if (ctx.isPointInStroke(this.trackPath, x, y)) {
       
       return 'asphalt';

@@ -18,6 +18,7 @@ export default class GameEngine {
 
     async init () {
       const possibleSpawnpoints = await this.world.load();
+
       console.log(possibleSpawnpoints, possibleSpawnpoints[Math.floor(Math.random() * possibleSpawnpoints.length)])
 
       let spawnPoint = possibleSpawnpoints[Math.floor(Math.random() * possibleSpawnpoints.length)];
@@ -26,6 +27,7 @@ export default class GameEngine {
       this.localPlayer.spawnPoint = { ...spawnPoint };
       this.localPlayer.x = spawnPoint.x;
       this.localPlayer.y = spawnPoint.y;
+
 
       this.start();
     }
