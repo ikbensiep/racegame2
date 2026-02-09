@@ -13,7 +13,11 @@ export default class World {
     this.collisionPaths = [];
     this.collidibles = [];
 
-    this.logicCtx = document.createElement('canvas').getContext('2d');
+    this.logicCanvas = document.createElement('canvas');
+    this.logicCanvas.width = 0; 
+    this.logicCanvas.height = 0;
+    this.logicCtx = this.logicCanvas.getContext('2d');
+
     this.trackPath = null; // The racetrack path
     this.trackElement = null;
     this.trackWidth = 500;
@@ -39,6 +43,7 @@ export default class World {
   }
   
   _initWorld () {
+
     /* Basically a tiling system that would get its dimensions from the css variables defined on #canvas
     /*
 
@@ -68,28 +73,31 @@ export default class World {
     
     // TODO: appending this for development only, allowing for live painting while dev/debuggonmg
     this.svgElement = svgDoc.querySelector('svg');
-    //this.element.querySelector('#worldmap').appendChild(this.svgElement);
+    this.element.querySelector('#worldmap').appendChild(this.svgElement);
+    this.element.style.backgroundImage = `url(${this.scene.svgUrl})`
     console.log(this.svgElement);
 
     this.width = parseInt(this.svgElement.getAttribute('width'));
     this.height = parseInt(this.svgElement.getAttribute('height'));
 
     const trackElement = this.svgElement.getElementById('racetrack');
-    this.trackElement = trackElement;
     const timingGroup = this.svgElement.getElementById('timing');
+    this.trackElement = trackElement;
+    this.paths.racetrack = trackElement.cloneNode();
     console.info(timingGroup)
 
     if (trackElement && timingGroup) {
       // Maak een herbruikbaar Path2D object van de SVG data
       this.trackPath = new Path2D(trackElement.getAttribute('d'));
 
-      const paths = timingGroup.querySelectorAll('path');
-      paths.forEach(path => {
+      const sectors = timingGroup.querySelectorAll('path');
+      sectors.forEach(path => {
           this.paths.sectors.set(path.id, new Path2D(path.getAttribute('d')));
       });
 
       // We halen ook de stroke-width op uit de SVG (belangrijk voor de breedte van de baan!)
       this.trackWidth = parseFloat(window.getComputedStyle(trackElement).strokeWidth) || 520;
+      console.log(this.paths)
     }
 
     // 1. Find spawnpoints
@@ -105,7 +113,7 @@ export default class World {
     this.lapTimer = new LapTimer(this, [...this.paths.sectors]);
 
     this.isLoaded = true;
-
+    this.element.querySelector('#worldmap').remove();
     return this.spawnPoints;
   }
   
@@ -194,20 +202,17 @@ export default class World {
   }
 
   getSurfaceType(x, y) {
-    if (!this.trackPath) return 'off-road';
+    if (!this.trackPath) return 'grass';
 
-    const ctx = this.logicCtx;
+    // Stel de dikte in voor de stroke-check
+    this.logicCtx.lineWidth = this.trackWidth;
 
-    // Check of de auto zich op de 'stroke' (de lijn) van het pad bevindt
-    // De dikte van de lijn in de SVG bepaalt hier de breedte van de baan
-    ctx.lineWidth = this.trackWidth;
-    if (ctx.isPointInStroke(this.trackPath, x, y)) {
-      
-      return 'asphalt';
-    } else {
-      
-      return 'grass';
+    // isPointInStroke checkt de wiskundige lijn, ongeacht canvas-grootte
+    if (this.logicCtx.isPointInStroke(this.trackPath, x, y)) {
+        return 'asphalt';
     }
+
+    return 'grass';
   }
 
 }
