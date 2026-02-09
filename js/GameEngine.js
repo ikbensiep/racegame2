@@ -11,16 +11,14 @@ export default class GameEngine {
 
         this.localPlayer = undefined;
         this.opponents = new Map();
-        this.network = new NetworkManager((data) => this.handleNetworkData(data));
+        this.network = new NetworkManager(this, (data) => this.handleNetworkData(data));
         
         this.init();
     }
 
     async init () {
+      
       const possibleSpawnpoints = await this.world.load();
-
-      console.log(possibleSpawnpoints, possibleSpawnpoints[Math.floor(Math.random() * possibleSpawnpoints.length)])
-
       let spawnPoint = possibleSpawnpoints[Math.floor(Math.random() * possibleSpawnpoints.length)];
 
       this.localPlayer = new Player('me', 'red', true, this);
@@ -28,18 +26,47 @@ export default class GameEngine {
       this.localPlayer.x = spawnPoint.x;
       this.localPlayer.y = spawnPoint.y;
 
-
       this.start();
     }
 
     handleNetworkData(data) {
+        /* previous 
         if (!this.opponents.has(data.id)) {
             this.opponents.set(data.id, new Opponent(data.id, 'blue', false, this));
         }
         const opp = this.opponents.get(data.id);
-        opp.x = data.x;
-        opp.y = data.y;
-        opp.angle = data.angle;
+        if(data.type == 'bang') { 
+          console.log(`🚑🚑🚑 hurt by ${data.id}`)  
+        } else {
+          opp.x = data.x;
+          opp.y = data.y;
+          opp.angle = data.angle;
+        }
+        */
+
+    switch(data.type) {
+      case 'hello':
+        // Hier heb je volledige controle over de nieuwe speler
+        if (!this.opponents.has(data.id)) {
+          const newOpp = new Opponent(data.id, data.color, false, this);
+          newOpp.name = data.name; // Sla de naam op
+          this.opponents.set(data.id, newOpp);
+          console.log(`${data.name} joined the race!`);
+        }
+        break;
+
+      case 'update':
+        const opp = this.opponents.get(data.id);
+        if (opp) {
+          opp.x = data.x;
+          opp.y = data.y;
+          opp.angle = data.angle;
+        } else {
+          // Optioneel: als we nog geen 'hello' hadden, stuur een verzoek terug
+          this.network.send({ type: 'who_are_you' });
+        }
+        break;
+      }
     }
 
     update(dt) {
@@ -49,6 +76,7 @@ export default class GameEngine {
 
       // Netwerk sync
       this.network.send({
+          type: 'update',
           id: this.network.peer.id,
           x: this.localPlayer.x,
           y: this.localPlayer.y,
