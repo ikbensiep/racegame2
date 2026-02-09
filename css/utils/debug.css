@@ -22,7 +22,7 @@ main {
 
   /* FIXME: re-enable background after testing */ 
   background:
-    url(/levels/assen/assen.svg#track) 0 0 / calc(4 * 8192px) calc(4 * 8192px),
+    url(/levels/assen/assen_track.webp) 0 0 / calc(4 * 8192px) calc(4 * 8192px),
     var(--gradient) 0 0 / var(--checker-width) var(--checker-height),
     var(--gradient) calc(var(--checker-width) / 2) calc(var(--checker-height) / 2) / var(--checker-width) var(--checker-height);
   background-attachment: local;
@@ -46,8 +46,8 @@ main {
 
     /* mask: linear-gradient(white, white), url(/levels/assen/assen_elevated.png) 0 0 / calc(4 * 8192px) calc(4 * 8192px);
     mask-position:  var(--player-position);
-    mask-composite: exclude; */
-    image-rendering: pixelated;
+    mask-composite: exclude;
+    image-rendering: pixelated; */
   }
 
   .elevated {
@@ -56,12 +56,12 @@ main {
     
     position: fixed;
     inset: 0;
-    background: url(/levels/assen/assen_elevated.png) var(--player-position-with-offset) / calc(4 * 8192px) calc(4 * 8192px);
+    background: url(/levels/assen/assen_elevated.webp) var(--player-position-with-offset) / calc(4 * 8192px) calc(4 * 8192px);
     background-attachment: fixed;
 
     transform-origin: var(--player-position);
     scale: 1;
     z-index: 10;
-    image-rendering: pixelated;
+    /* image-rendering: pixelated; */
   } 
 }

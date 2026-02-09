@@ -1,7 +1,22 @@
 export default class NetworkManager {
     constructor(game, onOpponentUpdate) {
+
       this.game = game;
-      this.peer = new Peer();
+      this.peer = new Peer(undefined, {
+        config: {
+        'iceServers': [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' }
+        ],
+        // Forceert de browser om sneller op te geven bij slechte verbindingen
+        'iceCandidatePoolSize': 10
+        },
+        debug: 2
+      });
+      
       this.conn = null;
       this.onOpponentUpdate = onOpponentUpdate;
       console.warn(game)
@@ -39,13 +54,15 @@ export default class NetworkManager {
       c.on('open', () => {
         console.log("🤝 Handshakey! 🔌 Connected to:", c.peer);
         
-        // Stuur direct je 'paspoort' naar de nieuwe peer
-        c.send({
+        const pakketje = { 
             type: 'hello',
             id: this.peer.id,
             name: this.game.localPlayer.name || 'Anonymous Racer', // Zorg dat dit ergens staat
             color: this.game.localPlayer.color || 'blue'
-        });
+        };
+        
+        // Stuur direct je 'paspoort' naar de nieuwe peer
+        c.send(pakketje);
     });
     }
 

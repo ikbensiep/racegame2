@@ -74,7 +74,10 @@ export default class World {
     // TODO: appending this for development only, allowing for live painting while dev/debuggonmg
     this.svgElement = svgDoc.querySelector('svg');
     this.element.querySelector('#worldmap').appendChild(this.svgElement);
-    this.element.style.backgroundImage = `url(${this.scene.svgUrl})`
+    
+    // Render je eigen vectoren maar. We Bitmappin' nao biatch.
+    // FIXME: temp fix
+    // this.element.style.backgroundImage = `url(${this.scene.svgUrl})`
     console.log(this.svgElement);
 
     this.width = parseInt(this.svgElement.getAttribute('width'));

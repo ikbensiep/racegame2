@@ -212,7 +212,7 @@ export default class Player extends Vehicle {
 
     if (wallHit && !this.isColliding) {
 
-      console.log("HIT", wallHit)
+      console.log("⛑️ HIT WALL", wallHit)
 
       this._resolveCollision(wallHit, gamepad)
       
@@ -228,7 +228,7 @@ export default class Player extends Vehicle {
 
       if (distanceSq < minDistance * minDistance && !this.isColliding) {
         // We hebben een botsing met een andere speler!
-        console.log('⛑️ collision!', opp)
+        console.log('🚑 HIT VEHICLE', opp)
         this._resolveCollision(opp, gamepad);
         this.game.network.send({
           type: 'bang',
