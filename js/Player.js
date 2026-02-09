@@ -7,7 +7,6 @@ export default class Player extends Vehicle {
 
     this.id = id;
     this.isLocal = isLocal;
-
     this.angle = 0; 
     this.speed = 0;
     this.x = 10500;
@@ -73,6 +72,7 @@ export default class Player extends Vehicle {
   }
 
   _resolveCollision(hit, gamepad) {
+
     const hitRadius = hit.r !== undefined ? hit.r : hit.radius;
     
     const dx = this.x - hit.x;
@@ -95,7 +95,6 @@ export default class Player extends Vehicle {
     this.vy *= 0.75;
       
     this.handleCollision(gamepad);
-    this.isColliding = true;
   }
 
   handleCollision (gamepad) {
@@ -227,17 +226,21 @@ export default class Player extends Vehicle {
       const distanceSq = dx * dx + dy * dy;
       const minDistance = this.radius + opp.radius;
 
-      if (distanceSq < minDistance * minDistance) {
+      if (distanceSq < minDistance * minDistance && !this.isColliding) {
         // We hebben een botsing met een andere speler!
+        console.log('⛑️ collision!', opp)
         this._resolveCollision(opp, gamepad);
         this.game.network.send({
+          type: 'bang',
           id: this.id,
           x: this.x,
           y: this.y,
           angle: this.angle,
           impact: true // Een vlaggetje zodat zij ook sfx kunnen afspelen
         });
-      } 
+      } else {
+        this.isColliding = false;
+      }
     });
 
   }

@@ -7,8 +7,10 @@ export default class Opponent extends Vehicle {
 
     updateFromNetwork(data) {
         // Hier kun je eventueel LERP (smoothing) toevoegen
-        this.x = data.x;
-        this.y = data.y;
-        this.angle = data.angle;
+        if(data.type && data.type !== 'bang') {
+          this.x = data.x;
+          this.y = data.y;
+          this.angle = data.angle;
+        }
     }
 }

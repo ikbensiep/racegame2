@@ -1,6 +1,7 @@
 export default class Vehicle {
-    constructor(id, color, game) {
+    constructor (id, color, game) {
         this.id = id;
+        this.name = `Player ${id}`;
         this.game = game;
         this.x = 0;
         this.y = 0;
@@ -31,7 +32,7 @@ export default class Vehicle {
         return carElement;
     }
 
-    draw() {
+    draw () {
       // Elke auto update zijn eigen element via transforms
       // this.element.style.transform = `translate(${this.x}px, ${this.y}px) rotate(${this.angle}rad)`;
       this.element.style.setProperty('--x', Math.floor(this.x));
