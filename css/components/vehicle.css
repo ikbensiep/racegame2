@@ -1,0 +1,55 @@
+
+@property --collider-color {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #fffa;
+}
+
+/* --- [Generic .vehicle placeholder style allowing for some state indication] --- */
+.vehicle {
+  --transition-duration: .75;
+  outline: 4px solid;
+
+  > div {
+    
+    /* collider viz circle */
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 50%;
+      width: calc(var(--radius) * 2px);
+      height: calc(var(--radius) * 2px);
+      z-index: 2;
+      border-radius: 50%;
+      translate: 50% -50%;
+      outline: 2px dashed var(--collider-color, white);
+      transition: outline calc(var(--transition-duration, .5) * 1s) ease;
+    }
+  }
+
+  &.player {
+    --collider-color: orange;
+  }
+
+  &.opponent {
+    --collider-color: red;
+  }
+
+  &.npc {
+    --collider-color: forestgreen;
+  }
+
+  &[data-state="colliding"] {
+    --collider-color: black;
+    
+    > div {
+      animation: impact-shake-rotate calc(var(--animation-duration, 0.2) * 1s) calc(var(--animation-delay, 0) * 1s) infinite;
+      
+      &:after {
+        outline-width: 3px !important;
+        outline-offset: 2px !important;
+      }
+    }
+  }
+}
+

@@ -1,8 +1,14 @@
+/* general shake */
 @keyframes shake {
-  0% { transform: translate(1px, 1px); }
-  20% { transform: translate(-13px, 0px); }
-  40% { transform: translate(13px, 5px); }
+  0% { transform: translate(1px, 3px); }
+  20% { transform: translate(-20px, -5px); }
+  40% { transform: translate(1px, 12px); }
   100% { transform: translate(0px, 0px); }
 }
 
-.shake-it { animation: shake 0.1s; }
+/* car impact animation with rotation*/
+@keyframes impact-shake-rotate {
+  50% { rotate: calc(var(--angle) ); }
+  50% { rotate: calc(var(--angle) + .01rad); }
+  50% { rotate: calc(var(--angle) ); }
+}

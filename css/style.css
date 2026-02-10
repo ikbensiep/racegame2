@@ -1,9 +1,25 @@
 @import url('./blocks/menu.css');
 @import url('./blocks/layout.css');
+@import url('./blocks/world.css');
 @import url('./components/animations.css');
+@import url('./effects/vfx.css');
 @import url('./components/car.css');
 @import url('./utils/tiles.css');
+
 @import url('./utils/debug.css');
+
+
+@property --animation-duration {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0;
+  inherits: true;
+}
 
 *, *::after, *::before {
   margin: 0;

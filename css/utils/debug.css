@@ -3,6 +3,7 @@
   initial-value: "0px 0px";
   inherits: true;
 }
+
 main {
   --checker-color: rgba(0, 0, 0, 0.5);
   --gradient: linear-gradient(
@@ -64,4 +65,17 @@ main {
     z-index: 10;
     /* image-rendering: pixelated; */
   } 
+}
+
+.vehicle {
+  &::after {
+    content: var(--driver-id) " " attr(data-state);
+    position: absolute;
+    inset: 0;
+    color: white;
+    background: url(/assets/uvmap.png);
+    inset: 0;
+    z-index: 0;
+    opacity: .5;
+  }
 }

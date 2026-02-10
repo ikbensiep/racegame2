@@ -1,0 +1,21 @@
+[data-state="boosting"] {
+  box-shadow: -10px 0 20px var(--player-color);
+}
+
+[data-state="burning"] {
+  /* Apply svg displacement filter                */
+  /* either use smil(?) animation or css,         */
+  /* decide later. Groetjes, jezelf.              */
+  /* Also: Emittertje maken vanzelfst             */
+  /* Tevens also: leuk om NPCs in de pits (op de  */
+  /* tribunes?) mee ""AAN TE STEKEN""""" NAHMEAN  */
+  filter: saturate(2) brightness(1.5);
+}
+
+[data-state="colliding"] {
+  /* set shake animation */
+  /* pretty much never a delay on this baby because impacts should make you FEEL SOMETHING */
+  animation: shake calc(var(--animation-duration, 0.2) * 1s) calc(var(--animation-delay, 0) * 1s) 1;
+  filter: saturate(1.2) brightness(1.2);
+}
+

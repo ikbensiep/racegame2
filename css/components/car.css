@@ -1,9 +1,12 @@
-@property --displayName {
+@import url(vehicle.css);
+
+@property --driver-id {
   syntax: "*";
   initial-value: "me";
   inherits: true;
 }
 
+/* this is the generic car container. Inside is a div.car-body with more dirrrtay markup */
 .car {
   --size: 256;
   width: calc(var(--size) * 1px);
@@ -15,17 +18,7 @@
   display: grid;
   place-content: center;
   
-  --displayName: attr(id);
-
-    &::after {
-      content: var(--displayName);
-      position: absolute;
-      inset: 0;
-      color: white;
-      background: #0003;
-      outline: 1px solid white;
-      inset: 0;
-    }
+  --driver-id: attr(id);
 
   /* 
   So in order to limit the paint rectangle size for every player 
@@ -50,27 +43,19 @@
     height: 96px;
     rotate: calc(var(--angle) * 1rad );
 
-    &::after {
-      content: '';
-      outline: 2px dashed white;
-      position: absolute;
-      inset: 50%;
-      width: calc(var(--radius) * 2px);
-      height: calc(var(--radius) * 2px);
-      z-index: 2;
-      border-radius: 50%;
-      translate: -50% -50%;
-    }
+    color: white;
+
+    z-index: 1;
+    writing-mode: sideways-rl;
+    place-content: center;
+    display: grid;
 
     &.player {
-      background-color: rgb(68, 68, 68);
+      background-color: var(--player-color, rgb(68, 68, 68));
     }
   
     &.opponent {
-      background-color: var(--bg-color, red);
+      background-color: var(--player-color, red);
     }
   }
-
-
-
 }
