@@ -39,6 +39,7 @@
     calc((var(--y) - var(--size) * .5)  * 1px);
 
   > .car-body {
+
     width: 172px;
     height: 96px;
     rotate: calc(var(--angle) * 1rad );
@@ -46,16 +47,77 @@
     color: white;
 
     z-index: 1;
-    writing-mode: sideways-rl;
+    
     place-content: center;
     display: grid;
 
-    &.player {
-      background-color: var(--player-color, rgb(68, 68, 68));
+    transform: rotateX(var(--rotate-y), 0deg) rotateY(var(--rotate-y), 0deg); /* we can rotate around the local body axis for dramatic flips */
+    background-image: url(/assets/cars/default/interior-scaled.png);
+    background-size: contain;
+    transform-style: preserve-3d;
+    perspective: 512px;
+    
+    > i {
+      position: absolute;
+      inset: 0;
     }
-  
-    &.opponent {
-      background-color: var(--player-color, red);
+
+    .chassis {
+      background-image: url('/assets/cars/default/interior-scaled.png');
+      background-size: contain;
+      
+      .interior {
+
+      }
+    }
+
+    .bodywork {
+      
+      /* De Mask: Panel lines, schaduwen en highlights */
+      mask-image: url('/assets/cars/porsche/porsche-mask.png');
+      mask-size: contain;
+      
+      /* blend-mode voor weathering op de livery */
+      background-image: 
+        linear-gradient(to right,
+          oklab(from var(--player-color) calc(l - 0.25) a b),
+          var(--player-color)
+        ),
+        var(--livery-bg, linear-gradient(transparent, transparent)),
+        var(--weathering-bg, linear-gradient(transparent, transparent));
+
+      background-blend-mode: 
+        normal, normal, multiply;
+      background-size: contain;
+      
+      translate: 0 0 5px; /* lift the body a little from the chassis for pseudo 3d effect */
+
+      .livery {
+        position: absolute;
+        inset: 0;
+        justify-content: center;
+        
+        &::after {
+          position: absolute;
+          width: 2rem;
+          height: 1.5rem;
+          right: 1ex;
+          top: 50%;
+          rotate: 90deg;
+          translate: 0 -50%;
+          text-align: center;
+          z-index: 1;
+          padding: .125ex;
+          content: attr(data-drivernum);
+          background-color: white;
+          color: var(--player-color);
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+      }
+    }
+
+    .mods {
+      /* empty container for now */
     }
   }
 }

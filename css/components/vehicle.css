@@ -12,6 +12,17 @@
 
   > div {
     
+    &.player {
+      --collider-color: orange;
+    }
+  
+    &.opponent {
+      --collider-color: red;
+    }
+  
+    &.npc {
+      --collider-color: forestgreen;
+    }
     /* collider viz circle */
     &::after {
       content: '';
@@ -21,26 +32,16 @@
       height: calc(var(--radius) * 2px);
       z-index: 2;
       border-radius: 50%;
-      translate: 50% -50%;
+      translate: -50% -50%;
       outline: 2px dashed var(--collider-color, white);
       transition: outline calc(var(--transition-duration, .5) * 1s) ease;
     }
+    
   }
 
-  &.player {
-    --collider-color: orange;
-  }
-
-  &.opponent {
-    --collider-color: red;
-  }
-
-  &.npc {
-    --collider-color: forestgreen;
-  }
 
   &[data-state="colliding"] {
-    --collider-color: black;
+    --collider-color: black !important;
     
     > div {
       animation: impact-shake-rotate calc(var(--animation-duration, 0.2) * 1s) calc(var(--animation-delay, 0) * 1s) infinite;

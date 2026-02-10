@@ -8,7 +8,7 @@
 
 /* car impact animation with rotation*/
 @keyframes impact-shake-rotate {
-  50% { rotate: calc(var(--angle) ); }
-  50% { rotate: calc(var(--angle) + .01rad); }
-  50% { rotate: calc(var(--angle) ); }
+  
+  50% { rotate: calc((var(--angle) * .98) * 1rad); }
+  
 }

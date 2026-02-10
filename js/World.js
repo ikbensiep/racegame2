@@ -66,7 +66,10 @@ export default class World {
   }
 
   async load () {
-    const response = await fetch(this.scene.svgUrl);
+    let artworkBasePath = `/levels/${this.scene}/${this.scene}`
+    let svgFilePath = `${artworkBasePath}.svg`
+    const response = await fetch(svgFilePath);
+
     const svgText = await response.text();
     const parser = new DOMParser();
     const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
@@ -77,7 +80,7 @@ export default class World {
     
     // Render je eigen vectoren maar. We Bitmappin' nao biatch.
     // FIXME: temp fix
-    // this.element.style.backgroundImage = `url(${this.scene.svgUrl})`
+    this.element.style.setProperty('--level-artwork-url', `url('${artworkBasePath}.svg')`)
     console.log(this.svgElement);
 
     this.width = parseInt(this.svgElement.getAttribute('width'));

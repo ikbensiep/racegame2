@@ -2,6 +2,7 @@
 @import url('./blocks/layout.css');
 @import url('./blocks/world.css');
 @import url('./components/animations.css');
+@import url('./components/camera.css');
 @import url('./effects/vfx.css');
 @import url('./components/car.css');
 @import url('./utils/tiles.css');
@@ -16,7 +17,7 @@
 }
 
 @property --angle {
-  syntax: "<angle>";
+  syntax: "<number>";
   initial-value: 0;
   inherits: true;
 }

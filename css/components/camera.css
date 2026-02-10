@@ -1,0 +1,25 @@
+#camera-viewport {
+  width: 100vw;
+  height: 100vh;
+  overflow: visible;
+  position: relative;
+  
+  /* De 'Infinite Floor': deze beweegt NIET mee met het scrollen */
+  background-image: url('/assets/noise.png');
+  background-repeat: repeat;
+  background-attachment: local; /* Cruciaal: het beweegt mee met de scroll-offset */
+  background-size: 200px 200px;
+  
+  /* Zoom Exception: we scalen de inhoud, niet de vloer */
+  --camera-scale: 1;
+
+  #zoom-layer {
+    transform: scale(var(--camera-scale));
+    transform-origin: center center;
+    will-change: transform;
+  }
+}
+
+.world {
+  
+}

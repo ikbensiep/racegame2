@@ -8,8 +8,8 @@ export default class GameEngine {
 
       this.settings = settings;
       this.lastTime = 0;
-
-      this.world = new World({svgUrl: 'levels/assen/assen.svg'});
+      this.scene = 'assen';
+      this.world = new World(this.scene);
 
       this.localPlayer = undefined;
       this.opponents = new Map();
@@ -67,7 +67,7 @@ export default class GameEngine {
           // Trigger visual effects
           this.effects.trigger(opp, 'colliding', 300);
           // Opbokke boeke
-          this.effects.trigger(this.localPlayer, 'colliding', 1500);
+          this.effects.trigger(this.localPlayer, 'colliding', 100);
           this.game.effects?.trigger(this.game.world, 'colliding', 500);
         }
       }

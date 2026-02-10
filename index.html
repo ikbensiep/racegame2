@@ -9,13 +9,17 @@
   <link rel="shortcut icon" href="favicon.svg" type="image/svg" />
 </head>
 <body>
-  <main id="canvas" class="tiles grid">
-    
-    <!-- this is for dev only so we can 'live paint' the svg while developing -->
-    <!-- eventually we'll only dislpay the map as a css background image!-->
-    <div id="worldmap"></div>
-    <section class="elevated"></section>
-  </main>
+  <section id="camera-viewport">
+    <div id="zoom-layer">
+
+      <main id="canvas" class="world tiles grid debug-uv">
+        <!-- this is for dev only so we can 'live paint' the svg while developing -->
+        <!-- eventually we'll only dislpay the map as a css background image!-->
+        <div id="worldmap"></div>
+        <section class="elevated"></section>
+      </main>
+    </div>
+  </section>
   <aside id="debug">
 
   </aside>
@@ -45,7 +49,11 @@
 
   <template id="racecar">
     <div class="vehicle car racecar">
-      <div class="car-body player" data-team data-drivernum data-name></div>
+      <div class="car-body" >
+        <i class="chassis"><i class="interior"></i></i>
+        <i class="bodywork"><i class="livery" data-drivernum></i></i>
+        <i class="mods"></i>
+      </div>
     </div>
   </template>
   <script src="js/main.js" type="module"></script>

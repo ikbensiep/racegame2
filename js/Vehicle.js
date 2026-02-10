@@ -17,13 +17,17 @@ export default class Vehicle {
     const clone = document.importNode(template.content, true);
     const carElement = clone.querySelector('.car');
     carElement.id = `vehicle-${this.id}`;
+    
+    // FIXME: determine how to set .player, .opponent or .npc here instead 
+    // if NPCs at some point intherit the vehicle class
+    carElement.classList.add('player'); 
     const body = carElement.querySelector('.car-body');
 
     if (body) {
       body.style.setProperty('--radius', this.radius)
       body.style.setProperty('--player-color', this.color);
       body.dataset.drivername = this.name;
-      body.dataset.drivernum = this.driverNumber;
+      body.querySelector('.livery').dataset.drivernum = this.driverNumber;
       console.log(body);
     }
 
