@@ -20,38 +20,36 @@ export class TweakManager {
     }
 
     _buildFields() {
-        this.fieldsContainer.innerHTML = ''; // Clear voor refresh
-        Object.keys(this.target).forEach(key => {
-            const val = this.target[key];
-            if (typeof val !== 'number') return;
+      Object.keys(this.target).forEach(key => {
+        const val = this.target[key];
+        const field = document.createElement('div');
+        field.className = 'tweak-field'; // Block
 
-            const min = val < 1 ? 0 : 0;
-            const max = val < 1 ? 1 : val * 2;
-            const step = val < 1 ? 0.001 : 0.1;
-
-            const field = document.createElement('div');
-            field.className = 'tweak-field';
+        if (typeof val === 'boolean') {
             field.innerHTML = `
-                <label class="tweak-field__label">
-                    <span class="tweak-field__text">${key}</span>
-                    <!-- data-key is cruciaal voor de refresh -->
+                <label>
+                    <span>${key}</span>
+                    <input type="checkbox" data-key="${key}" ${val ? 'checked' : ''}>
+                </label>`;
+            field.querySelector('input').onchange = e => this.target[key] = e.target.checked;
+        } 
+        else if (typeof val === 'number') {
+            const min = val < 1 ? 0 : 0, max = val < 1 ? 1 : val * 2, step = val < 1 ? 0.001 : 0.1;
+            field.innerHTML = `
+                <label>
+                    <span>${key}</span>
                     <input type="range" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${val}">
-                    <code class="tweak-field__value">${val}</code>
-                </label>
-            `;
+                    <code>${val}</code>
+                </label>`;
+            field.querySelector('input').oninput = e => {
+                this.target[key] = parseFloat(e.target.value);
+                field.querySelector('code').textContent = e.target.value;
+            };
+        } else return;
 
-            const input = field.querySelector('input');
-            const display = field.querySelector('.tweak-field__value');
-
-            input.addEventListener('input', (e) => {
-                const newVal = parseFloat(e.target.value);
-                this.target[key] = newVal;
-                display.textContent = newVal;
-            });
-
-            this.fieldsContainer.appendChild(field);
-        });
-    }
+        this.fieldsContainer.appendChild(field);
+    });
+}
 
     _addPresetDropdown(presets) {
         const field = document.createElement('div');

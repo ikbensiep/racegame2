@@ -50,15 +50,15 @@ export default class Vehicle {
     return carElement;
   }
 
-  _applyVisualRotation() {
-    // Combineer je gameplay 'angle' met de 3D offsets
-    const totalYaw = (this.angle * (180 / Math.PI)) + this.rotation.yaw;
-    
-    this.bodyElement.style.transform = `
-        rotateZ(${totalYaw}deg) 
-        rotateX(${this.rotation.pitch}deg) 
-        rotateY(${this.rotation.roll}deg)
-    `;
+  _createGizmo() {
+      const gizmo = document.createElement('div');
+      gizmo.className = 'gizmo';
+      gizmo.innerHTML = `
+          <div class="ring ring--x"></div>
+          <div class="ring ring--y"></div>
+          <div class="ring ring--z"></div>
+      `;
+      this.element.appendChild(gizmo);
   }
 
   draw () {

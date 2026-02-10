@@ -13,7 +13,8 @@ export default class Player extends Vehicle {
     this.x = 10500;
     this.y = 10000;
     this.radius = 64;
-
+    
+    this.body = this.element.querySelector('.car-body')
     this.dynamics = {};
     Object.assign(this.dynamics, Presets.DefaultDynamics);
     this.speed = 0;
@@ -22,12 +23,6 @@ export default class Player extends Vehicle {
     this.angle = 0; 
     this.steerInput = 0;
 
-    // TODO: DELET DIS N USE VehicleDynamic.js INSTEAD
-    // this.maxSpeed = 500;
-    // this.accel = 0.5;         // Hoe snel we optrekken
-    // this.friction = 0.98;   // Rolweerstand (0.95 = 5% verlies per frame)
-    // this.steerSpeed = 0.05;   // Hoe scherp de auto draait
-    // this.drift = 0.15;      // Hoeveel de auto "glijdt" (0.1 = veel grip, 0.9 = ijs)
     this.isBraking = false;
 
     this.vehicleTweaker = new TweakManager(this.dynamics, "🚗 Dynamics tweaker initialized");
@@ -42,13 +37,28 @@ export default class Player extends Vehicle {
     // Voeg een toggle toe om de ringen visueel aan/uit te zetten
     const debugToggle = { showGizmo: true };
     this.uiTweaker = new TweakManager(debugToggle, "🛠️ Debug Tools");
-
+    
     this.xp = 0;
     this.canScore = true;
     
     this.lastSectorId = null; // Om herhaling te voorkomen terwijl je op het vlak staat
     this.currentSector = 2; // Begin op 2, zodat s0 de eerstvolgende logische stap is
     this.lapStartTime = performance.now();
+    this._createGizmo()
+  }
+
+  _applyVisualRotation() {
+    // Pas de 3D rotatie toe op de visuele laag
+    ``
+    if (this.body) {
+        const yaw = (this.angle * (180 / Math.PI)) + (this.rotation.yaw || 0);
+        this.body.style.transform = `rotateZ(${yaw}deg) rotateX(${this.rotation.pitch || 0}deg) rotateY(${this.rotation.roll || 0}deg)`;
+    } else {
+      this.body = this.element.querySelector('.car-body');
+    }
+
+    // Exception: data-attribuut voor debug-visuals
+    this.element.dataset.debug = this.game.debugSettings.showGizmo;
   }
 
   /* new  */
@@ -273,6 +283,19 @@ export default class Player extends Vehicle {
       }
     });
 
+    this._applyVisualRotation()
+
+  }
+  
+  _applyVisualRotation() {
+    // Combineer je gameplay 'angle' met de 3D offsets
+    const totalYaw = (this.angle * (180 / Math.PI)) + this.rotation.yaw;
+    
+    this.element.style.transform = `
+        rotateZ(${totalYaw}deg) 
+        rotateX(${this.rotation.pitch}deg) 
+        rotateY(${this.rotation.roll}deg)
+    `;
   }
 
   draw() {

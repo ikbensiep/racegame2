@@ -8,15 +8,16 @@
     display: none; /* Standaard uit */
 }
 
-.vehicle[data-debug="true"] .gizmo { display: block; }
+[data-debug="true"] .gizmo { display: block; }
 
 .ring {
     position: absolute;
     inset: 0;
-    border: 2px solid transparent;
+    border: 2px dashed transparent;
     border-radius: 50%;
 }
-/* RGB -> XYZ */
-.ring--x { border-color: #ff3e00; transform: rotateY(90deg); } /* Pitch */
-.ring--y { border-color: #00ffcc; transform: rotateX(90deg); } /* Roll */
-.ring--z { border-color: #3b82f6; }                            /* Yaw */
+
+/* XYZ -> RGB Utilities via CSS variabelen of directe klasses */
+.gizmo .x { border-color: #ff4500; transform: rotateY(90deg); }
+.gizmo .y { border-color: #32cd32; transform: rotateX(90deg); }
+.gizmo .z { border-color: #1e90ff; }                         /* Yaw */

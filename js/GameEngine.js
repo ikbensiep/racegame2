@@ -18,8 +18,6 @@ export default class GameEngine {
       this.effects = new EffectManager(this);
       this.network = new NetworkManager(this, (data) => this.handleNetworkData(data));
       this.init(this);
-      
-
     }
 
     async init (game) {
