@@ -91,14 +91,23 @@ export default class GameEngine {
       if (!this.world.isLoaded) return;
       const gp = navigator.getGamepads()[0];
       this.localPlayer.update(gp, dt);
-
+      
+      if (this.network.isHost) {
       this.opponents.forEach(opp => {
-        // Alleen als het een AI is, roepen we .update() aan.
-        // Menselijke spelers worden immers geüpdatet via handleNetworkData.
+        
         if (opp instanceof AIOpponent) {
-            opp.update();
-          }
-      });
+          opp.update();
+
+            this.network.send({
+                type: 'update',
+                id: opp.id,
+                x: opp.x,
+                y: opp.y,
+                angle: opp.angle
+            });
+            }
+          });
+      }
 
       // Netwerk sync
       this.network.send({

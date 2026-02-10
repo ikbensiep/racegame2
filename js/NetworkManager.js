@@ -1,6 +1,6 @@
 export default class NetworkManager {
     constructor(game, onOpponentUpdate) {
-
+      this.isHost = false; 
       this.game = game;
       this.peer = new Peer(undefined, {
         config: {
@@ -32,6 +32,10 @@ export default class NetworkManager {
               // we joined an invite
               this.connect(joinId);
             } else { 
+              
+                this.isHost = true;
+                console.info("👑 Je bent de Host. Jij beheert de bots.");
+              
               // we can invite other players
               console.log("📨 Invite link:", `${window.location.origin}${window.location.pathname}?join=${id}`);
             }
@@ -45,6 +49,7 @@ export default class NetworkManager {
     }
 
     _setupConnection(c) {
+
       this.conn = c;
       c.on('data', (data) => { 
         if (data.id === this.peer.id) return; 
@@ -64,7 +69,7 @@ export default class NetworkManager {
         
         // Stuur direct je 'paspoort' naar de nieuwe peer
         c.send(pakketje);
-    });
+      });
     }
 
     send(data) {

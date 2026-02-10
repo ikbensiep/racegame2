@@ -1,18 +1,44 @@
 # RACE GAME 2
 
+last edit: 10/02/2026 - 16:14
+
 ## Overview
-The Player is a racing Driver, their Career spans several Seasons of Race Events.
+In this game, the **Player** is a Racing Driver, their **Career** spans several **Seasons** of Race **Events**.
 
-Over Season.Events.length, a player must gather the most Championship Points (CP) in order to win the Championship.
-During a race weekend, Racing Experience (XP), Championship Points (CP) and money ($), may be earned. 
+This not a racing sim. It's an adventure/RPG/rogue-like (fuck idk these gaming terms) with a racing component to it. 
 
->.note Potentially, a combination of these could resolve to an overall Reputation Points (RP) score, but maybe that's making things a bit too complex for now. 
+### Lore
 
-## TECH DEV GOALS
-To develop (a system to develop) engaging html5 games without needing to go webGL or Canvas. Those systems are fantastic but are somewhat cumbersome to start game development with. This project aims to stick as much as possible to clean & lean `html`, `css`, `svg` (ok and some `js`) for the delivery of audio-, visual and haptic feedback. 
+It's about the fun you had with your favorite matchbox or model kit toy cars when you were a kid. Racing on the streets of the bedroom floor mat - yes, _that_ bedroom floor mat, outside in a sandbox with more heavy-duty plastic toy digger machines and construction cranes, imagining how your favorite Darda (tm) cars would roar around a real racetrack. 
 
-Note that _lean_ does not equal **plain**. 
-We can combine clipping, masking, blending and svg filtering to achieve a very rich user experience.
+If only you weren't still a kid back then, you'd have _known_ the smell of hot exhaust pipes, that "burning fuel" actually means more than just turning it into heat energy (hint: it _does_ kinda burn on your skin, ask how I know) and what burning rubber smells like, but back there and then you could at least _imagine_ some of these things.
+
+## Player objectives
+
+Over `Carreer[currentSeason].Events.length`, a player must gather the most **Championship Points** (CP) in order to win the Championship that Season.
+During a race weekend, **Racing Experience** (XP), Championship Points (CP) and **Money** ($), may be earned. 
+
+> **NOTE** Potentially, a combination of these could resolve to an overall **Reputation Points** (RP) score, but maybe that's making things a bit too complex for now. 
+
+### (TODO: refine)
+After winning a Championship, the player has 'graduated' and is now granted access to the online **Multiplayer** world where they can compete against other human-players in various (types of?) **Lobbys**.
+
+
+## TECH/DEV GOALS
+To develop (a system to develop) engaging html5 games _without_ needing to go `webGL` or `Canvas`/`ThreeJS`.
+ Those systems are all fantastic in and of themselves, but are somewhat cumbersome to start a game development journey with. This project aims to stick as much as possible to clean & lean `html`, `css`, `svg` (ok and some `js`) for the delivery of excellent audio-, visual- and haptic experiences and feedback.
+
+💡 Note that _lean_ does not equal **plain**. 
+We can combine clipping, masking, blending/compositing and svg filtering to achieve a _very_ rich user experience.
+
+We pull out all stops (gamepad API, audio / filter APIs, graphics, haptics, networkcomms, pixel baking etc etc) to 
+deliver a grand experience. Idk what other stuff we can tap into but we'll find it. Geolocation?
+
+This project is an ode (of sorts) to the Almighty Web Browser And Its Rendering Engine (`AWBAIRE`) and what experiences it may offer other than [[doomscrolling]] to both creators and consumers (editor's note: surely there must be a better word for that. Less-than-creative Active Participants?).
+
+That's a long introduction just to say: today, players can select a base `background-color` for their vehicle, soon they'll be pasting stacks of CSS `*-gradient()`s as both `background-image` and `mask-image`s to design (and share!) their own sick liveries.
+
+Type shi.
 
 ## TODOs
 - [ ] Clean up this doc
