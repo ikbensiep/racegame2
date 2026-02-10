@@ -80,7 +80,7 @@ export default class World {
     
     // Render je eigen vectoren maar. We Bitmappin' nao biatch.
     // FIXME: temp fix
-    this.element.style.setProperty('--level-artwork-url', `url('${artworkBasePath}.svg')`)
+    this.element.style.setProperty('--level-artwork-url', `url('${artworkBasePath}_track.webp')`)
     console.log(this.svgElement);
 
     this.width = parseInt(this.svgElement.getAttribute('width'));
@@ -218,6 +218,7 @@ export default class World {
         return 'asphalt';
     }
 
+    
     return 'grass';
   }
 

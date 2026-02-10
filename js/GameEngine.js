@@ -4,6 +4,7 @@ import Opponent from './Opponent.js';
 import AIOpponent from './AIOpponent.js';
 import NetworkManager from './NetworkManager.js';
 import EffectManager from './EffectManager.js';
+
 export default class GameEngine {
     constructor(settings) {
 
@@ -18,6 +19,7 @@ export default class GameEngine {
       this.network = new NetworkManager(this, (data) => this.handleNetworkData(data));
       this.init(this);
       
+
     }
 
     async init (game) {

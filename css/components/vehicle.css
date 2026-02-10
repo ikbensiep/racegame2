@@ -7,11 +7,16 @@
 
 /* --- [Generic .vehicle placeholder style allowing for some state indication] --- */
 .vehicle {
+
   --transition-duration: .75;
   outline: 4px solid;
+  transform-style: preserve-3d;
+  perspective: 512px;
 
   > div {
     
+    transform-style: preserve-3d;
+
     &.player {
       --collider-color: orange;
     }

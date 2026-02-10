@@ -1,0 +1,22 @@
+/* De Gizmo Ringen */
+.gizmo {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 160px; height: 160px;
+    margin: -80px 0 0 -80px;
+    pointer-events: none;
+    display: none; /* Standaard uit */
+}
+
+.vehicle[data-debug="true"] .gizmo { display: block; }
+
+.ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid transparent;
+    border-radius: 50%;
+}
+/* RGB -> XYZ */
+.ring--x { border-color: #ff3e00; transform: rotateY(90deg); } /* Pitch */
+.ring--y { border-color: #00ffcc; transform: rotateX(90deg); } /* Roll */
+.ring--z { border-color: #3b82f6; }                            /* Yaw */

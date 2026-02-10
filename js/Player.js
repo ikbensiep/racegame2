@@ -1,4 +1,7 @@
 import Vehicle from './Vehicle.js';
+import { TweakManager } from './tools/Tweaker.js';
+import * as Presets from './VehicleDynamics.js';
+import * as SurfaceModule from './SurfaceDynamics.js';
 
 export default class Player extends Vehicle {
   constructor(id, name, driverNumber = 0, color = 'red', isLocal = false, game) {
@@ -7,21 +10,38 @@ export default class Player extends Vehicle {
 
     this.id = id;
     this.isLocal = isLocal;
-    this.angle = 0; 
-    this.speed = 0;
     this.x = 10500;
     this.y = 10000;
+    this.radius = 64;
+
+    this.dynamics = {};
+    Object.assign(this.dynamics, Presets.DefaultDynamics);
+    this.speed = 0;
     this.vx = 0;
     this.vy = 0;
-    this.radius = 64;
-    
-    // Constants (jouw drift settings)
-    this.maxSpeed = 500;
-    this.accel = 0.5;         // Hoe snel we optrekken
-    this.friction = 0.98;   // Rolweerstand (0.95 = 5% verlies per frame)
-    this.steerSpeed = 0.05;   // Hoe scherp de auto draait
-    this.drift = 0.15;      // Hoeveel de auto "glijdt" (0.1 = veel grip, 0.9 = ijs)
+    this.angle = 0; 
+    this.steerInput = 0;
+
+    // TODO: DELET DIS N USE VehicleDynamic.js INSTEAD
+    // this.maxSpeed = 500;
+    // this.accel = 0.5;         // Hoe snel we optrekken
+    // this.friction = 0.98;   // Rolweerstand (0.95 = 5% verlies per frame)
+    // this.steerSpeed = 0.05;   // Hoe scherp de auto draait
+    // this.drift = 0.15;      // Hoeveel de auto "glijdt" (0.1 = veel grip, 0.9 = ijs)
     this.isBraking = false;
+
+    this.vehicleTweaker = new TweakManager(this.dynamics, "🚗 Dynamics tweaker initialized");
+    this.vehicleTweaker._addPresetDropdown(Presets);
+
+    this.SurfaceData = SurfaceModule.Surfaces;
+    this.surfaceTweaker = new TweakManager(this.SurfaceData.asphalt, "🚛 Surface: Asphlat Multipliers");
+    this.surfaceTweaker._addPresetDropdown(this.SurfaceData);
+
+    this.rotationTweaker = new TweakManager(this.rotation, "📐 3D Gizmo (Pitch/Roll/Yaw)");
+
+    // Voeg een toggle toe om de ringen visueel aan/uit te zetten
+    const debugToggle = { showGizmo: true };
+    this.uiTweaker = new TweakManager(debugToggle, "🛠️ Debug Tools");
 
     this.xp = 0;
     this.canScore = true;
@@ -31,46 +51,66 @@ export default class Player extends Vehicle {
     this.lapStartTime = performance.now();
   }
 
-  _applyPhysics (gamepad, dt) {
-    const gas = gamepad.buttons[7].value;   // R2
-    const brake = gamepad.buttons[6].value; // L2
+  /* new  */
+  _applyPhysics(gamepad, dt) {
+    const d = this.dynamics;
+    const s = this.SurfaceData[this.activeSurface] || this.SurfaceData.asphalt; // De actieve modifier
+
+    // 0. Inputs uitlezen
+    const gas = gamepad.buttons[7].value;         // R2
+    const brake = gamepad.buttons[6].value;       // L2
     const handbrake = gamepad.buttons[5].pressed; // R1
+    this.isBraking = brake > 0;
 
-    brake ? this.isBraking = true : this.isBraking = false;
+    // Pas de multipliers toe op de basiswaarden
+    const currentAccel = d.acceleration * s.power;
+    const currentFriction = d.friction * s.drag;
+    const currentGrip = (1 - d.driftFactor) * s.grip;
 
-        // 1. Versnelling: accel * dt
-    if (gas > 0) this.speed += (gas * this.accel) * dt;
-    if (brake > 0) this.speed -= (brake * this.accel) * dt;
+    // 1. Versnelling & Remmen (Gebruik acceleration uit Dynamics)
+    if (gas > 0) this.speed += (gas * currentAccel) * dt;
+    if (brake > 0) this.speed -= (brake * currentFriction) * dt;
 
-    // 2. Wrijving: dit is een lastige. 
-    // Bij 60fps doe je: speed *= 0.96. 
-    // Met deltaTime wordt dat: speed *= Math.pow(0.96, dt);
-    // this.speed *= Math.pow(this.friction, dt);
-    this.speed *= (1 - (1 - this.friction) * dt);
+    // Snelheidslimiet (Voorkom dat achteruit sneller is dan vooruit)
+    // We limiteren vooruit op maxSpeed, achteruit op de helft daarvan
+    if (this.speed > d.maxSpeed) this.speed = d.maxSpeed;
+    if (this.speed < -d.maxSpeed / 2) this.speed = -d.maxSpeed / 2;
 
-    // 3. Sturen: steerSpeed * dt
+    // 2. Wrijving (Friction)
+    // De formule die je gebruikte: (1 - (1 - friction) * dt)
+    this.speed *= (1 - (1 - d.friction) * dt);
+
+    // 3. Sturen (Steering)
     if (Math.abs(gamepad?.axes[0]) > 0.1) {
-      const speedFactor = Math.min(Math.abs(this.speed) / 5, 1.0); 
-      const steerAmount = (gamepad.axes[0] * this.steerSpeed * speedFactor) * dt;
-      
-      this.angle += steerAmount;
+        // speedFactor zorgt dat je niet kunt sturen als je stilstaat
+        const speedFactor = Math.min(Math.abs(this.speed) / 5, 1.0); 
+        const steerAmount = (gamepad.axes[0] * d.steeringSensitivity * speedFactor) * dt;
+        
+        this.angle += steerAmount;
     }
 
-    // 4. Grip & Drift: ook hier Math.pow gebruiken voor de 'weerstand'
-    const grip = handbrake ? 0.05 : 0.2;
+    // 4. Grip & Drift
+    // We pakken de drift-waarde uit Dynamics. Als handbrake ingedrukt is, 
+    // gebruiken we de handbrakeDrift (bijv. 0.85), anders de gewone driftFactor (bijv. 0.95)
+    const currentDrift = handbrake ? d.handbrakeDrift : d.driftFactor;
+    
+    // Hoe lager de waarde (bijv 0.05), hoe meer de auto 'glijdt'
+    // Let op: we draaien de logica om zodat 'drift' uit de class logisch voelt
+    const grip = 1 - currentDrift; 
+
     const targetVX = Math.cos(this.angle) * this.speed;
     const targetVY = Math.sin(this.angle) * this.speed;
 
-    // Lineaire interpolatie (lerp) met dt
-    this.vx += (targetVX - this.vx) * (1 - Math.pow(1 - grip, dt));
-    this.vy += (targetVY - this.vy) * (1 - Math.pow(1 - grip, dt));
+    // Lerp met deltaTime voor consistente snelheid op alle schermen
+    const lerpFactor = 1 - Math.pow(1 - currentGrip, dt);
+    this.vx += (targetVX - this.vx) * lerpFactor;
+    this.vy += (targetVY - this.vy) * lerpFactor;
 
-    // 5. Beweging: vx * dt
+    // 5. Beweging
     this.x += this.vx * dt;
     this.y += this.vy * dt;
-
-  }
-
+}
+  
   _resolveCollision(hit, gamepad) {
 
     const hitRadius = hit.r !== undefined ? hit.r : hit.radius;
@@ -159,17 +199,7 @@ export default class Player extends Vehicle {
 
     if(this.activeSurface !== surface) {
       this.activeSurface = surface;
-      this.game.effects.trigger(this, surface, 5000);
-    }
-
-    if (surface === 'grass') {
-        this.maxSpeed = 400;        // Drastisch trager
-        this.friction = 0.92;     // Veel meer weerstand (auto stopt snel)
-        this.accel = 0.5;         // Moeizamer optrekken
-    } else {
-        this.maxSpeed = 500;       // Standaard asfalt waarden
-        this.friction = 0.98;
-        this.accel = 0.75;
+      this.game.effects.trigger(this, surface, 500);
     }
 
     const sectorId = this.game.world.lapTimer.checkSectors(this.x, this.y);

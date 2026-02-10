@@ -5,14 +5,25 @@ export default class Vehicle {
     this.driverNumber = driverNumber;
     this.color = color;
     this.game = game;
+
+    this.speed = 0;
     this.x = 0;
     this.y = 0;
-    this.angle = 0;
+    this.angle = 0; // steering angle
+    this.steerInput = 0;
+
+    // vehicle body rotations voor coolen flips en salto's
+    this.rotation = {
+        pitch: 0, // X
+        roll: 0,  // Y
+        yaw: 0    // Z (onafhankelijk van this.angle voor debug)
+    };
+
     this.radius = 64;
     this.element = this._createVisual();
   }
 
-  _createVisual() {
+  _createVisual () {
     const template = document.getElementById("racecar");
     const clone = document.importNode(template.content, true);
     const carElement = clone.querySelector('.car');
@@ -39,11 +50,23 @@ export default class Vehicle {
     return carElement;
   }
 
+  _applyVisualRotation() {
+    // Combineer je gameplay 'angle' met de 3D offsets
+    const totalYaw = (this.angle * (180 / Math.PI)) + this.rotation.yaw;
+    
+    this.bodyElement.style.transform = `
+        rotateZ(${totalYaw}deg) 
+        rotateX(${this.rotation.pitch}deg) 
+        rotateY(${this.rotation.roll}deg)
+    `;
+  }
+
   draw () {
     // Elke auto update zijn eigen element via transforms
     // this.element.style.transform = `translate(${this.x}px, ${this.y}px) rotate(${this.angle}rad)`;
     this.element.style.setProperty('--x', Math.floor(this.x));
     this.element.style.setProperty('--y', Math.floor(this.y));
     this.element.style.setProperty('--angle', parseFloat(this.angle.toFixed(3)));
+
   }
 }
