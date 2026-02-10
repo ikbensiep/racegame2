@@ -2,26 +2,28 @@ import World from './World.js';
 import Player from './Player.js';
 import Opponent from './Opponent.js';
 import NetworkManager from './NetworkManager.js';
-
+import EffectManager from './EffectManager.js';
 export default class GameEngine {
-    constructor() {
-        this.lastTime = 0;
+    constructor(settings) {
 
-        this.world = new World({svgUrl: 'levels/assen/assen.svg'});
+      this.settings = settings;
+      this.lastTime = 0;
 
-        this.localPlayer = undefined;
-        this.opponents = new Map();
-        this.network = new NetworkManager(this, (data) => this.handleNetworkData(data));
-        
-        this.init();
+      this.world = new World({svgUrl: 'levels/assen/assen.svg'});
+
+      this.localPlayer = undefined;
+      this.opponents = new Map();
+      this.network = new NetworkManager(this, (data) => this.handleNetworkData(data));
+      this.effects = new EffectManager(this);
+      this.init(this);
     }
 
-    async init () {
+    async init (game) {
       
       const possibleSpawnpoints = await this.world.load();
       let spawnPoint = possibleSpawnpoints[Math.floor(Math.random() * possibleSpawnpoints.length)];
 
-      this.localPlayer = new Player('me', 'red', true, this);
+      this.localPlayer = new Player('me', this.settings.name, this.settings.driverNumber, this.settings.color, true, game);
       this.localPlayer.spawnPoint = { ...spawnPoint };
       this.localPlayer.x = spawnPoint.x;
       this.localPlayer.y = spawnPoint.y;
@@ -30,25 +32,17 @@ export default class GameEngine {
     }
 
     handleNetworkData(data) {
-        /* previous 
-        if (!this.opponents.has(data.id)) {
-            this.opponents.set(data.id, new Opponent(data.id, 'blue', false, this));
-        }
-        const opp = this.opponents.get(data.id);
-        if(data.type == 'bang') { 
-          console.log(`🚑🚑🚑 hurt by ${data.id}`)  
-        } else {
-          opp.x = data.x;
-          opp.y = data.y;
-          opp.angle = data.angle;
-        }
-        */
+
+    const opp = this.opponents.get(data.id) || null;
 
     switch(data.type) {
+
       case 'hello':
+        console.info('🥳 HELLO from ', data); // DIT IS GOED SPUL
+
         // Hier heb je volledige controle over de nieuwe speler
         if (!this.opponents.has(data.id)) {
-          const newOpp = new Opponent(data.id, data.color, false, this);
+          const newOpp = new Opponent(data.id, data.name, data.driverNumber, data.color, this);
           newOpp.name = data.name; // Sla de naam op
           this.opponents.set(data.id, newOpp);
           console.log(`${data.name} joined the race!`);
@@ -56,7 +50,6 @@ export default class GameEngine {
         break;
 
       case 'update':
-        const opp = this.opponents.get(data.id);
         if (opp) {
           opp.x = data.x;
           opp.y = data.y;
@@ -66,6 +59,17 @@ export default class GameEngine {
           this.network.send({ type: 'who_are_you' });
         }
         break;
+
+      case 'bang' :
+        if (data.type === 'bang' && opp) {
+          console.log(`🚑 Collision with ${data.id}`);
+          
+          // Trigger visual effects
+          this.effects.trigger(opp, 'colliding', 300);
+          // Opbokke boeke
+          this.effects.trigger(this.localPlayer, 'colliding', 1500);
+          this.game.effects?.trigger(this.game.world, 'colliding', 500);
+        }
       }
     }
 

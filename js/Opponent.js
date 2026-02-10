@@ -1,9 +1,9 @@
 import Vehicle from './Vehicle.js';
 
 export default class Opponent extends Vehicle {
-    constructor(id, color, isLocal = false, game) {
-        super(id, color, game);
-    }
+constructor(id, name, driverNumber, color, game) {
+    super(id, name, driverNumber, color, game);
+}
 
     updateFromNetwork(data) {
         // Hier kun je eventueel LERP (smoothing) toevoegen

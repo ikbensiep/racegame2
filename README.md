@@ -8,10 +8,17 @@ During a race weekend, Racing Experience (XP), Championship Points (CP) and mone
 
 >.note Potentially, a combination of these could resolve to an overall Reputation Points (RP) score, but maybe that's making things a bit too complex for now. 
 
-## TODOs
+## TECH DEV GOALS
+To develop (a system to develop) engaging html5 games without needing to go webGL or Canvas. Those systems are fantastic but are somewhat cumbersome to start game development with. This project aims to stick as much as possible to clean & lean `html`, `css`, `svg` (ok and some `js`) for the delivery of audio-, visual and haptic feedback. 
 
-- [ ] Write Design Doc of sorts
-- [ ] Create (phased/sprint-based) TODO.md
+Note that _lean_ does not equal **plain**. 
+We can combine clipping, masking, blending and svg filtering to achieve a very rich user experience.
+
+## TODOs
+- [ ] Clean up this doc
+- [ ] Write Design Doc of sorts?
+- [ ] Add credits.txt?
+- [ ] Create project, milestones 
 
 ## SOLO GOAL: become champion over a Career
 - [ ] a Career may span multiple Championship Seasons

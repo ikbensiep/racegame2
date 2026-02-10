@@ -58,6 +58,7 @@ export default class NetworkManager {
             type: 'hello',
             id: this.peer.id,
             name: this.game.localPlayer.name || 'Anonymous Racer', // Zorg dat dit ergens staat
+            driverNumber: this.game.localPlayer.driverNumber,
             color: this.game.localPlayer.color || 'blue'
         };
         

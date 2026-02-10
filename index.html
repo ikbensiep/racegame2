@@ -3,16 +3,12 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>tiling with intersection observer</title>
+  <title>RAECGAEM2</title>
   <link rel="stylesheet" href="css/style.css" type="text/css"/>
   <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+  <link rel="shortcut icon" href="favicon.svg" type="image/svg" />
 </head>
 <body>
-  <header>
-    <fieldset>
-      <input type="text" name="displayName" value="Piet "/>
-    </fieldset>
-  </header>
   <main id="canvas" class="tiles grid">
     
     <!-- this is for dev only so we can 'live paint' the svg while developing -->
@@ -23,9 +19,34 @@
   <aside id="debug">
 
   </aside>
-  <footer></footer>
+  
+  <dialog id="lobby-dialog">
+    <form method="dialog" id="player-setup-form">
+      <h2>🏁 Join Race</h2>
+      
+      <div class="input-group">
+        <label for="p-name">Naam:</label>
+        <input type="text" id="p-name" placeholder="Racer" maxlength="12" required>
+      </div>
+
+      <div class="input-group">
+        <label for="p-color">Kleur:</label>
+        <input type="color" id="p-color" value="#ff0000">
+      </div>
+
+      <div class="input-group">
+        <label for="p-number">Nummer:</label>
+        <input type="number" id="p-number" value="01" min="0" max="99">
+      </div>
+
+      <button type="submit" id="start-race-btn">START RACE</button>
+    </form>
+  </dialog>
+
   <template id="racecar">
-    <div class="car racecar" data-team data-drivernum><div class="car-body player">player</div></div>
+    <div class="vehicle car racecar">
+      <div class="car-body player" data-team data-drivernum data-name></div>
+    </div>
   </template>
   <script src="js/main.js" type="module"></script>
 </body>

@@ -1,8 +1,8 @@
 import Vehicle from './Vehicle.js';
 
 export default class Player extends Vehicle {
-  constructor(id, color = 'red', isLocal = false, game) {
-    super(id, color, game);
+  constructor(id, name, driverNumber = 0, color = 'red', isLocal = false, game) {
+    super(id, name, driverNumber, color, game);
     this.game = game;
 
     this.id = id;
@@ -100,13 +100,13 @@ export default class Player extends Vehicle {
   handleCollision (gamepad) {
     // 1. Controller Trillen (Rumble)
     // De meeste moderne gamepads ondersteunen 'dual-rumble'
-    if (gamepad && gamepad.hapticActuators && gamepad.hapticActuators[0]) {
-        gamepad.hapticActuators[0].playEffect("dual-rumble", {
-            startDelay: 0,
-            duration: 200,      // Kort maar krachtig
-            weakMagnitude: 0.5, // De lichte trilmotor
-            strongMagnitude: 0.8 // De zware trilmotor (voor de klap)
-        });
+    if (gamepad && gamepad.vibrationActuator && gamepad.vibrationActuator) {
+        gamepad.vibrationActuator.playEffect("dual-rumble", {
+        startDelay: 0,
+        duration: 20,      // Kort maar krachtig
+        weakMagnitude: 0.5, // De lichte trilmotor
+        strongMagnitude: 0.8 // De zware trilmotor (voor de klap)
+      });
     }
 
     // 2. Geluid afspelen
@@ -117,8 +117,6 @@ export default class Player extends Vehicle {
     //     crashSound.play().catch(e => {}); // Catch om browser-autostart fouten te voorkomen
     // }
 
-    // this.game.world.element.classList.add('shake-it');
-    // setTimeout(() => this.game.world.element.classList.remove('shake-it'), 200);
 
   }
 
@@ -161,7 +159,7 @@ export default class Player extends Vehicle {
 
     if(this.activeSurface !== surface) {
       this.activeSurface = surface;
-      console.log(surface);
+      this.game.effects.trigger(this, surface, 5000);
     }
 
     if (surface === 'grass') {
@@ -215,7 +213,9 @@ export default class Player extends Vehicle {
       console.log("⛑️ HIT WALL", wallHit)
 
       this._resolveCollision(wallHit, gamepad)
-      
+      this.game.effects?.trigger(this, 'colliding', 300);
+      this.game.effects?.trigger(this.game.world, 'colliding', 300);
+
     } else if (!wallHit) {
       this.isColliding = false;
     }

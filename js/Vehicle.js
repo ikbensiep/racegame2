@@ -1,27 +1,30 @@
 export default class Vehicle {
-  constructor (id, color, game) {
+  constructor (id, name, driverNumber, color, game) {
     this.id = id;
-    this.name = `Player ${id}`;
+    this.name = name;
+    this.driverNumber = driverNumber;
+    this.color = color;
     this.game = game;
     this.x = 0;
     this.y = 0;
     this.angle = 0;
     this.radius = 64;
-    this.element = this._createVisual(color);
+    this.element = this._createVisual();
   }
 
-  _createVisual(color) {
+  _createVisual() {
     const template = document.getElementById("racecar");
     const clone = document.importNode(template.content, true);
     const carElement = clone.querySelector('.car');
     carElement.id = `vehicle-${this.id}`;
-    carElement.classList.add('opponent');
     const body = carElement.querySelector('.car-body');
 
     if (body) {
-      body.style.backgroundColor = color;
       body.style.setProperty('--radius', this.radius)
-      console.log(body)
+      body.style.setProperty('--player-color', this.color);
+      body.dataset.drivername = this.name;
+      body.dataset.drivernum = this.driverNumber;
+      console.log(body);
     }
 
     try {
