@@ -1,6 +1,7 @@
 import World from './World.js';
 import Player from './Player.js';
 import Opponent from './Opponent.js';
+import AIOpponent from './AIOpponent.js';
 import NetworkManager from './NetworkManager.js';
 import EffectManager from './EffectManager.js';
 export default class GameEngine {
@@ -13,9 +14,10 @@ export default class GameEngine {
 
       this.localPlayer = undefined;
       this.opponents = new Map();
-      this.network = new NetworkManager(this, (data) => this.handleNetworkData(data));
       this.effects = new EffectManager(this);
+      this.network = new NetworkManager(this, (data) => this.handleNetworkData(data));
       this.init(this);
+      
     }
 
     async init (game) {
@@ -29,6 +31,18 @@ export default class GameEngine {
       this.localPlayer.y = spawnPoint.y;
 
       this.start();
+      // if(this.network.isHost) {
+        await this.spawnBots(game);
+      // }
+    }
+
+    async spawnBots (game) {
+      // Maak een paar bots aan
+      for(let i = 0; i < 3; i++) {
+          const bot = new AIOpponent(`bot-${i}`, 'green', game);
+          bot.progress = i * 0.1; // Verspreid ze over de baan
+          game.opponents.set(bot.id, bot);
+      }
     }
 
     handleNetworkData(data) {
@@ -77,6 +91,14 @@ export default class GameEngine {
       if (!this.world.isLoaded) return;
       const gp = navigator.getGamepads()[0];
       this.localPlayer.update(gp, dt);
+
+      this.opponents.forEach(opp => {
+        // Alleen als het een AI is, roepen we .update() aan.
+        // Menselijke spelers worden immers geüpdatet via handleNetworkData.
+        if (opp instanceof AIOpponent) {
+            opp.update();
+          }
+      });
 
       // Netwerk sync
       this.network.send({
