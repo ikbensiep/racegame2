@@ -14,7 +14,6 @@ export default class Player extends Vehicle {
     this.y = 10000;
     this.radius = 64;
     
-    this.body = this.element.querySelector('.car-body')
     this.dynamics = {};
     Object.assign(this.dynamics, Presets.DefaultDynamics);
     this.speed = 0;
@@ -32,33 +31,12 @@ export default class Player extends Vehicle {
     this.surfaceTweaker = new TweakManager(this.SurfaceData.asphalt, "🚛 Surface: Asphlat Multipliers");
     this.surfaceTweaker._addPresetDropdown(this.SurfaceData);
 
-    this.rotationTweaker = new TweakManager(this.rotation, "📐 3D Gizmo (Pitch/Roll/Yaw)");
-
-    // Voeg een toggle toe om de ringen visueel aan/uit te zetten
-    const debugToggle = { showGizmo: true };
-    this.uiTweaker = new TweakManager(debugToggle, "🛠️ Debug Tools");
-    
     this.xp = 0;
     this.canScore = true;
     
     this.lastSectorId = null; // Om herhaling te voorkomen terwijl je op het vlak staat
     this.currentSector = 2; // Begin op 2, zodat s0 de eerstvolgende logische stap is
     this.lapStartTime = performance.now();
-    this._createGizmo()
-  }
-
-  _applyVisualRotation() {
-    // Pas de 3D rotatie toe op de visuele laag
-    ``
-    if (this.body) {
-        const yaw = (this.angle * (180 / Math.PI)) + (this.rotation.yaw || 0);
-        this.body.style.transform = `rotateZ(${yaw}deg) rotateX(${this.rotation.pitch || 0}deg) rotateY(${this.rotation.roll || 0}deg)`;
-    } else {
-      this.body = this.element.querySelector('.car-body');
-    }
-
-    // Exception: data-attribuut voor debug-visuals
-    this.element.dataset.debug = this.game.debugSettings.showGizmo;
   }
 
   /* new  */
@@ -283,19 +261,8 @@ export default class Player extends Vehicle {
       }
     });
 
-    this._applyVisualRotation()
+   
 
-  }
-  
-  _applyVisualRotation() {
-    // Combineer je gameplay 'angle' met de 3D offsets
-    const totalYaw = (this.angle * (180 / Math.PI)) + this.rotation.yaw;
-    
-    this.element.style.transform = `
-        rotateZ(${totalYaw}deg) 
-        rotateX(${this.rotation.pitch}deg) 
-        rotateY(${this.rotation.roll}deg)
-    `;
   }
 
   draw() {
