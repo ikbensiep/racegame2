@@ -52,12 +52,13 @@
     display: grid;
 
     transform: rotateX(var(--rotate-y), 0deg) rotateY(var(--rotate-y), 0deg); /* we can rotate around the local body axis for dramatic flips */
-    background-image: url(/assets/cars/default/interior-scaled.png);
-    background-size: contain;
+    
+    
     transform-style: preserve-3d;
     perspective: 512px;
     
     > i {
+      font-style: normal !important;
       position: absolute;
       inset: 0;
     }
@@ -73,48 +74,63 @@
 
     .bodywork {
       
-      /* De Mask: Panel lines, schaduwen en highlights */
-      mask-image: url('/assets/cars/porsche/porsche-mask.png');
+      /* Masking */ 
+      mask-image: url('/assets/cars/porsche/porsche-livery.png');
       mask-size: contain;
       
-      /* blend-mode voor weathering op de livery */
+      --pattern: linear-gradient(transparent, transparent 35%, white 35%, white 48%, transparent 48%, transparent 52%, white 52%, white 65%, transparent 65%);
+      
+      /* bodywork paint + livery + coating + weathering stack */
+      /* 1. weathering  */
+      /* 2. no livery havin plain ahh body color livery" slight enhancement layer*/ 
+      /* 3. the actual livery, a default racing stripe */
+/* a default racing stripe */
+
+
       background-image: 
+        var(--weathering-bg, linear-gradient(transparent, transparent))
+
         linear-gradient(to right,
           oklab(from var(--player-color) calc(l - 0.25) a b),
           var(--player-color)
         ),
-        var(--livery-bg, linear-gradient(transparent, transparent)),
-        var(--weathering-bg, linear-gradient(transparent, transparent));
+
+        var(--livery-bg, linear-gradient(transparent, transparent));
 
       background-blend-mode: 
-        normal, normal, multiply;
+        multiply, multiply, normal;
       background-size: contain;
       
       translate: 0 0 5px; /* lift the body a little from the chassis for pseudo 3d effect */
 
-      .livery {
-        position: absolute;
-        inset: 0;
-        justify-content: center;
-        
-        &::after {
-          position: absolute;
-          width: 2rem;
-          height: 1.5rem;
-          right: 1ex;
-          top: 50%;
-          rotate: 90deg;
-          translate: 0 -50%;
-          text-align: center;
-          z-index: 1;
-          padding: .125ex;
-          content: attr(data-drivernum);
-          background-color: white;
-          color: var(--player-color);
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-      }
     }
+
+    /* custom livery layer */
+   .livery {
+     position: absolute;
+     inset: 0;
+     justify-content: center;
+     
+
+     /* TODO: design differentbadge shapes */
+     /* racer id badge always goes on top of livery */
+     &::after {
+       position: absolute;
+       width: 2rem;
+       height: 1.5rem;
+       right: 1ex;
+       top: 50%;
+       rotate: 90deg;
+       translate: 0 -50%;
+       text-align: center;
+       z-index: 1;
+       padding: .125ex;
+       content: attr(data-drivernum);
+       background-color: white;
+       color: var(--player-color);
+       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+     }
+   }
 
     .mods {
       /* empty container for now */

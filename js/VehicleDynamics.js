@@ -1,9 +1,19 @@
 // Vehicles
 
+export const DefaultDynamics = {
+  maxSpeed: 5000,
+  acceleration: 2.5,
+  friction: 0.985,         
+  steeringSensitivity: 0.05,
+  driftFactor: 0.25,       
+  handbrakeDrift: .01,     
+  grassFriction: 0.90
+};
+
 // 1. De Basislijn: De 'Golf/Volvo' Gezinsauto
 // Stabiel, traag sturen, veel rolweerstand
-export const DefaultDynamics = {
-  maxSpeed: 8,             // Bescheiden topsnelheid
+export const SaloonDynamics = {
+  maxSpeed: 10,             // Bescheiden topsnelheid
   acceleration: 0.12,      // Rustig optrekken
   friction: 0.97,          // Gemiddelde rolweerstand
   steeringSensitivity: 0.035, // Zwaarder sturen (geen racestuur)
@@ -50,19 +60,11 @@ export const TractorDynamics = {
 // 5. De F1 Auto: De Raket
 // Absurde snelheid, moet warm worden voor grip
 export const F1Dynamics = {
-  maxSpeed: 25,
+  maxSpeed: 7500,
   acceleration: 1.2,       // Katapult-start
   friction: 0.995,         // Aerodynamisch, rolt eeuwig door
   steeringSensitivity: 0.08,
   driftFactor: 0.15,       // Glijdt alleen bij extreme snelheden/bochten
   handbrakeDrift: 0.9,     // Eén tikje en je tolt rond
   grassFriction: 0.50      // Onbestuurbaar op gras (spint direct)
-};
-
-export const GrassDynamics = {
-  ...DefaultDynamics,
-  maxSpeed: 150,      // Veel trager op gras
-  acceleration: 0.2,  // Moeizamer optrekken
-  friction: 0.90,      // Veel meer weerstand
-  driftFactor: 0.4     // Meer glijden/minder grip
 };

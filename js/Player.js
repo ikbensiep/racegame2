@@ -24,11 +24,11 @@ export default class Player extends Vehicle {
 
     this.isBraking = false;
 
-    this.vehicleTweaker = new TweakManager(this.dynamics, "🚗 Dynamics tweaker initialized");
+    this.vehicleTweaker = new TweakManager(this.dynamics, "🚗 Dynamics tweaker");
     this.vehicleTweaker._addPresetDropdown(Presets);
 
     this.SurfaceData = SurfaceModule.Surfaces;
-    this.surfaceTweaker = new TweakManager(this.SurfaceData.asphalt, "🚛 Surface: Asphlat Multipliers");
+    this.surfaceTweaker = new TweakManager(this.SurfaceData.asphalt, "🚛 Surface tweaker");
     this.surfaceTweaker._addPresetDropdown(this.SurfaceData);
 
     this.xp = 0;
@@ -43,7 +43,7 @@ export default class Player extends Vehicle {
   _applyPhysics(gamepad, dt) {
     const d = this.dynamics;
     const s = this.SurfaceData[this.activeSurface] || this.SurfaceData.asphalt; // De actieve modifier
-
+    console.log(this.activeSurface)
     // 0. Inputs uitlezen
     const gas = gamepad.buttons[7].value;         // R2
     const brake = gamepad.buttons[6].value;       // L2
@@ -187,6 +187,7 @@ export default class Player extends Vehicle {
 
     if(this.activeSurface !== surface) {
       this.activeSurface = surface;
+      
       this.game.effects.trigger(this, surface, 500);
     }
 

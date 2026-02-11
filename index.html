@@ -49,10 +49,22 @@
 
   <template id="racecar">
     <div class="vehicle car racecar">
-      <div class="car-body" >
+      <div class="car-body">
         <i class="chassis"><i class="interior"></i></i>
-        <i class="bodywork"><i class="livery" data-drivernum></i></i>
-        <i class="mods"></i>
+
+        <!-- bodywork stack: -->
+        <!-- (all layers below are masked)-->
+        <!-- filter fx (fire emitter, displacement filter)-->
+        <!-- weathering / damage layers: (masked layers, blend: multi) research masking by contents? -->
+        <!-- mods (spoilers) -->
+        <!-- no? / default / custom livery, ::before, ::after (driver badge) -->
+        <!-- .base-color (--player-color) ::before(gloss / metallic shading) radial gradient w/ splash of white, blend:multiply?, metallic: optionally masked by slight noise? (experiment)-->
+
+        <i class="bodywork">
+          <i class="base-color"></i>
+          <i class="livery" data-drivernum></i>
+          <i class="mods"></i>
+        </i>
       </div>
     </div>
   </template>
