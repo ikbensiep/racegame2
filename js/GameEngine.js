@@ -100,7 +100,7 @@ export default class GameEngine {
       
       if (!this.world.isLoaded) return;
       
-      this.camera.update();
+      
 
       const gp = navigator.getGamepads()[0];
       this.localPlayer.update(gp, dt);
@@ -130,6 +130,8 @@ export default class GameEngine {
           y: this.localPlayer.y,
           angle: this.localPlayer.angle
       });
+
+      this.camera.update();
     }
 
     draw() {

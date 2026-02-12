@@ -27,27 +27,40 @@ export default class CameraManager {
   }
 
   update() {
-    if (!this.target) return;
+    if (!this.target || this.freeRoam) return;
 
-    // 1. Lineaire positie (geen lerp, geen vertraging)
-    const lookahead = 5; 
+    // 1. Bereken het ideale doelpunt (DestX/Y)
+    const lookahead = 10;
     const tx = this.target.x + (this.target.vx || 0) * lookahead;
     const ty = this.target.y + (this.target.vy || 0) * lookahead;
 
-    // 2. Bereken het exacte middelpunt
-    let scrollX = tx - (this.viewPortSize.width / 2);
-    let scrollY = ty - (this.viewPortSize.height / 2);
+    let destX = tx - (this.viewPortSize.width / 2);
+    let destY = ty - (this.viewPortSize.height / 2);
 
-    // 3. Harde Clamping (geen grijze randen)
-    scrollX = Math.max(0, Math.min(scrollX, this.worldSize - this.viewPortSize.width));
-    scrollY = Math.max(0, Math.min(scrollY, this.worldSize - this.viewPortSize.height));
+    // Clamping
+    destX = Math.max(0, Math.min(destX, this.worldSize - this.viewPortSize.width));
+    destY = Math.max(0, Math.min(destY, this.worldSize - this.viewPortSize.height));
 
-    // 4. Forceer de browser naar de coördinaten
-    // We gebruiken 'auto' om ELKE vorm van browser-smoothing uit te schakelen
+    if (this.isTransitioning) {
+        // 2. LERP in JS (Geen DOM-reads meer!)
+        this.camX += (destX - this.camX) * 0.05;
+        this.camY += (destY - this.camY) * 0.05;
+
+        // Check of we er zijn
+        if (Math.hypot(destX - this.camX, destY - this.camY) < 2) {
+            this.isTransitioning = false;
+        }
+    } else {
+        // 3. Instant lock
+        this.camX = destX;
+        this.camY = destY;
+    }
+
+    // 4. WRITE: Slechts één DOM-schrijfactie per frame
     this.element.scrollTo({
-        left: scrollX,
-        top: scrollY,
-        behavior: 'auto' 
+        left: this.camX,
+        top: this.camY,
+        behavior: 'auto'
     });
   }
   
