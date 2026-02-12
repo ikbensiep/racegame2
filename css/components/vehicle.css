@@ -1,10 +1,4 @@
 
-@property --collider-color {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: #fffa;
-}
-
 /* --- [Generic .vehicle placeholder style allowing for some state indication] --- */
 .vehicle {
 
@@ -28,20 +22,6 @@
     &.npc {
       --collider-color: forestgreen;
     }
-    /* collider viz circle */
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 50%;
-      width: calc(var(--radius) * 2px);
-      height: calc(var(--radius) * 2px);
-      z-index: 2;
-      border-radius: 50%;
-      translate: -50% -50%;
-      outline: 2px dashed var(--collider-color, white);
-      transition: outline calc(var(--transition-duration, .5) * 1s) ease;
-    }
-    
   }
 
 

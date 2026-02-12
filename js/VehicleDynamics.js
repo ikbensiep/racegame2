@@ -1,8 +1,8 @@
 // Vehicles
 
 export const DefaultDynamics = {
-  maxSpeed: 5000,
-  acceleration: 2.5,
+  maxSpeed: 500,
+  acceleration: .5,
   friction: 0.985,         
   steeringSensitivity: 0.05,
   driftFactor: 0.25,       

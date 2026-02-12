@@ -10,6 +10,7 @@
 @import url('./components/car.css');
 @import url('./utils/tiles.css');
 
+@import url('./utils/colors.css');
 @import url('./utils/debug.css');
 @import url('./utils/gizmo.css');
 
@@ -33,6 +34,7 @@
 
 body {
   background-color: aquamarine;
-  overflow: hidden;
+  display: grid;
   font-family: sans-serif;
+  overflow: hidden;
 }

@@ -21,12 +21,14 @@ export default class Vehicle {
 
     this.radius = 64;
     this.element = this._createVisual();
+    this.gizmo = this._createGizmo();
   }
 
   _createVisual () {
     const template = document.getElementById("racecar");
     const clone = document.importNode(template.content, true);
     const carElement = clone.querySelector('.car');
+    
     carElement.id = `vehicle-${this.id}`;
     
     // FIXME: determine how to set .player, .opponent or .npc here instead 
@@ -35,7 +37,7 @@ export default class Vehicle {
     const body = carElement.querySelector('.car-body');
 
     if (body) {
-      body.style.setProperty('--radius', this.radius)
+      carElement.style.setProperty('--radius', this.radius)
       body.style.setProperty('--player-color', this.color);
       body.dataset.drivername = this.name;
       body.querySelector('.livery').dataset.drivernum = this.driverNumber;
@@ -45,7 +47,7 @@ export default class Vehicle {
     try {
       this.game.world.element.appendChild(carElement);
     } catch (e) {
-      console.log(this.game)
+      console.error(e)
     }
     return carElement;
   }
@@ -54,11 +56,14 @@ export default class Vehicle {
       const gizmo = document.createElement('div');
       gizmo.className = 'gizmo';
       gizmo.innerHTML = `
-          <div class="ring ring--x"></div>
-          <div class="ring ring--y"></div>
-          <div class="ring ring--z"></div>
+          <div class="ring x"></div>
+          <div class="ring y"></div>
+          <div class="ring z"></div>
       `;
-      this.element.appendChild(gizmo);
+      let body = this.element.querySelector('.car-body')
+      this.element.dataset.debug = "true";
+      body.appendChild(gizmo);
+      console.log(body)
   }
 
   draw () {

@@ -1,15 +1,13 @@
 /* Sidebar basis */
 aside#debug {
     position: fixed;
-    right: 0;
-    top: 0;
     width: 280px;
     height: 100vh;
     background: rgba(0, 0, 0, 0.85);
     color: #fff;
     padding: 1rem;
-    overflow-y: auto;
-    font-family: 'Courier New', monospace;
+    overflow-y: scroll;
+    
     z-index: 1000;
 }
 
@@ -33,6 +31,9 @@ aside#debug {
 /* Content & Fields */
 .tweak-group__content {
     padding: 1rem 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1ex;
 }
 
 .tweak-field__label {
@@ -72,4 +73,28 @@ aside#debug {
     margin-bottom: 1.5rem;
     border-bottom: 1px dashed #444;
     padding-bottom: 1rem;
+}
+
+.camera-regie .camera-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.camera-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.camera-option:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.camera-option input[type="radio"] {
+  accent-color: var(--accent-color, #ff4500);
 }

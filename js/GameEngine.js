@@ -4,6 +4,8 @@ import Opponent from './Opponent.js';
 import AIOpponent from './AIOpponent.js';
 import NetworkManager from './NetworkManager.js';
 import EffectManager from './EffectManager.js';
+import CameraManager from './CameraManager.js';
+import CameraTweaker from './tools/CameraTweaker.js';
 
 export default class GameEngine {
     constructor(settings) {
@@ -17,6 +19,10 @@ export default class GameEngine {
       this.opponents = new Map();
       this.effects = new EffectManager(this);
       this.network = new NetworkManager(this, (data) => this.handleNetworkData(data));
+      this.camera = {};
+
+      this.cameraTweaker = new CameraTweaker(this);
+
       this.init(this);
     }
 
@@ -31,8 +37,11 @@ export default class GameEngine {
       this.localPlayer.y = spawnPoint.y;
 
       this.start();
+      this.camera = new CameraManager(this, this.world.element)
+      this.camera.target = this.localPlayer;
       // if(this.network.isHost) {
         await this.spawnBots(game);
+
       // }
     }
 
@@ -88,7 +97,11 @@ export default class GameEngine {
     }
 
     update(dt) {
+      
       if (!this.world.isLoaded) return;
+      
+      this.camera.update();
+
       const gp = navigator.getGamepads()[0];
       this.localPlayer.update(gp, dt);
       

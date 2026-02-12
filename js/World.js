@@ -80,7 +80,7 @@ export default class World {
     
     // Render je eigen vectoren maar. We Bitmappin' nao biatch.
     // FIXME: temp fix
-    this.element.style.setProperty('--level-artwork-url', `url('${artworkBasePath}_track.webp')`)
+    this.element.style.setProperty('--level-artwork-url', `url('${artworkBasePath}_track.png')`)
     console.log(this.svgElement);
 
     this.width = parseInt(this.svgElement.getAttribute('width'));
@@ -112,9 +112,9 @@ export default class World {
     console.timeEnd('finding-spawnpoints');
     
     // 2. Find walls (obstacles)
-    console.time('finding-walls');
-    await this.findWalls();
-    console.timeEnd('finding-walls');
+    // console.time('finding-walls');
+    // await this.findWalls();
+    // console.timeEnd('finding-walls');
 
     this.lapTimer = new LapTimer(this, [...this.paths.sectors]);
 

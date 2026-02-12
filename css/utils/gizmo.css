@@ -1,11 +1,20 @@
+@property --outline-color {
+    syntax: "<color>";
+    initial-value: white;
+    inherits: true;
+}
+
 /* De Gizmo Ringen */
 .gizmo {
     position: absolute;
-    top: 50%; left: 50%;
-    width: 160px; height: 160px;
-    margin: -80px 0 0 -80px;
+    width: calc(var(--radius) * 2px);
+    height: calc(var(--radius) * 2px);
     pointer-events: none;
-    display: none; /* Standaard uit */
+     /* Standaard uit */
+    transform-style: preserve-3d;
+    translate: -50% -50% !important;
+    left: 50% !important;
+    top: 50% !important;
 }
 
 [data-debug="true"] .gizmo { display: block; }
@@ -13,11 +22,11 @@
 .ring {
     position: absolute;
     inset: 0;
-    border: 2px dashed transparent;
+    outline: 4px dashed var(--collider-color);
     border-radius: 50%;
 }
 
 /* XYZ -> RGB Utilities via CSS variabelen of directe klasses */
-.gizmo .x { border-color: #ff4500; transform: rotateY(90deg); }
-.gizmo .y { border-color: #32cd32; transform: rotateX(90deg); }
-.gizmo .z { border-color: #1e90ff; }                         /* Yaw */
+.gizmo .x { --collider-color: var(--axis-x-color); transform: rotateY(90deg); }
+.gizmo .y { --collider-color: var(--axis-y-color); transform: rotateX(90deg); }
+.gizmo .z { --collider-color: var(--axis-z-color); }                         /* Yaw */

@@ -1,0 +1,11 @@
+/* maybe move this to world.css,˙idk if its necessary yet */
+
+#canvas {
+    overflow: scroll;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE/Edge */
+}
+
+#canvas::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}

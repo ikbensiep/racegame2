@@ -1,0 +1,16 @@
+<svg 
+  id="world-validator" 
+  viewBox="0 0 32k 32k" 
+  width="32k" 
+  height="32k"
+  >
+
+  <!-- TODO: 
+      find a way to exploit the most from an Inkscape-led workflow:  -->
+  <!-- what "data" fields do we have in the UI there and how does that translate to the rendered xml?                  -->
+  <!-- for example: addinbg a title and description in the Object Details panel, adds 2 children -->
+  <!-- each containing their text strings. -->
+
+  <g data-zone="pit-box">
+  <g data-world-role="pit-box">
+</svg>

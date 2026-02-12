@@ -1,0 +1,11 @@
+@property --collider-color {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #fffa;
+}
+
+:root {
+  --axis-x-color: #ff3653;
+  --axis-y-color: #77b316;
+  --axis-z-color: #317acd;
+}

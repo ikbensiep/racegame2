@@ -1,8 +1,26 @@
 @import url(vehicle.css);
 
+/* driver number badge on livery */
 @property --driver-id {
-  syntax: "*";
+  syntax: "<string>";
   initial-value: "me";
+  inherits: true;
+}
+
+/* body rotations for 3d effects. */
+@property --rotate-x {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+@property --rotate-y {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+@property --rotate-z {
+  syntax: "<number>";
+  initial-value: 0;
   inherits: true;
 }
 
@@ -29,7 +47,7 @@
     
   We need to separate an entity into layers like this because if 
   we add a drop shadow filter, it would rotate with the player breaking
-  the 'rotating sun' immersion. So the shadow goes on the wrapper
+  the light source ('sun') immersion. So the shadow goes on the wrapper
   element, which any translated elements inside then 'inherit'
   (in reality they of course help _determine_ whatever the parent's filter paints).  
   */
@@ -38,70 +56,96 @@
     calc((var(--x) - var(--size) * .5) * 1px) 
     calc((var(--y) - var(--size) * .5)  * 1px);
 
+
   > .car-body {
 
     width: 172px;
     height: 96px;
-    rotate: calc(var(--angle) * 1rad );
+    rotate: calc(var(--angle) * 1rad ); /* vehicle heading */
+
+    --rotate-x : 0;
+    --rotate-y : 0;
+    --rotate-z : 0;
 
     color: white;
-
     z-index: 1;
-    
-    place-content: center;
-    display: grid;
 
-    transform: rotateX(var(--rotate-y), 0deg) rotateY(var(--rotate-y), 0deg); /* we can rotate around the local body axis for dramatic flips */
     
-    
-    transform-style: preserve-3d;
+    display: grid;
+    place-content: center;
+
     perspective: 512px;
+    transform-style: preserve-3d;
+
+    transform: 
+      rotateX(calc(var(--rotate-x) * 1deg)) 
+      rotateY(calc(var(--rotate-y) * 1deg)) 
+      rotateZ(calc(var(--rotate-z) * 1deg));
     
-    > i {
+    /* animation: car-centrifuge-demo 10s linear forwards infinite; */
+
+    transition: transform cubic-bezier(0.68, -0.55, 0.265, 1.55) .25s;
+
+    * {
+      background-size: contain;
+      background-position: center;
+      mask-size: contain;
+      mask-position: center;
       font-style: normal !important;
+    } 
+
+    /* TODO: currently using <i> elements for economic reasons, research <b>, <q>, <u> * friends*/ 
+    > * {
       position: absolute;
       inset: 0;
     }
 
     .chassis {
       background-image: url('/assets/cars/default/interior-scaled.png');
-      background-size: contain;
+      
       
       .interior {
-
+        /* placeholder for customisations? (interior lights, custom dashboard colors */
       }
     }
-
+    
     .bodywork {
+      translate: 0 0 25px; /* lift the body a little from the chassis for pseudo 3d effect */
       
+      /* a default racing stripe */
+      --pattern: linear-gradient(transparent, transparent 35%, white 35%, white 48%, transparent 48%, transparent 52%, white 52%, white 65%, transparent 65%);
+
+      &:not(:has(.custom-livery)) {
+        --livery-bg: var(--pattern);
+      }
+
       /* Masking */ 
       mask-image: url('/assets/cars/porsche/porsche-livery.png');
-      mask-size: contain;
       
-      --pattern: linear-gradient(transparent, transparent 35%, white 35%, white 48%, transparent 48%, transparent 52%, white 52%, white 65%, transparent 65%);
       
-      /* bodywork paint + livery + coating + weathering stack */
+      /* bodywork paint + livery + coating + weathering stack: */
       /* 1. weathering  */
-      /* 2. no livery havin plain ahh body color livery" slight enhancement layer*/ 
-      /* 3. the actual livery, a default racing stripe */
-/* a default racing stripe */
-
+      /* 2. the actual livery, a default racing stripe */
+      /* 3. "no livery havin plain ahh body color livery" w slight color gradient enhancement layer*/ 
+      
 
       background-image: 
-        var(--weathering-bg, linear-gradient(transparent, transparent))
+        
+        var(--weathering-bg, linear-gradient(transparent, transparent)),
 
-        linear-gradient(to right,
+        var(--livery-bg, linear-gradient(transparent, transparent)),
+
+        linear-gradient(
+          to right,
           oklab(from var(--player-color) calc(l - 0.25) a b),
           var(--player-color)
-        ),
+        );
 
-        var(--livery-bg, linear-gradient(transparent, transparent));
 
       background-blend-mode: 
-        multiply, multiply, normal;
-      background-size: contain;
-      
-      translate: 0 0 5px; /* lift the body a little from the chassis for pseudo 3d effect */
+        multiply, 
+        normal,
+        normal;
 
     }
 
@@ -112,23 +156,43 @@
      justify-content: center;
      
 
-     /* TODO: design differentbadge shapes */
      /* racer id badge always goes on top of livery */
      &::after {
+       content: attr(data-drivernum);
        position: absolute;
-       width: 2rem;
-       height: 1.5rem;
        right: 1ex;
        top: 50%;
        rotate: 90deg;
        translate: 0 -50%;
-       text-align: center;
        z-index: 1;
-       padding: .125ex;
-       content: attr(data-drivernum);
-       background-color: white;
-       color: var(--player-color);
-       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+      /* TODO: design different badge shapes */
+      --badge-bg: white; /* or gradient(s)... */
+      --badge-outline-color: black;
+      --badge-outline-width: 2px;
+      --badge-radius: 1px;
+      --badge-drivernum-color: black;
+      --badge-league-bg-color: green; /* a badge has a league-identifying mark, in this case a thick colored stroke acrioss the top */
+      --badge-league-text-color: white;
+
+      background-color: var(--badge-bg);
+      color: var(--badge-drivernum-color);
+      padding: .25ex .35ex;
+      text-align: center;
+      outline: 2px solid var(--badge-outline-color, black);
+
+      /* font shorthand order: */
+      /* 
+      font-style: italic;
+      font-weight: bold;
+      font-size: 0.8em;
+      line-height: 1.2;
+      font-family: "Arial", sans-serif;
+      */
+      font-family:
+        initial normal 12px/12px
+        var(--player-font, "Impact"), fantasy, sans-serif; /* FIXME: --player-font *must* be one of preset selection for de-hassling (and/or legal) reasons I think? */
+       
      }
    }
 

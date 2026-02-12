@@ -276,7 +276,8 @@ export default class Player extends Vehicle {
     this.game.world.element.style.setProperty('--player-angle', Math.floor(this.angle));
 
     if (this.isLocal) {
-      this.element.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
+      //TODO: update to use CameraManager class
+      // this.element.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
     }
   }
 }
