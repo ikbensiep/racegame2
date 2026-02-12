@@ -39,10 +39,12 @@ export default class GameEngine {
       this.start();
       this.camera = new CameraManager(this, this.world.element)
       this.camera.target = this.localPlayer;
+    
       // if(this.network.isHost) {
         await this.spawnBots(game);
 
       // }
+      this.cameraTweaker.refresh();
     }
 
     async spawnBots (game) {

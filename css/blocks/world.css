@@ -1,4 +1,6 @@
 
+@import url('../components/buildings.css');
+
 #canvas.world {
   
   --animation-duration: 1;

@@ -1,4 +1,5 @@
 import LapTimer from "./LapTimer.js";
+import BuildingFactory from "./BuildingFactory.js";
 
 export default class World {
   constructor(scene) {
@@ -116,10 +117,14 @@ export default class World {
     // await this.findWalls();
     // console.timeEnd('finding-walls');
 
+    // 3. Find building ground plates for 3D box factory
+
+    await this.generateBuildings();
+
     this.lapTimer = new LapTimer(this, [...this.paths.sectors]);
 
     this.isLoaded = true;
-    this.element.querySelector('#worldmap').remove();
+    this.element.querySelector('#worldmap svg').remove();
     return this.spawnPoints;
   }
   
@@ -175,6 +180,12 @@ export default class World {
         }
     });
   }
+
+  async generateBuildings() {
+    // building-3D-groundplates is the ID in your SVG
+    BuildingFactory.generate(this.svgElement, this.element);
+    console.log("🏙️ 3D World populated via BuildingFactory");
+}
 
   // Controleer of een punt (x, y) binnen de wereldgrenzen valt
   isOutOfBounds(x, y, size) {

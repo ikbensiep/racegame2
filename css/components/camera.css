@@ -1,16 +1,23 @@
+@property --perspective-size {
+  syntax: "<length>";
+  initial-value: 1024px;
+  inherits: true;
+}
+
+@property --perspective-factor {
+  syntax: "<length>";
+  initial-value: 1;
+  inherits: true;
+}
+
 #camera-viewport {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
   position: relative;
-  
-  perspective: 1024px;
-  /* De 'Infinite Floor': deze beweegt NIET mee met het scrollen */
-  background-image: url('/assets/noise.png');
-  background-repeat: repeat;
-  background-attachment: local; /* Cruciaal: het beweegt mee met de scroll-offset */
-  background-size: 200px 200px;
-  
+  --perspective-size: 1024px;
+  --perspective-factor: .25;
+  perspective: calc(var(--perspective-size) * var(--perspective-factor));
   /* Zoom Exception: we scalen de inhoud, niet de vloer */
   --camera-scale: 1;
 
@@ -18,18 +25,18 @@
     will-change: transform;
     transform: scale(var(--camera-scale));
     transform-origin: center center; 
-
+    perspective: inherit;
     /* FIXME: Parallax?
     /* Every world layer transformation (scale, rotation, transform, skew?)           */
     /* must originate from the player's point of view or else we'll all just          */
     /* get sea sick I tell you hwat.                                                  */
     /* EDIT: No need to move `transform-origin` to player x,y anymore:                */
     /* the #zoom-layer element will scale in its entirety                             */
-    
   }
 }
 
 .world {
   will-change: transform;
   transform-style: preserve-3d;
+  perspective: inherit;
 }

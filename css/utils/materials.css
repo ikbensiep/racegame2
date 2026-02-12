@@ -1,0 +1,54 @@
+
+/* --- TRIBUNE TEXTURE (Bankjes & Trappen) --- */
+.mat-grandstands .roof {
+  background-color: var(--c);
+  background-image: 
+    /* De horizontale bankjes */
+    repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 18px,
+      rgba(0,0,0,0.15) 18px,
+      rgba(0,0,0,0.15) 20px
+    ),
+    /* De verticale looppaden/secties */
+    repeating-linear-gradient(
+      to right,
+      transparent,
+      transparent 150px,
+      rgba(255,255,255,0.05) 150px,
+      rgba(255,255,255,0.05) 155px
+    );
+}
+
+/* --- BAKSTEEN PRESET (Voor gebouwen/paddock) --- */
+.mat-paddock .walls-ns,
+.mat-paddock .walls-ew {
+  background-color: #8b4513; /* fallback */
+  background-image: 
+    linear-gradient(335deg, #7b3503 23px, transparent 23px),
+    linear-gradient(155deg, #9b5523 23px, transparent 23px),
+    linear-gradient(335deg, #7b3503 23px, transparent 23px),
+    linear-gradient(155deg, #9b5523 23px, transparent 23px);
+  background-size: 50px 50px;
+}
+
+/* --- AMBIENT OCCLUSION (De 'schaduw' onderaan de muren) --- */
+.building .walls-ns::after,
+.building .walls-ew::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 30%);
+}
+
+/* --- ZONLICHT SIMULATIE (Via CSS Filters) --- */
+/* Noordmuren vangen meer licht */
+.building .walls-ns { filter: brightness(1.1); }
+/* Zuidmuren staan in de schaduw */
+.building .walls-ns::before { filter: brightness(0.7); }
+/* Westmuren */
+.building .walls-ew { filter: brightness(0.9); }
+/* Oostmuren */
+.building .walls-ew::before { filter: brightness(0.8); }

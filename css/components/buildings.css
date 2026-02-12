@@ -1,0 +1,120 @@
+/* 
+   DE HOKJESFABRIEK (Full Version) 
+   Logica: Container op de grond, muren klappen omhoog, dak op Z-hoogte.
+*/
+
+.building {
+  position: absolute;
+  transform-style: preserve-3d;
+  width: var(--w); 
+  height: var(--h);
+  left: 0; 
+  top: 0;
+  /* Volgorde: Eerst naar X,Y (wereld), dan rotatie om eigen as */
+  transform: rotateZ(var(--rz)) translate3d(var(--x), var(--y), 0);
+  transform-origin: 0 0;
+  --d: 280px; /* Standaard hoogte, overschrijfbaar via inline style */
+}
+
+/* Basis voor alle muren-containers en hun pseudo-elementen */
+.walls-ns, .walls-ew, 
+.walls-ns::before, .walls-ew::before {
+  position: absolute;
+  background-size: cover;
+  transform-style: preserve-3d;
+}
+
+/* --- NOORD (Red) & ZUID (Purple) --- */
+.walls-ns {
+  inset: 0;
+  height: var(--d);
+  transform-origin: top;
+  transform: rotateX(90deg); /* Klap omhoog vanaf de bovenkant */
+  background: red; 
+}
+
+.walls-ns::before {
+  content: '';
+  inset: 0;
+  background: purple;
+  filter: brightness(0.8);
+  /* Schuif naar de onderkant van het gebouw (Zuid) */
+  /* De lokale Z-as wijst nu naar voren door de 90deg rotatie */
+  transform: translateZ(calc(var(--h) * -1));
+}
+
+/* --- WEST (Green) & OOST (Orange) --- */
+.walls-ew {
+  top: 0;
+  left: 0;
+  width: var(--h); /* De diepte van de SVG-rect wordt de breedte van deze muur */
+  height: var(--d);
+  transform-origin: left top;
+  /* Jouw specifieke as-correctie voor Inkscape */
+  transform: rotateY(90deg) rotateZ(90deg);
+  background: green; 
+}
+
+.walls-ew::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: orange;
+  filter: brightness(0.9);
+  /* Schuif naar de overkant (Oost) over de breedte van het gebouw */
+  /* We gebruiken -1 omdat de as door de rotateZ is omgedraaid */
+  transform: translateZ(calc(var(--w) * 1));
+}
+
+/* --- HET DAK --- */
+.building .roof {
+  position: absolute;
+  inset: 0;
+  background: var(--c);
+  filter: brightness(1.1);
+  /* Ligt bovenop de muren */
+  transform: translateZ(var(--d));
+}
+
+/* --- TRIBUNE SPECIFIEKE LOGICA (.grandstands class) --- */
+
+.building.grandstands .walls-ew,
+.building.grandstands .walls-ew::before {
+  /* Schuin afzagen: Hoog bij Noord (0,0), laag bij Zuid (100,100) */
+  /* clip-path: polygon(0 0, 100% 100%, 0 100%); */
+}
+
+.building.grandstands .roof {
+  
+  transform-origin: bottom;
+
+  /* 1. Bereken de exacte lengte van het schuine vlak (Pythagoras) */
+  /* De nieuwe hoogte = wortel uit (hoogte_gebouw² + diepte_gebouw²) */
+  --roof-length: calc(sqrt(pow(var(--d), 2) + pow(var(--h), 2)));
+  
+  /* 2. Zet de hoogte van het dak op deze berekende lengte */
+  height: var(--roof-length);
+  
+  /* 3. Corrigeer de positie omdat de height nu groter is dan de --h */
+  /* We trekken het dak 'omhoog' zodat de onderkant op de zuidlijn blijft */
+  /* top: auto; */
+  bottom: 0;
+
+  /* 4. De hoek berekenen we met de boogtangens (atan2) */
+  /* Geen gegokte graden meer, maar pure geometrie */
+  transform: 
+    translateZ(0) 
+    rotateX(calc(atan2(var(--d), var(--h)) * -1));
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.1) 0px,
+    rgba(255,255,255,0.1) 15px,
+    rgba(0,0,0,0.1) 15px,
+    rgba(0,0,0,0.1) 30px
+  );
+}
+
+/* Bij een tribune is de voorkant (Zuid/Purple) open/laag */
+.building.grandstands .walls-ns::before {
+  display: none;
+}
