@@ -1,9 +1,10 @@
 #camera-viewport {
   width: 100vw;
   height: 100vh;
-  overflow: visible;
+  overflow: scroll;
   position: relative;
-  
+  will-change: transform;
+  perspective: 1024px;
   /* De 'Infinite Floor': deze beweegt NIET mee met het scrollen */
   background-image: url('/assets/noise.png');
   background-repeat: repeat;
@@ -29,5 +30,6 @@
 }
 
 .world {
-  
+  will-change: transform;
+  transform-style: preserve-3d;
 }
