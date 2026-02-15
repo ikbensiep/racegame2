@@ -43,11 +43,11 @@ export default class Player extends Vehicle {
   _applyPhysics(gamepad, dt) {
     const d = this.dynamics;
     const s = this.SurfaceData[this.activeSurface] || this.SurfaceData.asphalt; // De actieve modifier
-    console.log(this.activeSurface)
+    
     // 0. Inputs uitlezen
     const gas = gamepad.buttons[7].value;         // R2
     const brake = gamepad.buttons[6].value;       // L2
-    const handbrake = gamepad.buttons[5].pressed; // R1
+    const handbrake = gamepad.buttons[5].pressed || gamepad.buttons[5].value; // R1
     this.isBraking = brake > 0;
 
     // Pas de multipliers toe op de basiswaarden
@@ -62,17 +62,17 @@ export default class Player extends Vehicle {
     // Snelheidslimiet (Voorkom dat achteruit sneller is dan vooruit)
     // We limiteren vooruit op maxSpeed, achteruit op de helft daarvan
     if (this.speed > d.maxSpeed) this.speed = d.maxSpeed;
-    if (this.speed < -d.maxSpeed / 2) this.speed = -d.maxSpeed / 2;
+    if (this.speed < -d.maxSpeed / 2) this.speed = -d.maxSpeed / 4;
 
     // 2. Wrijving (Friction)
-    // De formule die je gebruikte: (1 - (1 - friction) * dt)
     this.speed *= (1 - (1 - d.friction) * dt);
 
     // 3. Sturen (Steering)
     if (Math.abs(gamepad?.axes[0]) > 0.1) {
         // speedFactor zorgt dat je niet kunt sturen als je stilstaat
         const speedFactor = Math.min(Math.abs(this.speed) / 5, 1.0); 
-        const steerAmount = (gamepad.axes[0] * d.steeringSensitivity * speedFactor) * dt;
+        const direction = this.speed >= 0 ? 1 : -1;
+        const steerAmount = (gamepad.axes[0] * d.steeringSensitivity * speedFactor * direction) * dt;
         
         this.angle += steerAmount;
     }
@@ -97,7 +97,7 @@ export default class Player extends Vehicle {
     // 5. Beweging
     this.x += this.vx * dt;
     this.y += this.vy * dt;
-}
+  }
   
   _resolveCollision(hit, gamepad) {
 
@@ -118,9 +118,9 @@ export default class Player extends Vehicle {
     this.y = hit.y + Math.sin(angle) * (minDist + 1);
 
     // 2. Physics aanpassing
-    this.speed *= -1;
-    this.vx *= 0.75;
-    this.vy *= 0.75;
+    this.speed *= .95;
+    // this.vx *= 0.5;
+    // this.vy *= 0.5;
       
     this.handleCollision(gamepad);
   }
@@ -129,12 +129,13 @@ export default class Player extends Vehicle {
     // 1. Controller Trillen (Rumble)
     // De meeste moderne gamepads ondersteunen 'dual-rumble'
     if (gamepad && gamepad.vibrationActuator && gamepad.vibrationActuator) {
-        gamepad.vibrationActuator.playEffect("dual-rumble", {
-        startDelay: 0,
-        duration: 20,      // Kort maar krachtig
-        weakMagnitude: 0.5, // De lichte trilmotor
-        strongMagnitude: 0.8 // De zware trilmotor (voor de klap)
-      });
+        this.playHapticFeedBack (gamepad, 
+        {
+          startDelay: 0,
+          duration: 10,      // Kort maar krachtig
+          weakMagnitude: 0.25, // De lichte trilmotor
+          strongMagnitude: 0.1 // De zware trilmotor (voor de klap)
+        });
     }
 
     // 2. Geluid afspelen
@@ -166,6 +167,15 @@ export default class Player extends Vehicle {
 
     this.currentSector = num;
     this.game.world.lapTimer.lastSectorTime = now;
+  }
+
+  playHapticFeedBack (gamepad, haptics) {
+    gamepad.vibrationActuator.playEffect("dual-rumble", {
+      startDelay: haptics.startDelay || 0,
+      duration: haptics.duration || 20,      // Kort maar krachtig
+      weakMagnitude: haptics.weakMagnitude || 0.5, // De lichte trilmotor
+      strongMagnitude: haptics.strongMagnitude || 0.2 // De zware trilmotor (voor de klap)
+    });
   }
 
   onLevelUp() {
@@ -217,12 +227,14 @@ export default class Player extends Vehicle {
 
     this._applyPhysics(gamepad, dt)
 
+
+    // Prevent going out of bounce 🔊🔊🔊
     const oldPos = { x: this.x, y: this.y };
 
     if (this.game.world.isOutOfBounds(this.x, this.y, this.radius)) {
       this.x = oldPos.x;
       this.y = oldPos.y;
-      this.speed *= -0.5; // "Bouncen" tegen de omheining van de wereld
+      this.speed *= -1; 
     }
 
     const wallHit = this.game.world.getCollision(this.x, this.y, this.radius);
@@ -262,7 +274,6 @@ export default class Player extends Vehicle {
       }
     });
 
-   
 
   }
 
@@ -271,9 +282,9 @@ export default class Player extends Vehicle {
 
     super.draw();
 
-    this.game.world.element.style.setProperty('--player-x', Math.floor(this.x));
-    this.game.world.element.style.setProperty('--player-y', Math.floor(this.y));
-    this.game.world.element.style.setProperty('--player-angle', Math.floor(this.angle));
+    this.game.world.element.style.setProperty('--player-x', this.x);
+    this.game.world.element.style.setProperty('--player-y', this.y);
+    this.game.world.element.style.setProperty('--player-angle', this.angle);
 
     if (this.isLocal) {
       //TODO: update to use CameraManager class

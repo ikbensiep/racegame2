@@ -12,11 +12,10 @@
   <section id="camera-viewport">
     <div id="zoom-layer">
 
-      <main id="canvas" class="world tiles grid debug-uv">
+      <main id="canvas" class="world">
         <!-- this is for dev only so we can 'live paint' the svg while developing -->
         <!-- eventually we'll only dislpay the map as a css background image!-->
         <div id="worldmap"></div>
-        <section class="elevated"></section>
       </main>
     </div>
   </section>
@@ -35,7 +34,19 @@
 
       <div class="input-group">
         <label for="p-color">Kleur:</label>
-        <input type="color" id="p-color" value="#b4d455">
+        <input type="color" id="p-color" value="#020202" list="color" />
+        <datalist id="color">
+          <option>#a55</option>
+          <option>#ac1d1c</option>
+          <option>#b4d455</option>
+          <option>#b00b00</option>
+          <option>#c0ff33</option>
+          <option>#c0ffee</option>
+          <option>#deface</option>
+          <option>#defec8</option>
+          <option>#facade</option>
+          <option>#0ff1ce</option>
+        </datalist>
       </div>
 
       <div class="input-group">
@@ -68,6 +79,69 @@
       </div>
     </div>
   </template>
+
+  <template id="structure">
+    <div class="structure">
+      <div class="wall-n"></div>
+      <div class="wall-e"></div>
+      <div class="wall-s"></div>
+      <div class="wall-w"></div>
+      <div class="roof"></div>
+    </div>
+  </template>
+
+
+  <svg id="filters">
+          <filter id="displacementFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
+                <animate attributeName="seed" from="0" to="600" begin="0s" dur="100s" repeatCount="indefinite"></animate>
+            </feTurbulence>
+
+            <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G">
+            </feDisplacementMap>
+          </filter>
+          
+          <filter id="specularLight"
+            style="color-interpolation-filters:sRGB;"
+            inkscape:label="Specular Light"
+            x="-0.050315805"
+            y="-0.050315805"
+            width="1.1006316"
+            height="1.1006316">
+          <feGaussianBlur
+                in="SourceAlpha"
+                stdDeviation="10"
+                result="blur"
+                id="feGaussianBlur67" />
+          <feSpecularLighting
+                in="blur"
+                specularExponent="35.0"
+                specularConstant="10"
+                surfaceScale="5"
+                lighting-color="#fce48d"
+                result="specular"
+                id="feSpecularLighting67">
+              <feDistantLight
+                    azimuth="270"
+                    elevation="156"
+                    id="feDistantLight67" />
+          </feSpecularLighting>
+          <feComposite
+                in="specular"
+                in2="SourceGraphic"
+                k3="1"
+                k2="1"
+                operator="arithmetic"
+                result="composite1"
+                id="feComposite67" />
+          <feComposite
+              in="composite1"
+              in2="SourceAlpha"
+              operator="in"
+              result="composite2"
+              id="feComposite68" />
+          </filter>
+  </svg>
   <script src="js/main.js" type="module"></script>
 </body>
 </html>

@@ -3,7 +3,10 @@
 .vehicle {
 
   --transition-duration: .75;
-  outline: 4px solid;
+  filter: 
+    drop-shadow(0px -12px 16px #0009)
+    drop-shadow(0px -5px 3px #0006)
+    url(#specularLight);
   transform-style: preserve-3d;
   perspective: 512px;
 

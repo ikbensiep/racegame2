@@ -1,54 +1,119 @@
 
-/* --- TRIBUNE TEXTURE (Bankjes & Trappen) --- */
-.mat-grandstands .roof {
-  background-color: var(--c);
-  background-image: 
-    /* De horizontale bankjes */
-    repeating-linear-gradient(
-      to bottom,
-      transparent,
-      transparent 18px,
-      rgba(0,0,0,0.15) 18px,
-      rgba(0,0,0,0.15) 20px
-    ),
-    /* De verticale looppaden/secties */
-    repeating-linear-gradient(
-      to right,
-      transparent,
-      transparent 150px,
-      rgba(255,255,255,0.05) 150px,
-      rgba(255,255,255,0.05) 155px
-    );
-}
+.building {
 
-/* --- BAKSTEEN PRESET (Voor gebouwen/paddock) --- */
-.mat-paddock .walls-ns,
-.mat-paddock .walls-ew {
-  background-color: #8b4513; /* fallback */
-  background-image: 
-    linear-gradient(335deg, #7b3503 23px, transparent 23px),
-    linear-gradient(155deg, #9b5523 23px, transparent 23px),
-    linear-gradient(335deg, #7b3503 23px, transparent 23px),
-    linear-gradient(155deg, #9b5523 23px, transparent 23px);
-  background-size: 50px 50px;
-}
+  .roof {
+    background: #333e;
+    display: grid;
+    place-content: center;
+    color: white;
+  }
+  
 
-/* --- AMBIENT OCCLUSION (De 'schaduw' onderaan de muren) --- */
-.building .walls-ns::after,
-.building .walls-ew::after {
-    content: '';
+  &::before {
+    content: 'building floor level';
     position: absolute;
     inset: 0;
+    padding: 1ex;
+    color: pink;
+  }
+
+  &::after {
+    content: 'building lot';
+    
+    color: hotpink;
+    position: absolute;
+    inset: -64px;
+    padding: 1ex;
+    
+    transform: translateZ(-5px); /* Net onder het gebouw op het 'vloerkleed' */
     pointer-events: none;
-    background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 30%);
+  }
+
+  .walls-ew,
+  .walls-ns,
+  .walls-ew::before,
+  .walls-ns::before {
+    /* background-color: transparent !important; */
+    backface-visibility: hidden;
+  }
+
 }
 
-/* --- ZONLICHT SIMULATIE (Via CSS Filters) --- */
-/* Noordmuren vangen meer licht */
-.building .walls-ns { filter: brightness(1.1); }
-/* Zuidmuren staan in de schaduw */
-.building .walls-ns::before { filter: brightness(0.7); }
-/* Westmuren */
-.building .walls-ew { filter: brightness(0.9); }
-/* Oostmuren */
-.building .walls-ew::before { filter: brightness(0.8); }
+
+/* --- GRANDSTANDS  --- */
+.mat-grandstands {
+
+  .walls-ew, 
+  .walls-ew::before {
+    background-color: #7773;
+    background-image: repeating-linear-gradient(90deg, black 0px, black 10px, transparent 11px, transparent 100px);
+    outline: 2px solid #333;
+  }
+
+  .walls-ns, 
+  .walls-ns::before { 
+    height: calc(var(--d) * 1.75);background: #999;outline: 2px solid;
+  }
+
+  .walls-ns::before {
+    background: 
+      repeating-linear-gradient(25deg, #999 0, #999 1px, transparent 0, transparent 10px),
+      repeating-linear-gradient(-25deg, #999 0, #999 1px, transparent 0, transparent 10px);
+  }
+
+
+  .roof {
+    background-color: #2196F3;
+    background-image: 
+      repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 12px,
+        rgba(0,0,0,0.2) 12px,
+        rgba(0,0,0,0.2) 15px
+        );
+        
+      box-shadow: inset 0 20px 20px rgba(255,255,255,0.95);
+  }
+}
+
+.mat-fence {
+  background-color: rgba(200, 200, 200, 0.2);
+  /* Het 'gaas' patroon met een simpele gradient */
+  --fence-pattern:  
+    repeating-linear-gradient(45deg, #999 0, #999 1px, transparent 0, transparent 10px),
+    repeating-linear-gradient(-45deg, #999 0, #999 1px, transparent 0, transparent 10px);
+  border-left: 4px solid #555; /* De hekpaal */
+  border-right: 4px solid #555;
+}
+
+.mat-fence .roof { display: none; } /* Een hek heeft geen dak */
+
+/* --- Paddock Buildings --- */
+
+.mat-paddock {
+  .wall-n, 
+  .wall-e,
+  .wall-w, 
+  .wall-s {
+    background-color: transparent !important;
+    
+    background-image: 
+    repeating-linear-gradient(
+      to top,
+      var(--column-color, white) 0, 
+      var(--column-color, white) calc(var(--column-fill-size) * 8px), 
+      transparent calc(var(--column-fill-size) * 8px + 1px),  
+      transparent 128px), 
+      
+      repeating-linear-gradient(
+        90deg,
+        var(--column-color, white) 0,
+        var(--column-color, white) calc(var(--column-fill-size) * 1px),
+        rgb(from var(--face-color, #999) r g b / var(--face-opacity, 1)) calc((var(--column-fill-size) * 1px) + 1px),
+        rgb(from var(--face-color, #999) r g b / var(--face-opacity, 1)) calc( (var(--column-size) + var(--column-fill-size)) * 1px)
+        )
+      /* url('/assets/uvmap.png') */
+      ;
+  }
+}

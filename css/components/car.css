@@ -110,7 +110,7 @@
     }
     
     .bodywork {
-      translate: 0 0 25px; /* lift the body a little from the chassis for pseudo 3d effect */
+      translate: 0 0 2px; /* lift the body a little from the chassis for pseudo 3d effect */
       
       /* a default racing stripe */
       --pattern: linear-gradient(transparent, transparent 35%, white 35%, white 48%, transparent 48%, transparent 52%, white 52%, white 65%, transparent 65%);

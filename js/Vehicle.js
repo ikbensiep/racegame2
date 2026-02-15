@@ -21,7 +21,7 @@ export default class Vehicle {
 
     this.radius = 64;
     this.element = this._createVisual();
-    this.gizmo = this._createGizmo();
+    // this.gizmo = this._createGizmo();
   }
 
   _createVisual () {
@@ -34,11 +34,11 @@ export default class Vehicle {
     // FIXME: determine how to set .player, .opponent or .npc here instead 
     // if NPCs at some point intherit the vehicle class
     carElement.classList.add('player'); 
+    carElement.style.setProperty('--player-color', this.color);
     const body = carElement.querySelector('.car-body');
 
     if (body) {
       carElement.style.setProperty('--radius', this.radius)
-      body.style.setProperty('--player-color', this.color);
       body.dataset.drivername = this.name;
       body.querySelector('.livery').dataset.drivernum = this.driverNumber;
       console.log(body);

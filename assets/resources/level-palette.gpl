@@ -1,0 +1,14 @@
+GIMP Palette
+Name: RaceCircuit
+Columns: 3
+#
+255   0   0	Race Control Tower
+128   0 128	Team Garage
+255 165   0	Grandstand Covered
+255 215   0	Grandstand Open
+255 255 255	Medical Center
+255  85  85	Marshal Post
+  0   0 255	Fuel/Tires/Retail
+128 128 128	Utility/Storage
+169 169 169	Sanitary
+

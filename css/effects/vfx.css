@@ -9,13 +9,13 @@
   /* Also: Emittertje maken vanzelfst             */
   /* Tevens also: leuk om NPCs in de pits (op de  */
   /* tribunes?) mee ""AAN TE STEKEN""""" NAHMEAN  */
-  filter: saturate(2) brightness(1.5);
+  filter: saturate(2) brightness(1.1);
 }
 
 [data-state="colliding"] {
   /* set shake animation */
   /* pretty much never a delay on this baby because impacts should make you FEEL SOMETHING */
   animation: shake calc(var(--animation-duration, 0.2) * 1s) calc(var(--animation-delay, 0) * 1s) 1;
-  filter: saturate(1.2) brightness(1.2);
+  /* filter: saturate(1.2) brightness(1.1); */
 }
 

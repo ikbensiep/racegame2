@@ -2,7 +2,8 @@
 export default class CameraManager {
   constructor(game, scrollContainer, worldSize = 32768) {
     this.game = game;
-    this.element = scrollContainer; 
+    this.element = scrollContainer;
+    this.zoomElement = this.element.querySelector('#zoom-layer')
     this.target = game.localPlayer;
     this.isTransitioning = false;
     this.worldSize = worldSize;
@@ -27,10 +28,11 @@ export default class CameraManager {
   }
 
   update() {
+
     if (!this.target || this.freeRoam) return;
 
     // 1. Bereken het ideale doelpunt (DestX/Y)
-    const lookahead = 10;
+    const lookahead = 15;
     const tx = this.target.x + (this.target.vx || 0) * lookahead;
     const ty = this.target.y + (this.target.vy || 0) * lookahead;
 
@@ -52,16 +54,21 @@ export default class CameraManager {
         }
     } else {
         // 3. Instant lock
-        this.camX = destX;
-        this.camY = destY;
+        // this.camX = destX;
+        // this.camY = destY;
+        // Nee, meer LERP
+        this.camX += (destX - this.camX) * 0.75;
+        this.camY += (destY - this.camY) * 0.75;
     }
 
     // 4. WRITE: Slechts één DOM-schrijfactie per frame
-    this.element.scrollTo({
-        left: this.camX,
-        top: this.camY,
-        behavior: 'auto'
-    });
+    this.element.style.setProperty('--cam-x', Math.round(this.camX)) /* rounding these to prevent too many DOM updates */
+    this.element.style.setProperty('--cam-y', Math.round(this.camY))
+    // this.element.scrollTo({
+    //     left: this.camX,
+    //     top: this.camY,
+    //     behavior: 'direct'
+    // });
   }
   
   async scrollToTarget(targetElement) {

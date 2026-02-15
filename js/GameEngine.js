@@ -37,19 +37,18 @@ export default class GameEngine {
       this.localPlayer.y = spawnPoint.y;
 
       this.start();
-      this.camera = new CameraManager(this, this.world.element)
+      this.camera = new CameraManager(this, document.querySelector('#camera-viewport'))
       this.camera.target = this.localPlayer;
     
       // if(this.network.isHost) {
-        await this.spawnBots(game);
-
+      //  await this.spawnBots(game);
       // }
       this.cameraTweaker.refresh();
     }
 
     async spawnBots (game) {
       // Maak een paar bots aan
-      for(let i = 0; i < 3; i++) {
+      for(let i = 0; i < 1; i++) {
           const bot = new AIOpponent(`bot-${i}`, 'green', game);
           bot.progress = i * 0.1; // Verspreid ze over de baan
           game.opponents.set(bot.id, bot);
@@ -93,7 +92,7 @@ export default class GameEngine {
           this.effects.trigger(opp, 'colliding', 300);
           // Opbokke boeke
           this.effects.trigger(this.localPlayer, 'colliding', 100);
-          this.game.effects?.trigger(this.game.world, 'colliding', 500);
+          this.game.effects?.trigger(this.game.camera.zoomElement, 'colliding', 300);
         }
       }
     }
@@ -101,8 +100,6 @@ export default class GameEngine {
     update(dt) {
       
       if (!this.world.isLoaded) return;
-      
-      
 
       const gp = navigator.getGamepads()[0];
       this.localPlayer.update(gp, dt);

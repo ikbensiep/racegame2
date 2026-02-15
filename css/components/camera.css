@@ -16,12 +16,14 @@
   overflow: hidden;
   position: relative;
   --perspective-size: 1024px;
-  --perspective-factor: .25;
+  --perspective-factor: .5;
   perspective: calc(var(--perspective-size) * var(--perspective-factor));
-  /* Zoom Exception: we scalen de inhoud, niet de vloer */
+  
   --camera-scale: 1;
 
   #zoom-layer {
+    position: fixed;
+    inset: 0;
     will-change: transform;
     transform: scale(var(--camera-scale));
     transform-origin: center center; 
@@ -33,10 +35,4 @@
     /* EDIT: No need to move `transform-origin` to player x,y anymore:                */
     /* the #zoom-layer element will scale in its entirety                             */
   }
-}
-
-.world {
-  will-change: transform;
-  transform-style: preserve-3d;
-  perspective: inherit;
 }

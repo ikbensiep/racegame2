@@ -22,6 +22,8 @@ export default class World {
     this.trackPath = null; // The racetrack path
     this.trackElement = null;
     this.trackWidth = 500;
+    this.structures = [];
+    this.buildingFactory = new BuildingFactory(this);
 
     // TODO
     // these should all probably contain arrays with 0 or more paths
@@ -82,7 +84,7 @@ export default class World {
     // Render je eigen vectoren maar. We Bitmappin' nao biatch.
     // FIXME: temp fix
     this.element.style.setProperty('--level-artwork-url', `url('${artworkBasePath}_track.png')`)
-    console.log(this.svgElement);
+
 
     this.width = parseInt(this.svgElement.getAttribute('width'));
     this.height = parseInt(this.svgElement.getAttribute('height'));
@@ -108,19 +110,18 @@ export default class World {
     }
 
     // 1. Find spawnpoints
-    console.time('finding-spawnpoints');
-    await this.findSpawnPoints('race');
-    console.timeEnd('finding-spawnpoints');
+    await this.findSpawnPoints('training');
+    
     
     // 2. Find walls (obstacles)
-    // console.time('finding-walls');
-    // await this.findWalls();
-    // console.timeEnd('finding-walls');
-
+    await this.findWalls();
+    
     // 3. Find building ground plates for 3D box factory
-
+    
+    console.time('generate-buildings');
     await this.generateBuildings();
-
+    console.timeEnd('generate-buildings');
+    
     this.lapTimer = new LapTimer(this, [...this.paths.sectors]);
 
     this.isLoaded = true;
@@ -165,13 +166,16 @@ export default class World {
     
     wallPaths.forEach(path => {
       const length = path.getTotalLength();
-        
-        // Jouw interval
-        // TODO: multiply `step` and `r` by stroke width?
-        const step = 64; 
+      
+      // Jouw interval
+      // TODO: multiply `step` and `r` by stroke width?
+      const step = 64; 
+      
+      console.log(`collidible-wall ${Math.floor(length)}`);
 
         for (let i = 0; i < length; i += step) {
           const circle = path.getPointAtLength(i);
+
           this.collidibles.push({
             x: circle.x,
             y: circle.y,
@@ -183,7 +187,8 @@ export default class World {
 
   async generateBuildings() {
     // building-3D-groundplates is the ID in your SVG
-    BuildingFactory.generate(this.svgElement, this.element);
+    
+    this.buildingFactory.generate(this.svgElement, this.element)
     console.log("🏙️ 3D World populated via BuildingFactory");
 }
 

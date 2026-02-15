@@ -1,45 +1,215 @@
 
-@import url('../components/buildings.css');
-
 #canvas.world {
   
+  /* 8k: easy to remember, fun to type number (provided u have a numpad) */
+  --world-size: calc(4 * 8192px);
   --animation-duration: 1;
-
-  --level-artwork :var(--level-artwork-url) 0 0 / calc(4 * 8192px) calc(4 * 8192px);
-
-
-  /* TODO light layering tests */
-  &::after {
-
-    pointer-events: none;
+  --level-artwork :var(--level-artwork-url) 0 0 / var(--world-size) var(--world-size);
+  --player-position: calc(var(--player-x) * 1px) calc(var(--player-y) * 1px);
+  --player-position-with-offset: calc(var(--cam-x) * -1px ) calc(var(--cam-y) * -1px );
+  width: var(--world-size);
+  height: var(--world-size);
+  translate: var(--player-position-with-offset) 0px;
+  background: var(--level-artwork);
+  perspective: 512px;
+  perspective-origin: var(--player-position);
+  will-change: translate;
+  transform-style: preserve-3d;
+  perspective: inherit;
+  
+  
+    /* TODO light layering tests */
+  &::before {
+    /**
+      * We place a layer exactly over the camera window, that translates along with the camera.
+      * Its blend-mode multiplies darkens / lightens the world.
+    */
     content: '';
     position: fixed;
-    inset: 0;
-    
-
-    mix-blend-mode: multiply;
-
-    background-attachment: fixed;
+    /*! inset: 0; */
+    translate: calc((var(--cam-x) * 1px) ) calc((var(--cam-y) * 1px) );
     background-image: url(/levels/assen/assen_lights.webp);
-    background-position: calc(var(--player-x) * -1px + (50vw)) calc(var(--player-y) * -1px + (50vh));
-    background-size: calc(4 * 8192px) calc(4 * 8192px);
-
-    /* mask: linear-gradient(white, white), url(/levels/assen/assen_elevated.png) 0 0 / calc(4 * 8192px) calc(4 * 8192px);
-    mask-position:  var(--player-position);
-    mask-composite: exclude;
-    image-rendering: pixelated; */
-  }
-
-  .elevated {
+    background-size: var(--world-size) var(--world-size);
+    mix-blend-mode: multiply;
     pointer-events: none;
-    --player-position-with-offset: calc(var(--player-x) * -1px + (50vw)) calc(var(--player-y) * -1px + (50vh));
-    
-    position: fixed;
-    inset: 0;
-    background: url(/levels/assen/assen_elevated.png) var(--player-position-with-offset) / calc(4 * 8192px) calc(4 * 8192px);
-    background-attachment: fixed;
-    transform-origin: var(--player-position);
-    z-index: 10;
+    z-index: 100;
+    width: 120vw;
+    height: 120vh;
+    translate: calc(var(--cam-x) * 1px ) calc(var(--cam-y) * 1px ) 2px;
+    background-position: calc(var(--cam-x) * -1px + 10vw) calc(var(--cam-y) * -1px + 10vh);
+    left: -10vw;
+    top: -10vh;
+    opacity: .85;
   }
 
+}
+
+
+/* 
+   DE HOKJESFABRIEK (Full Version) 
+   Logica: Container op de grond, muren klappen omhoog, dak op Z-hoogte.
+*/
+
+.building {
+  position: absolute;
+  transform-style: preserve-3d;
+  width: var(--w);
+  height: var(--h);
+  left: 0;
+  top: 0;
+  /* Volgorde: Eerst naar X,Y (wereld), dan rotatie om eigen as */
+  transform: rotateZ(var(--rz)) translate3d(var(--x), var(--y), 0);
+  transform-origin: 0 0;
+  --d: calc( var(--floor-count, 1) * 64px);
+  transition: .2s linear;
+  background-image: url('/assets/uvmap.png');
+  z-index: 20;
+
+  &.off-screen {
+    opacity: 0.5;
+    /* display: none; */
+  }
+}
+
+/* Basis voor alle muren-containers en hun pseudo-elementen */
+.wall-n, 
+.wall-e, 
+.wall-s, 
+.wall-w {
+  position: absolute;
+  transform-style: preserve-3d;
+  color: white;
+  font-size: xx-large;
+  text-align: center;
+  display: grid;
+  place-content: center;
+}
+
+
+/* --- NOORD (Red) --- */
+.wall-n {
+  inset: 0;
+  height: calc(var(--d) * 1);
+  transform-origin: top;
+  transform: rotateX(-90deg) translate(0px, -100%); /* Klap omhoog vanaf de bovenkant */
+  background-color: red;
+}
+
+/* --- OOST (Orange) --- */
+.wall-e {
+  width: var(--h);
+  height: var(--d); 
+  padding: 0;
+  content: 'EAST face';
+  position: absolute;
+  inset: 0;
+  background-color: orange ;
+  transform-origin: left top;
+  
+  transform: 
+    translateX(var(--w))
+    translateY(var(--h))
+    translateZ(var(--d))
+    rotateX(-90deg) 
+    rotateY(90deg)
+  ;
+}
+
+/* --- ZUID (Purp) --- */
+
+.wall-s {
+  /* inset: 0; */
+  background-color: purple ;
+  
+  /* Schuif naar de onderkant van het gebouw (Zuid) */
+  /* De lokale Z-as wijst nu naar voren door de 90deg rotatie */
+  transform-origin: bottom;
+  transform:  rotateX(-90deg);
+  bottom: 0;
+  height: var(--d);
+  width: var(--w);
+}
+
+/* --- WEST (Green) --- */
+.wall-w {
+  top: 0;
+  left: 0;
+  width: var(--h); /* De diepte van de SVG-rect wordt de breedte van deze muur */
+  height: var(--d);
+  transform-origin: left top;
+  
+  /* Jouw specifieke as-correctie voor Inkscape */
+  transform: rotateY(-90deg) rotateZ(90deg) translateY(-100%);
+  background-color: green;
+}
+
+
+
+/* --- DA ROOF --- */
+.building .roof {
+  position: absolute;
+  inset: 0;
+  background: var(--c);
+  filter: brightness(1.1);
+  /* Ligt bovenop de muren */
+  transform: translateZ(var(--d));
+}
+
+/* --- GRANDSTANDS (.grandstands class) --- */
+
+.building.mat-grandstands {
+  --d: 128px;
+}
+
+/* FIXME: don't use roof for grandstand seats */
+.building.mat-grandstands .roof {
+  transform-origin: bottom;
+
+  /* 1. Bereken de exacte lengte van het schuine vlak (Pythagoras) */
+  /* De nieuwe hoogte = wortel uit (hoogte_gebouw² + diepte_gebouw²) */
+  --roof-length: calc(sqrt(pow(var(--d), 2) + pow(var(--h), 2)));
+  
+  /* 2. Zet de hoogte van het dak op deze berekende lengte */
+  height: var(--roof-length);
+  
+  /* 3. Corrigeer de positie omdat de height nu groter is dan de --h */
+  /* We trekken het dak 'omhoog' zodat de onderkant op de zuidlijn blijft */
+  /* top: auto; */
+  bottom: 0;
+
+  /* 4. De hoek berekenen we met de boogtangens (atan2) */
+  /* Geen gegokte graden meer, maar pure geometrie */
+  transform: 
+    translateZ(0) 
+    rotateX(calc(atan2(var(--d), var(--h)) * -1));
+  opacity: 1;
+}
+
+/* Grandstand front gets a fence with advertising (for now) */
+.building.mat-grandstands .walls-ns::before {
+  background: url('/assets/environment/advertising/honkin.svg') repeat-x left bottom, linear-gradient(to top, white, white 44px, transparent 45px, transparent), repeating-linear-gradient(45deg, #999 0, #999 1px, transparent 0, transparent 10px),    repeating-linear-gradient(-45deg, #999 0, #999 1px, transparent 0, transparent 10px), repeating-linear-gradient(90deg, #333, #333 5px, transparent 6px, transparent 128px);
+  background-size: 128px 48px, 100%;
+}
+
+/* FIXME: update StructureFactory markup output for walls n fences: 
+ * add wall types (ads, 100m boards etc). 
+ */
+
+.fence-wall {
+  position: absolute;
+  
+  transform-style: flat;
+  
+  transform-origin: bottom left; 
+  transform: 
+    rotateZ(var(--rz)) 
+    rotateX(-90deg); 
+
+  will-change: auto; 
+  transition: 1.5s linear;
+
+  /* FIXME: build generic/central intr6nObserver 3D-culling fix  */
+  &.off-screen { 
+    opacity: 0;
+  }
 }

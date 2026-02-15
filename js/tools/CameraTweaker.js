@@ -2,19 +2,24 @@
 export default class CameraTweaker {
   constructor(game) {
     this.game = game;
-    this.container = document.createElement('div');
+    this.container = document.createElement('details');
+    this.container.name = "tweaker"
     this.container.className = 'tweak-group camera-panel';
     this._setupUI();
   }
 
   _setupUI() {
     this.container.innerHTML = `
-      <h3>🎥 Camera Regie</h3>
+      <summary class="tweak-group__summary">🎥 Camera</summary>
+      <fieldset>
       <label class="tweak-field">
         <span>Free Roam Mode</span>
         <input type="checkbox" id="cam-freeroam">
       </label>
-      <div class="target-list"></div>
+      </fieldset>
+      <fieldset>
+      <ul class="target-list"></ul>
+      </fieldset>
     `;
 
     this.container.querySelector('#cam-freeroam').onchange = (e) => {

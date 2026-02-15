@@ -3,6 +3,7 @@
 @import url('./blocks/world.css');
 
 @import url('./components/animations.css');
+/* @import url('./components/buildings.css'); */
 @import url('./components/camera.css');
 @import url('./components/tweaker.css');
 
@@ -14,6 +15,8 @@
 @import url('./utils/debug.css');
 @import url('./utils/gizmo.css');
 
+@import url('./utils/patterns.css');
+@import url('./utils/materials.css');
 
 @property --animation-duration {
   syntax: "<number>";
@@ -37,4 +40,12 @@ body {
   display: grid;
   font-family: sans-serif;
   overflow: hidden;
+}
+
+/* TODO: organize */
+
+svg#filters {
+  height: 0;
+  width: 0;
+  visibility: hidden;
 }

@@ -6,11 +6,10 @@ export default class AIOpoonent extends Vehicle {
       this.trackPath = game.world.trackElement;
       this.pathLength = this.trackPath.getTotalLength();
       this.progress = 0; 
-      this.speed = 0.00025; 
+      this.speed = 0.001;
     }
 
     update() {
-        
         // Progress along track
         this.progress += this.speed;
         if (this.progress > 1) this.progress = 0;
