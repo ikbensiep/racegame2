@@ -31,9 +31,9 @@ export default class BuildingFactory {
 
         // TODO: move to function
         let buildingObserverOptions = {
-            root: document.body,
-            rootMargin: "-256px",
-            threshold: 0.2,
+            root: document.querySelector('#camera-viewport'),
+            rootMargin: "256px",
+            threshold: 0.05,
         };
 
         let structures = this.world.structures;
@@ -82,23 +82,9 @@ export default class BuildingFactory {
         const el = document.createElement('div');
         el.className = `building ${props.materialClass}`;
         
-        // {
-        //     id: rect.id || "",
-        //     title: title,
-        //     description: description,
-        //     materialClass: `mat-${className}`,
-        //     baseColor: rect.getAttribute('fill') || rect.style.fill || '#555555',
-            
-        //     depth: Math.max(1, Math.floor(strokeWidth)),
-        //     wall: parseInt(parts[0]) || 10,
-        //     gap: parseInt(parts[1]) || 0,
-        //     grunge: 1.0 - (parseFloat(tempEl.style.getPropertyValue('stroke-opacity')) || 1.0),
-        //     roof: tempEl.style.getPropertyValue('stroke-linecap') === 'square' ? 'overhang' : 'flat'
-        // };
-
         // Use cssText for high performance single-write to the DOM
         el.style.cssText = `
-            --w: ${w + props.depth}px; 
+            --w: ${w}px; 
             --h: ${h + props.depth}px; 
             --x: ${x}px; 
             --y: ${y}px; 
@@ -115,11 +101,16 @@ export default class BuildingFactory {
         `;
         /* TODO: use building <template> from index.html */
         el.innerHTML = `
-        <div class="wall-n">NOORD zijde</div>
-        <div class="wall-e">OOST blok</div>
-        <div class="wall-s">ZUYD</div>
-        <div class="wall-w">WESLEY</div>
-        <div class="roof">PATIO</div>
+        <div class="wall-n" title"NOORD wand"></div>
+        <div class="wall-e" title="OOST blok"></div>
+        <div class="wall-s" title="ZUYD zijde"></div>
+        <div class="wall-w" title="WESTley wand"></div>
+        <div class="roof">
+            <div class="sign">
+                <h3>${ props.title ? props.title : 'ROOF'}</h3>
+                <p>${ props.description ? props.description : 'rooftop patio'}</p>
+            </div>
+        </div>
         `;
 
         return el;
@@ -147,7 +138,7 @@ export default class BuildingFactory {
             const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
 
             const fence = document.createElement('div');
-            // GEEN .building class, maar een super-lichte .fence-wall
+            
             fence.className = 'fence-wall mat-fence';
             
             fence.style.cssText = `

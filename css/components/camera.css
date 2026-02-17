@@ -15,24 +15,4 @@
   height: 100vh;
   overflow: hidden;
   position: relative;
-  --perspective-size: 1024px;
-  --perspective-factor: .5;
-  perspective: calc(var(--perspective-size) * var(--perspective-factor));
-  
-  --camera-scale: 1;
-
-  #zoom-layer {
-    position: fixed;
-    inset: 0;
-    will-change: transform;
-    transform: scale(var(--camera-scale));
-    transform-origin: center center; 
-    perspective: inherit;
-    /* FIXME: Parallax?
-    /* Every world layer transformation (scale, rotation, transform, skew?)           */
-    /* must originate from the player's point of view or else we'll all just          */
-    /* get sea sick I tell you hwat.                                                  */
-    /* EDIT: No need to move `transform-origin` to player x,y anymore:                */
-    /* the #zoom-layer element will scale in its entirety                             */
-  }
 }

@@ -13,9 +13,9 @@ window.addEventListener('load', () => {
 lobbyDialog.addEventListener('close', () => {
   // Haal de data op
   const settings = {
-    name: document.getElementById('p-name').value,
-    color: document.getElementById('p-color').value,
-    driverNumber: parseInt(document.getElementById('p-number').value)
+    name: document.getElementById('player-name').value,
+    color: document.getElementById('player-color').value,
+    driverNumber: parseInt(document.getElementById('player-number').value)
   };
 
   // Initialiseer de game met deze settings

@@ -9,15 +9,13 @@
   <link rel="shortcut icon" href="favicon.svg" type="image/svg" />
 </head>
 <body>
-  <section id="camera-viewport">
-    <div id="zoom-layer">
-
-      <main id="canvas" class="world">
-        <!-- this is for dev only so we can 'live paint' the svg while developing -->
-        <!-- eventually we'll only dislpay the map as a css background image!-->
-        <div id="worldmap"></div>
-      </main>
-    </div>
+  <section id="camera-viewport" data-post-processing="crt">
+    <main id="canvas" class="world">
+      <!-- this is for dev only so we can 'live paint' the svg while developing -->
+      <!-- eventually we'll only dislpay the map as a css background image!-->
+      <div id="light-layer"></div>
+      <div id="worldmap"></div>
+    </main>
   </section>
   <aside id="debug">
 
@@ -29,13 +27,15 @@
       
       <div class="input-group">
         <label for="p-name">Naam:</label>
-        <input type="text" id="p-name" value="Kees" placeholder="Racer" maxlength="20" required autofocus>
+        <input type="text" id="player-name" value="Kees" placeholder="Racer" maxlength="20" required autofocus>
       </div>
 
       <div class="input-group">
-        <label for="p-color">Kleur:</label>
-        <input type="color" id="p-color" value="#020202" list="color" />
-        <datalist id="color">
+        <label for="player-color">Kleur:</label>
+        
+        <input type="color" id="player-color" value="" list="color-palette" />
+        <datalist id="color-palette">
+          <!-- ja lachn maar helaas zijn het wat viezige kleuren bijelkaar in één palet
           <option>#a55</option>
           <option>#ac1d1c</option>
           <option>#b4d455</option>
@@ -46,12 +46,36 @@
           <option>#defec8</option>
           <option>#facade</option>
           <option>#0ff1ce</option>
+          -->
+
+
+  <option value="#ff6e61">#ff6e61</option>;
+  <option value="#ffcb5c">#ffcb5c</option>;
+  <option value="#69af4b">#69af4b</option>;
+  <option value="#4b91e2">#4b91e2</option>;
+  <option value="#ee5d5d">#ee5d5d</option>;
+
+
+  <option value="#1b1e37">#1b1e37</option>;
+  <option value="#4d4a8c">#4d4a8c</option>;
+  <option value="#a4a4d6">#a4a4d6</option>;
+  <option value="#e1b8ff">#e1b8ff</option>;
+  <option value="#ff7142">#ff7142</option>;
+  
+
+  <option value="#ff6e61">#ff6e61</option>;
+  <option value="#6c5b80">#6c5b80</option>;
+  <option value="#88d8b1">#88d8b1</option>;
+  <option value="#f7b5a1">#f7b5a1</option>;
+  <option value="#ff9d00">#ff9d00</option>;
+
+
         </datalist>
       </div>
 
       <div class="input-group">
-        <label for="p-number">Nummer:</label>
-        <input type="number" id="p-number" value="58" min="0" max="99">
+        <label for="player-number">Nummer:</label>
+        <input type="number" id="player-number" value="58" min="0" max="99">
       </div>
 
       <button type="submit" id="start-race-btn" >START RACE</button>
@@ -141,6 +165,35 @@
               result="composite2"
               id="feComposite68" />
           </filter>
+            <filter id="water-loop" x="0" y="0" width="100%" height="100%">
+    
+    <!-- 1. Noice -->
+    <feTurbulence 
+      type="fractalNoise" 
+      baseFrequency="0.02 0.04" 
+      numOctaves="2" 
+      stitchTiles="stitch" 
+      result="noise" />
+
+    <!-- 2. Shift colors for perfect loop without jump -->
+    <feColorMatrix in="noise" type="hueRotate" values="0" result="animatedNoise">
+      <animate 
+        attributeName="values" 
+        from="0" to="360" 
+        dur="8s" 
+        repeatCount="indefinite" />
+    </feColorMatrix>
+
+    <!-- 3. Afflpy distortion to input image -->
+    <feDisplacementMap 
+      in="SourceGraphic" 
+      in2="animatedNoise" 
+      scale="15" 
+      xChannelSelector="R" 
+      yChannelSelector="G" />
+  </filter>
+
+
   </svg>
   <script src="js/main.js" type="module"></script>
 </body>

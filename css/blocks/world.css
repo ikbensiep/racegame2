@@ -1,45 +1,75 @@
 
+@property --player-angle {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
 #canvas.world {
   
   /* 8k: easy to remember, fun to type number (provided u have a numpad) */
   --world-size: calc(4 * 8192px);
   --animation-duration: 1;
-  --level-artwork :var(--level-artwork-url) 0 0 / var(--world-size) var(--world-size);
+  
   --player-position: calc(var(--player-x) * 1px) calc(var(--player-y) * 1px);
   --player-position-with-offset: calc(var(--cam-x) * -1px ) calc(var(--cam-y) * -1px );
   width: var(--world-size);
   height: var(--world-size);
-  translate: var(--player-position-with-offset) 0px;
-  background: var(--level-artwork);
+  background-repeat: no-repeat;
+  background-size: calc(var(--world-size) * .5) calc(var(--world-size) * .5);
+  background-position: 
+    0 0, calc(var(--world-size) * .5) 0, 
+    0 calc(var(--world-size) * .5), calc(var(--world-size) * .5) calc(var(--world-size) * .5);
+  
+    translate: var(--player-position-with-offset) 0px;
+  
   perspective: 512px;
   perspective-origin: var(--player-position);
   will-change: translate;
   transform-style: preserve-3d;
-  perspective: inherit;
   
+  
+  transition:  translate 0s linear, filter 1.5s;
   
     /* TODO light layering tests */
-  &::before {
+  #light-layer {
     /**
       * We place a layer exactly over the camera window, that translates along with the camera.
       * Its blend-mode multiplies darkens / lightens the world.
+      * A mask then cuts out a hole of the darkened/lighterened layer, 
+      * revealing the "sun and/or headlight-lit ground below".
     */
     content: '';
     position: fixed;
-    /*! inset: 0; */
+    inset: 0;
     translate: calc((var(--cam-x) * 1px) ) calc((var(--cam-y) * 1px) );
     background-image: url(/levels/assen/assen_lights.webp);
+    
     background-size: var(--world-size) var(--world-size);
+    background-position: calc(var(--cam-x) * -1px + 10vw) calc(var(--cam-y) * -1px + 10vh);
     mix-blend-mode: multiply;
     pointer-events: none;
     z-index: 100;
     width: 120vw;
     height: 120vh;
-    translate: calc(var(--cam-x) * 1px ) calc(var(--cam-y) * 1px ) 2px;
-    background-position: calc(var(--cam-x) * -1px + 10vw) calc(var(--cam-y) * -1px + 10vh);
+    translate: 
+      calc(var(--cam-x) * 1px ) 
+      calc(var(--cam-y) * 1px ) 
+      0px; /* Z translate y tho?? */
     left: -10vw;
     top: -10vh;
-    opacity: .85;
+    opacity: 1;
+    mask-type: alpha;
+     mask-image: 
+     radial-gradient(circle, transparent 256px, white 720px),
+     conic-gradient(from calc(var(--player-angle) * 1rad - 90deg), black, black 140deg, transparent 160deg, transparent 210deg, black 220deg),
+     radial-gradient(circle, white 64px, transparent 128px)
+    ; 
+
+    mask-position: 
+      calc(var(
+    --player-x) - var(--cam-x) * 1px) 
+      calc(var(--player-y) - var(--cam-y) * 1px);
   }
 
 }
@@ -57,6 +87,7 @@
   height: var(--h);
   left: 0;
   top: 0;
+
   /* Volgorde: Eerst naar X,Y (wereld), dan rotatie om eigen as */
   transform: rotateZ(var(--rz)) translate3d(var(--x), var(--y), 0);
   transform-origin: 0 0;
@@ -64,10 +95,14 @@
   transition: .2s linear;
   background-image: url('/assets/uvmap.png');
   z-index: 20;
+  transition: .5s .5s;
+  
+  /* FIXME: fake ambient occlusion / contact shadow + ambient light coming from windows */
+  box-shadow: 0 0 10px #0006, 0 0 42px 26px rgb(from var(--face-color) r g b / .25);
+
 
   &.off-screen {
     opacity: 0.5;
-    /* display: none; */
   }
 }
 
@@ -75,16 +110,27 @@
 .wall-n, 
 .wall-e, 
 .wall-s, 
-.wall-w {
+.wall-w,
+.roof {
   position: absolute;
   transform-style: preserve-3d;
-  color: white;
+  color: inherit;
   font-size: xx-large;
   text-align: center;
   display: grid;
   place-content: center;
+  transition: opacity .5s 1.5s;
 }
 
+.off-screen {
+  .wall-n, 
+  .wall-e, 
+  .wall-s, 
+  .wall-w,
+  .roof {
+    opacity: 0;
+  }
+}
 
 /* --- NOORD (Red) --- */
 .wall-n {
@@ -128,6 +174,9 @@
   bottom: 0;
   height: var(--d);
   width: var(--w);
+
+  /* clips a door.. (FIXME: gestures) ..somewhere in the bottom */
+  clip-path: polygon(0 0%, 100% 0, 100% 100%, calc(50% - 8px) 100%, calc(50% - 8px) calc(100% - 20px), 36% calc(100% - 20px), 36% 100%, 0 100%)
 }
 
 /* --- WEST (Green) --- */
@@ -149,9 +198,8 @@
 .building .roof {
   position: absolute;
   inset: 0;
-  background: var(--c);
-  filter: brightness(1.1);
-  /* Ligt bovenop de muren */
+  /* background: var(--c); */
+  /* trsnalted to --floor-count * 64px in Z direction */
   transform: translateZ(var(--d));
 }
 
@@ -186,8 +234,10 @@
 }
 
 /* Grandstand front gets a fence with advertising (for now) */
-.building.mat-grandstands .walls-ns::before {
-  background: url('/assets/environment/advertising/honkin.svg') repeat-x left bottom, linear-gradient(to top, white, white 44px, transparent 45px, transparent), repeating-linear-gradient(45deg, #999 0, #999 1px, transparent 0, transparent 10px),    repeating-linear-gradient(-45deg, #999 0, #999 1px, transparent 0, transparent 10px), repeating-linear-gradient(90deg, #333, #333 5px, transparent 6px, transparent 128px);
+.building.mat-grandstands .wall-e,
+.building.mat-grandstands .wall-s,
+.building.mat-grandstands .wall-w {
+  background: url('/assets/environment/advertising/honkin.svg') repeat-x left bottom, linear-gradient(to top, white, white 44px, transparent 45px, transparent), repeating-linear-gradient(45deg, #333 0, #999 1px, transparent 0, transparent 10px),    repeating-linear-gradient(-45deg, #666 0, #333 1px, transparent 0, transparent 10px), repeating-linear-gradient(90deg, #333, #333 5px, transparent 6px, transparent 128px);
   background-size: 128px 48px, 100%;
 }
 
@@ -200,13 +250,13 @@
   
   transform-style: flat;
   
-  transform-origin: bottom left; 
+  transform-origin: top left; 
   transform: 
     rotateZ(var(--rz)) 
-    rotateX(-90deg); 
+    rotateX(90deg); 
 
   will-change: auto; 
-  transition: 1.5s linear;
+  transition: opacity .5s linear;
 
   /* FIXME: build generic/central intr6nObserver 3D-culling fix  */
   &.off-screen { 

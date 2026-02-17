@@ -3,7 +3,7 @@ export default class AIOpoonent extends Vehicle {
     constructor(id, color, game) {
       
       super(id, `🤖-${id}`, 88, color, game);
-      this.trackPath = game.world.trackElement;
+      this.trackPath = game.world.paths.racetrack;
       this.pathLength = this.trackPath.getTotalLength();
       this.progress = 0; 
       this.speed = 0.001;

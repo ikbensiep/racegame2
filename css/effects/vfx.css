@@ -15,7 +15,76 @@
 [data-state="colliding"] {
   /* set shake animation */
   /* pretty much never a delay on this baby because impacts should make you FEEL SOMETHING */
-  animation: shake calc(var(--animation-duration, 0.2) * 1s) calc(var(--animation-delay, 0) * 1s) 1;
-  /* filter: saturate(1.2) brightness(1.1); */
+  /* animation: shake calc(var(--animation-duration, 0.2) * 1s) calc(var(--animation-delay, 0) * 1s) 1; */
+  filter: saturate(1.05) brightness(1.02);
+  transition-duration: 0s !important;
 }
 
+.vehicle[data-state="colliding"] {
+    > div {
+      transition: rotate .25s linear !important;
+    } 
+  }
+
+@property --pp-opacity {
+  syntax: "<number>";
+  initial-value: 0.5;
+  inherits: true;
+}
+
+@property --pp-blur {
+  syntax: "<number>";
+  initial-value: 5px;
+  inherits: true;
+}
+
+@property --pp-saturate {
+  syntax: "<number>";
+  initial-value: 1.1;
+  inherits: true;
+}
+
+@property --pp-hue {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
+[data-post-processing="crt"] {
+  &::before {
+    pointer-events: none;
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 2;
+    background-size: 100% 3px, 3px 100%;
+
+    opacity: var(--pp-opacity, 0);
+    backdrop-filter: 
+      blur( calc( var(--pp-blur) * 1px))
+      saturate( var(--pp-saturate) )
+      hue-rotate( calc( var(--pp-hue) * 1deg))
+  }
+
+  /*
+  &::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(18, 16, 16, 0.1);
+    opacity: 0;
+    z-index: 2;
+    pointer-events: none;
+    animation: flicker 1.5s infinite;
+  }
+  */
+}

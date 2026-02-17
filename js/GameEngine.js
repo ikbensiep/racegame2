@@ -37,6 +37,7 @@ export default class GameEngine {
       this.localPlayer.y = spawnPoint.y;
 
       this.start();
+      
       this.camera = new CameraManager(this, document.querySelector('#camera-viewport'))
       this.camera.target = this.localPlayer;
     

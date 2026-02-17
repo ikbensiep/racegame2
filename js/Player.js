@@ -37,6 +37,8 @@ export default class Player extends Vehicle {
     this.lastSectorId = null; // Om herhaling te voorkomen terwijl je op het vlak staat
     this.currentSector = 2; // Begin op 2, zodat s0 de eerstvolgende logische stap is
     this.lapStartTime = performance.now();
+    
+    this.intervalUpdateTimer = 0;
   }
 
   /* new  */
@@ -118,10 +120,49 @@ export default class Player extends Vehicle {
     this.y = hit.y + Math.sin(angle) * (minDist + 1);
 
     // 2. Physics aanpassing
-    this.speed *= .95;
-    // this.vx *= 0.5;
-    // this.vy *= 0.5;
-      
+    // Tunable rotation + realistic velocity reflection across the collision normal.
+    const speedMag = Math.hypot(this.vx, this.vy);
+
+    // Tunables from dynamics (visible in the Dynamics tweaker)
+    const rotFactor = (this.dynamics && this.dynamics.collisionRotationFactor) || 1.0;
+    const reflectFactor = (this.dynamics && this.dynamics.collisionReflection) || 0.9;
+
+    if (speedMag > 0.001) {
+      const movementAngle = Math.atan2(this.vy, this.vx);
+      const impactAngle = angle; // hoek vanaf hit-centrum naar speler
+
+      // Normaliseer verschil naar [-PI, PI]
+      let angleDiff = movementAngle - impactAngle;
+      while (angleDiff <= -Math.PI) angleDiff += Math.PI * 2;
+      while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+
+      // Roteer tegen de rij-as in met geschaalde afwijking
+      this.angle -= angleDiff * rotFactor;
+
+      // Normaliseer speler-hoek naar [-PI, PI]
+      if (this.angle <= -Math.PI || this.angle > Math.PI) {
+        this.angle = ((this.angle + Math.PI) % (Math.PI * 2)) - Math.PI;
+      }
+
+      // Reflecteer velocity over de collision-normal (realistischer bounce)
+      const nx = Math.cos(angle); // normale richting (van hit naar speler)
+      const ny = Math.sin(angle);
+      const dot = this.vx * nx + this.vy * ny;
+      const reflectedVX = this.vx - 2 * dot * nx;
+      const reflectedVY = this.vy - 2 * dot * ny;
+
+      this.vx = reflectedVX * reflectFactor;
+      this.vy = reflectedVY * reflectFactor;
+
+      // Update scalar speed projected op de nieuwe forward vector
+      this.speed = this.vx * Math.cos(this.angle) + this.vy * Math.sin(this.angle);
+    } else {
+      // fallback — houd het oude invert/dampen-gedrag voor zeer lage snelheden
+      // this.speed *= -0.975;
+      this.vx *= -0.975;
+      this.vy *= -0.975;
+    }
+
     this.handleCollision(gamepad);
   }
 
@@ -190,7 +231,16 @@ export default class Player extends Vehicle {
   }
 
   update(gamepad, dt) {
-    
+    if(this.intervalUpdateTimer < 10) {
+      this.intervalUpdateTimer += dt;
+    } else {
+      this.intervalUpdateTimer = 0;
+      this.element.dataset.speed = Math.floor(this.speed);
+      this.element.dataset.vx = Math.floor(this.vx);
+      this.element.dataset.vy = Math.floor(this.vy);
+      this.element.dataset.angle = Math.floor(this.angle);
+    }
+
     if (!this.isLocal || !gamepad) return;
     
     const surface = this.game.world.getSurfaceType(this.x, this.y);
@@ -198,7 +248,8 @@ export default class Player extends Vehicle {
     if(this.activeSurface !== surface) {
       this.activeSurface = surface;
       
-      this.game.effects.trigger(this, surface, 500);
+      /* Maybe later? */
+      // this.game.effects.trigger(this, surface, 500);
     }
 
     const sectorId = this.game.world.lapTimer.checkSectors(this.x, this.y);
@@ -245,7 +296,7 @@ export default class Player extends Vehicle {
 
       this._resolveCollision(wallHit, gamepad)
       this.game.effects?.trigger(this, 'colliding', 300);
-      this.game.effects?.trigger(this.game.world, 'colliding', 300);
+      this.game.effects?.trigger(this.game.world, 'colliding', 1000);
 
     } else if (!wallHit) {
       this.isColliding = false;

@@ -57,8 +57,8 @@ export default class CameraManager {
         // this.camX = destX;
         // this.camY = destY;
         // Nee, meer LERP
-        this.camX += (destX - this.camX) * 0.75;
-        this.camY += (destY - this.camY) * 0.75;
+        this.camX += (destX - this.camX) * 0.95;
+        this.camY += (destY - this.camY) * 0.95;
     }
 
     // 4. WRITE: Slechts één DOM-schrijfactie per frame
@@ -67,7 +67,7 @@ export default class CameraManager {
     // this.element.scrollTo({
     //     left: this.camX,
     //     top: this.camY,
-    //     behavior: 'direct'
+    //     behavior: 'auto'
     // });
   }
   

@@ -10,21 +10,47 @@ export default class CameraTweaker {
 
   _setupUI() {
     this.container.innerHTML = `
-      <summary class="tweak-group__summary">🎥 Camera</summary>
+      <summary class="tweak-group__summary">Craphics & Gamera</summary>
       <fieldset>
+      <legend>Camera target</legend>
       <label class="tweak-field">
         <span>Free Roam Mode</span>
         <input type="checkbox" id="cam-freeroam">
       </label>
-      </fieldset>
-      <fieldset>
       <ul class="target-list"></ul>
+      </fieldset>
+      <fieldset class="time">
+        <legend>Time of Day</legend>
+        <label for="time-of-day"><input type="range" name="time-of-day" id="time-of-day" value="0" max="24" step=".25" />time <output for="time-of-day"></output></label>
+      </fieldset>
+      <fieldset class="post-processing">
+        <legend>compositing</legend>
+        <label><input type="radio" name="postProcessing" value="" checked /> OFF</label>
+        <label><input type="radio" name="postProcessing" value="crt" /> CRT</label>
+        <label for="opacity"><input type="range" name="opacity" id="opacity" value="0.5" max="1" step=".1" />opacity <output for="opacity"></output></label>
+        <label for="blur"><input type="range" name="blur" id="blur" value="0" max="128" step="1" />blur <output for="blur"></output></label>
+        <label for="saturate"><input type="range" name="saturate" id="saturate" value="0" max="20" step=".5"/>saturate <output for="saturate"></output></label>
+        <label for="hue"><input type="range" name="hue" id="hue" value="0" max="360" step="1" />hue <output for="hue"></output></label>
       </fieldset>
     `;
 
     this.container.querySelector('#cam-freeroam').onchange = (e) => {
       this.game.camera.freeRoam = e.target.checked;
     };
+
+    let postProcessOptions = this.container.querySelectorAll('fieldset input[type=range]');
+
+    postProcessOptions.forEach ( option => {
+      option.addEventListener('input', (e) => {
+        if (e.target.type == 'radio') {
+          this.game.camera.element.dataset[e.target.name] = e.target.value;
+        }
+        if(e.target.type == 'range') { 
+          this.game.camera.element.style.setProperty(`--pp-${e.target.name}`, e.target.value)
+        }
+
+      });
+    })
 
     document.getElementById('debug').appendChild(this.container);
     this.refresh();

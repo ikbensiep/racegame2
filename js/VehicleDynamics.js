@@ -1,13 +1,21 @@
 // Vehicles
 
 export const DefaultDynamics = {
-  maxSpeed: 500,
-  acceleration: .5,
+  maxSpeed: 1500,
+  acceleration: .75,
   friction: 0.985,         
   steeringSensitivity: 0.05,
   driftFactor: 0.25,       
   handbrakeDrift: .01,     
-  grassFriction: 0.90
+  grassFriction: 0.90,
+
+  // Collision tuning (exposed to the Dynamics tweaker)
+  // - collisionRotationFactor: scale applied to the computed angle-difference
+  //   between movement direction and impact point (1.0 = apply fully).
+  // - collisionReflection: multiplier applied to the reflected velocity vector
+  //   after collision (0..1, lower = more damping).
+  collisionRotationFactor: .2,
+  collisionReflection: 0.4
 };
 
 // 1. De Basislijn: De 'Golf/Volvo' Gezinsauto

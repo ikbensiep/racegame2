@@ -25,19 +25,9 @@ export default class World {
     this.structures = [];
     this.buildingFactory = new BuildingFactory(this);
 
-    // TODO
-    // these should all probably contain arrays with 0 or more paths
+
     this.paths = {
-      garage: null,      // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
-      grandstands: null, // fill, sfx (crowd noise) detection
-      gridslot: null,    // fill, race start position (spawnpoint)
-      gravel: null,      // fill, vehicle dynamics / sfx
-      paddock: null,     // fill, in this area player is allowed to enter 'RPG mode' (ie, exit car)
-      pitbox: null,      // fill, vehicle dynamics (tune car settings) a marked service area directly off the pitlane
-      pitlane: null,     // stroke, vehicle dynamics (speed limiter)
-      racetrack: null,   // stroke, vehicle dynamics detection
-      tunnel: null,      // fill, sfx (reverb) detection
-      sectors: new Map()
+      
     }
 
     this.lapTimer = null;
@@ -69,8 +59,8 @@ export default class World {
   }
 
   async load () {
-    let artworkBasePath = `/levels/${this.scene}/${this.scene}`
-    let svgFilePath = `${artworkBasePath}.svg`
+    let artworkBasePath = `/levels/${this.scene}`
+    let svgFilePath = `${artworkBasePath}/${this.scene}.svg`
     const response = await fetch(svgFilePath);
 
     const svgText = await response.text();
@@ -83,31 +73,36 @@ export default class World {
     
     // Render je eigen vectoren maar. We Bitmappin' nao biatch.
     // FIXME: temp fix
-    this.element.style.setProperty('--level-artwork-url', `url('${artworkBasePath}_track.png')`)
+    try {
 
+      this.element.style.backgroundImage = `
+        url('${artworkBasePath}/tiles/${this.scene}_track-0-0.png'), 
+        url('${artworkBasePath}/tiles/${this.scene}_track-1-0.png'), 
+        url('${artworkBasePath}/tiles/${this.scene}_track-0-1.png'),
+        url('${artworkBasePath}/tiles/${this.scene}_track-1-1.png') 
+        `;
+        console.log(this.element)
+    } catch (e) {
+      console.error(e)
+    }
+    
 
     this.width = parseInt(this.svgElement.getAttribute('width'));
     this.height = parseInt(this.svgElement.getAttribute('height'));
 
     const trackElement = this.svgElement.getElementById('racetrack');
     const timingGroup = this.svgElement.getElementById('timing');
-    this.trackElement = trackElement;
-    this.paths.racetrack = trackElement.cloneNode();
-    console.info(timingGroup)
 
+    // Arbitrary check to see if the bare mninimum exists, probably nonsense test by now 
     if (trackElement && timingGroup) {
-      // Maak een herbruikbaar Path2D object van de SVG data
-      this.trackPath = new Path2D(trackElement.getAttribute('d'));
-
-      const sectors = timingGroup.querySelectorAll('path');
-      sectors.forEach(path => {
-          this.paths.sectors.set(path.id, new Path2D(path.getAttribute('d')));
-      });
-
+      
       // We halen ook de stroke-width op uit de SVG (belangrijk voor de breedte van de baan!)
       this.trackWidth = parseFloat(window.getComputedStyle(trackElement).strokeWidth) || 520;
-      console.log(this.paths)
+      
     }
+
+    // 0. Chart the area, note interesting areas/surfaces
+    await this.findSurfaces();
 
     // 1. Find spawnpoints
     await this.findSpawnPoints('training');
@@ -129,6 +124,30 @@ export default class World {
     return this.spawnPoints;
   }
   
+  async findSurfaces () {
+    console.log('🧭 finding surfaces...')
+    const timingGroup = this.svgElement.getElementById('timing');
+
+      this.paths.worldBG =     new Path2D(this.svgElement.querySelector('#world-bg').getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
+      this.paths.fuelStation = new Path2D(this.svgElement.querySelector('#fuel-station').getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
+      this.paths.grandstands = new Path2D(this.svgElement.querySelector('#sfx-triggers path#grandstands').getAttribute('d'))  // fill, sfx (crowd noise) detection
+      this.paths.gravel =      new Path2D(this.svgElement.querySelector('#gravel').getAttribute('d')) // fill, vehicle dynamics / sfx
+      this.paths.gridslot =    new Path2D(this.svgElement.querySelector('#gridslot')?.getAttribute('d') || "") // fill, race start position (spawnpoint)
+      this.paths.paddock =     new Path2D(this.svgElement.querySelector('#paddock').getAttribute('d')) // fill, in this area player is allowed to enter 'RPG mode' (ie, exit car)
+      this.paths.pitbox =      new Path2D(this.svgElement.querySelector('#pitbox').getAttribute('d')) // fill, vehicle dynamics (tune car settings) a marked service area directly off the pitlane
+      this.paths.pitlane =     new Path2D(this.svgElement.querySelector('#pitlane').getAttribute('d'));  // stroke, vehicle dynamics (speed limiter)
+      this.paths.racetrack =   new Path2D(this.svgElement.querySelector('#racetrack').getAttribute('d')); // stoke, vehicle dynamics (grip level, weather?)
+      this.paths.sectors =     new Map(); // timing sectors
+      this.paths.tunnel =      new Path2D(this.svgElement.querySelector('#tunnel')?.getAttribute('d'));  // fill, sfx (ie, reverb) detection
+
+      const sectors = timingGroup.querySelectorAll('path');
+      sectors.forEach(path => {
+          this.paths.sectors.set(path.id, new Path2D(path.getAttribute('d')));
+      });
+
+
+  }
+
   async findSpawnPoints (sessionType) {
     let spawnFilter;
     
@@ -224,18 +243,50 @@ export default class World {
   }
 
   getSurfaceType(x, y) {
-    if (!this.trackPath) return 'grass';
-
-    // Stel de dikte in voor de stroke-check
-    this.logicCtx.lineWidth = this.trackWidth;
-
-    // isPointInStroke checkt de wiskundige lijn, ongeacht canvas-grootte
-    if (this.logicCtx.isPointInStroke(this.trackPath, x, y)) {
-        return 'asphalt';
-    }
-
     
-    return 'grass';
+    // Stel de dikte in voor de stroke-check
+    // this.logicCtx.lineWidth = this.trackWidth;
+    // isPointInStroke checkt de wiskundige lijn, ongeacht canvas-grootte
+    // if (this.logicCtx.isPointInStroke(this.trackPath, x, y)) {
+    //     return 'asphalt';
+    // }
+
+    // this.logicCtx.lineWidth = 1;
+    // if (this.logicCtx.isPointInPath(this.paths.worldBG, x, y)) {
+    //   return 'grass';
+    // } else {
+    //   /* etc */
+    //   return 'asphalt';
+    // }
+
+ // 1. Definieer de prioriteit (van specifiek naar algemeen)
+  // We checken de 'kleine' vlakken eerst.
+  const surfaceRules = [
+    { path: this.paths.pitbox,      type: 'pitbox',      method: 'fill'   },
+    { path: this.paths.pitlane,     type: 'pitlane',     method: 'stroke', width: 280 }, 
+    { path: this.paths.racetrack,   type: 'asphalt',     method: 'stroke', width: 520 }, 
+    { path: this.paths.gravel,      type: 'gravel',      method: 'fill'   },
+    { path: this.paths.fuelStation, type: 'fuel',        method: 'fill'   },
+    { path: this.paths.paddock,     type: 'paddock',     method: 'fill'   },
+    { path: this.paths.tunnel,      type: 'tunnel',      method: 'fill'   },
+    { path: this.paths.worldBG,     type: 'grass',       method: 'fill'   }
+  ];
+
+  // 2. Loop door de regels en return de eerste match
+  for (const rule of surfaceRules) {
+    if (!rule.path) continue; // Skip als het pad niet bestaat (zoals optionele tunnels)
+
+    if (rule.method === 'stroke') {
+      this.logicCtx.lineWidth = rule.width || 1;
+      if (this.logicCtx.isPointInStroke(rule.path, x, y)) return rule.type;
+    } else {
+      if (this.logicCtx.isPointInPath(rule.path, x, y)) return rule.type;
+    }
+  }
+
+  // 3. Fallback als er niets geraakt wordt
+  return 'out-of-bounds';
+
   }
 
 }

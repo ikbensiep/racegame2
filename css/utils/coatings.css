@@ -1,0 +1,61 @@
+/* ripped from colormagic.app         */
+/* TODO: investigate integrating api? */
+/* https://colormagic.app/api         */
+
+:root {
+  /* Retro Vibes */
+  --coating-pack-A-1: #ff6e61;
+  --coating-pack-A-2: #707eff;
+  --coating-pack-A-3: #f2e03a;
+  --coating-pack-A-4: #4ce1d7;
+  --coating-pack-A-5: #ff3d7e;
+  
+  /* Retro Cyber Elegance */
+  --coating-pack-B-1: #4d9dff;
+  --coating-pack-B-2: #ff4d8e;
+  --coating-pack-B-3: #ffd54d;
+  --coating-pack-B-4: #681b98;
+  --coating-pack-B-5: #00bdad;
+  
+  /* Sonic Adventure */
+  --coating-pack-C-1: #1b6a98;
+  --coating-pack-C-2: #f1c40e;
+  --coating-pack-C-3: #e74d3c;
+  --coating-pack-C-4: #2ecc70;
+  --coating-pack-C-5: #8d43ad;
+  
+  /* 90s Anime */
+  --coating-pack-D-1: #ff6e61;
+  --coating-pack-D-2: #ffb84d;
+  --coating-pack-D-3: #6d9dc5;
+  --coating-pack-D-4: #5e4b8b;
+  --coating-pack-D-5: #da1b61;
+
+  /* 1994 */
+  --coating-pack-E-1: #d1513d;
+  --coating-pack-E-2: #f69c3c;
+  --coating-pack-E-3: #f8c48b;
+  --coating-pack-E-4: #9ed6e0;
+  --coating-pack-E-5: #4c8a9a;
+
+  /* 90s Miami Sunset */
+  --coating-pack-F-1: #ff6e61;
+  --coating-pack-F-2: #ffcb5c;
+  --coating-pack-F-3: #69af4b;
+  --coating-pack-F-4: #4b91e2;
+  --coating-pack-F-5: #ee5d5d;
+
+  /* Y2K Vibe */
+  --coating-pack-G-1: #1b1e37;
+  --coating-pack-G-2: #4d4a8c;
+  --coating-pack-G-3: #a4a4d6;
+  --coating-pack-G-4: #e1b8ff;
+  --coating-pack-G-5: #ff7142;
+  
+  /* Scenekid */
+  --coating-pack-H-1: #ff6e61;
+  --coating-pack-H-2: #6c5b80;
+  --coating-pack-H-3: #88d8b1;
+  --coating-pack-H-4: #f7b5a1;
+  --coating-pack-H-5: #ff9d00;
+} 

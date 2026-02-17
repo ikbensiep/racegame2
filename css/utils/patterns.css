@@ -8,11 +8,15 @@
   background-size: calc(2*var(--s)) calc(2*var(--s));
 }
 
-.fence-wall {
+
+
+.fencing {
+  /* Het 'gaas' patroon met een simpele gradient */
+  --fence-pattern:  
+    repeating-linear-gradient(45deg, #999 0, #999 1px, transparent 0, transparent 10px),
+    repeating-linear-gradient(-45deg, #999 0, #999 1px, transparent 0, transparent 10px);
   background-image: var(--fence-pattern); /* Uit je materials.css */
   background-size: 20px 20px;
-  border-left: 2px solid #555;
-  pointer-events: none; /* Auto's rijden er 'doorheen' qua kliks */
 }
 
 .pool {
@@ -38,6 +42,6 @@
     var(--s) calc(var(--s)/-8)/var(--_s),
     conic-gradient(from 90deg at var(--t) var(--t),var(--c2) 25%,var(--c1) 0) 
     calc((var(--s) - var(--t))/2) calc((var(--s) - var(--t))/2)/var(--s) calc(5*var(--s)/4);
-    filter: url("#displacementFilter");
-    clip-path: inset(10px round 13px);
+
+    clip-path: inset(16px round 8px);
 }
