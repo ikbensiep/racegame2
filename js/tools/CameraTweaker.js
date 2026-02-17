@@ -3,7 +3,8 @@ export default class CameraTweaker {
   constructor(game) {
     this.game = game;
     this.container = document.createElement('details');
-    this.container.name = "tweaker"
+    this.container.setAttribute('open','');
+    this.container.name = "camming"
     this.container.className = 'tweak-group camera-panel';
     this._setupUI();
   }
@@ -21,7 +22,7 @@ export default class CameraTweaker {
       </fieldset>
       <fieldset class="time">
         <legend>Time of Day</legend>
-        <label for="time-of-day"><input type="range" name="time-of-day" id="time-of-day" value="0" max="24" step=".25" />time <output for="time-of-day"></output></label>
+        <label for="time-of-day"><input type="range" name="time-of-day" id="time-of-day" value="0" min="-1" max="1" step=".0725" />time <output for="time-of-day"></output></label>
       </fieldset>
       <fieldset class="post-processing">
         <legend>compositing</legend>
@@ -38,11 +39,12 @@ export default class CameraTweaker {
       this.game.camera.freeRoam = e.target.checked;
     };
 
-    let postProcessOptions = this.container.querySelectorAll('fieldset input[type=range]');
+    let postProcessOptions = this.container.querySelectorAll('fieldset input');
 
     postProcessOptions.forEach ( option => {
       option.addEventListener('input', (e) => {
         if (e.target.type == 'radio') {
+          console.log('hoi')
           this.game.camera.element.dataset[e.target.name] = e.target.value;
         }
         if(e.target.type == 'range') { 

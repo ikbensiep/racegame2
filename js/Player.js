@@ -158,9 +158,9 @@ export default class Player extends Vehicle {
       this.speed = this.vx * Math.cos(this.angle) + this.vy * Math.sin(this.angle);
     } else {
       // fallback — houd het oude invert/dampen-gedrag voor zeer lage snelheden
-      // this.speed *= -0.975;
-      this.vx *= -0.975;
-      this.vy *= -0.975;
+      this.speed *= 0.975;
+      this.vx *= 0.975;
+      this.vy *= 0.975;
     }
 
     this.handleCollision(gamepad);

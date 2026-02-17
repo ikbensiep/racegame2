@@ -21,8 +21,10 @@
         opacity: 1;
         transform-origin: bottom;
         transform: rotateX(-90deg);
-        padding: .5ex 1ex;
+        padding: .25ex .5ex;
         border-radius: .25ex;
+        font-size: smaller;
+
       }
       p {
         text-shadow: none;
@@ -41,29 +43,58 @@
     color: pink;
   }
 
-  &::after {
-    content: 'building lot';
-    
-    color: hotpink;
+  &:not(.foodtruck)::after {
+    content: 'structure: ' attr(class);
+    background-color: #676767;
+    border-radius: 32px;
     position: absolute;
-    inset: -64px;
-    padding: 1ex;
-    
+    inset: -72px;
+    padding: 3ex 72px;
     transform: translateZ(-5px); /* Net onder het gebouw op het 'vloerkleed' */
-    pointer-events: none;
   }
 
-  .walls-ew,
-  .walls-ns,
-  .walls-ew::before,
-  .walls-ns::before {
-    /* background-color: transparent !important; */
+  .wall-n,
+  .wall-e,
+  .wall-s,
+  .wall-w {
     backface-visibility: hidden;
   }
 
 }
 
-/* --- Paddock Buildings --- */
+/* --- Default dev texturing ---*/
+.mat-default {
+
+  &::after {
+    content: 'building lot (under construction)' !important;
+    background-color: #0003;
+    border-radius: 0 !important;
+    outline: 2px dashed currentColor;
+    color: #ee06;
+    background-image: 
+      repeating-linear-gradient(45deg, rgb(from currentColor r g b / .5) 0, rgb(from currentColor r g b / .5) 8px, transparent 9px, transparent 16px);
+    
+  }
+
+  .wall-n { --face-dev-color: var(--axis-x-color);}
+  .wall-e { --face-dev-color: var(--axis-y-color);}
+  .wall-s { --face-dev-color: hsl(from var(--axis-x-color) h s 24 );}
+  .wall-w { --face-dev-color: hsl(from var(--axis-y-color) h s 32 );}
+  .roof {--face-dev-color: hsl(from var(--axis-z-color) h s l );}
+
+  .wall-n, 
+  .wall-e,
+  .wall-w, 
+  .wall-s, 
+  .roof {
+    opacity: .5;
+    border: 2px dashed  var(--face-dev-color) !important;
+    background-image: 
+      repeating-linear-gradient(45deg, var(--face-dev-color) 0, var(--face-dev-color) 8px, transparent 9px, transparent 16px);
+  }
+}
+
+  /* --- Paddock Buildings --- */
 
 .mat-paddock {
   .wall-n, 

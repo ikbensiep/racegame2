@@ -131,7 +131,7 @@ export default class GameEngine {
           angle: this.localPlayer.angle
       });
 
-      this.camera.update();
+      this.camera.update(dt);
     }
 
     draw() {

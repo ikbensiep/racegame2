@@ -3,10 +3,10 @@ export default class CameraManager {
   constructor(game, scrollContainer, worldSize = 32768) {
     this.game = game;
     this.element = scrollContainer;
-    this.zoomElement = this.element.querySelector('#zoom-layer')
     this.target = game.localPlayer;
     this.isTransitioning = false;
     this.worldSize = worldSize;
+    this.dayTimeUpdater = 0;
 
     // VIRTUAL STATE: Lees NOOIT de DOM in de update loop
     this.camX = 0;
@@ -27,7 +27,22 @@ export default class CameraManager {
     console.log(`🎬 Camera Lock:`, this.target);
   }
 
-  update() {
+  update(dt) {
+    // day / night cycle
+    if(this.dayTimeUpdater < 10000) {
+      let now = new Date();
+      try {
+        let timeEl = document.querySelector('input[name="time-of-day"]');
+        timeEl.value = Math.sin(now.getTime() / 10000);
+        let event = new Event('input');
+        timeEl.dispatchEvent(event);
+        this.dayTimeUpdater + dt;
+      } catch (e) {
+        console.error(e)
+      }
+    } else {
+      this.dayTimeUpdater = 0
+    }
 
     if (!this.target || this.freeRoam) return;
 

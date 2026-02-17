@@ -198,7 +198,7 @@ export default class World {
           this.collidibles.push({
             x: circle.x,
             y: circle.y,
-            r: 32 // Radius van het "hek-onderdeel"
+            r: 16 // Radius van het "hek-onderdeel"
           });
         }
     });

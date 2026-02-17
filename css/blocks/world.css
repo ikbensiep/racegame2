@@ -58,7 +58,10 @@
       0px; /* Z translate y tho?? */
     left: -10vw;
     top: -10vh;
-    opacity: 1;
+    opacity: abs(var(--pp-time-of-day, 0));
+
+    transition: opacity 1s;
+
     mask-type: alpha;
      mask-image: 
      radial-gradient(circle, transparent 256px, white 720px),
@@ -92,19 +95,20 @@
   transform: rotateZ(var(--rz)) translate3d(var(--x), var(--y), 0);
   transform-origin: 0 0;
   --d: calc( var(--floor-count, 1) * 64px);
-  transition: .2s linear;
-  background-image: url('/assets/uvmap.png');
   z-index: 20;
-  transition: .5s .5s;
   
   /* FIXME: fake ambient occlusion / contact shadow + ambient light coming from windows */
   box-shadow: 0 0 10px #0006, 0 0 42px 26px rgb(from var(--face-color) r g b / .25);
 
+  transition: .2s linear;
+  background-image: url('/assets/uvmap.png');
+  
 
   &.off-screen {
     opacity: 0.5;
   }
 }
+
 
 /* Basis voor alle muren-containers en hun pseudo-elementen */
 .wall-n, 
@@ -137,8 +141,8 @@
   inset: 0;
   height: calc(var(--d) * 1);
   transform-origin: top;
-  transform: rotateX(-90deg) translate(0px, -100%); /* Klap omhoog vanaf de bovenkant */
-  background-color: red;
+  transform: rotateX(90deg); /* Klap omhoog vanaf de bovenkant */
+
 }
 
 /* --- OOST (Orange) --- */
@@ -149,7 +153,7 @@
   content: 'EAST face';
   position: absolute;
   inset: 0;
-  background-color: orange ;
+  
   transform-origin: left top;
   
   transform: 
@@ -165,7 +169,7 @@
 
 .wall-s {
   /* inset: 0; */
-  background-color: purple ;
+  
   
   /* Schuif naar de onderkant van het gebouw (Zuid) */
   /* De lokale Z-as wijst nu naar voren door de 90deg rotatie */
@@ -189,10 +193,8 @@
   
   /* Jouw specifieke as-correctie voor Inkscape */
   transform: rotateY(-90deg) rotateZ(90deg) translateY(-100%);
-  background-color: green;
+  
 }
-
-
 
 /* --- DA ROOF --- */
 .building .roof {
