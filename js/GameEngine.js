@@ -6,14 +6,15 @@ import NetworkManager from './NetworkManager.js';
 import EffectManager from './EffectManager.js';
 import CameraManager from './CameraManager.js';
 import CameraTweaker from './tools/CameraTweaker.js';
+import LapTimer from "./LapTimer.js";
 
 export default class GameEngine {
     constructor(settings) {
 
       this.settings = settings;
       this.lastTime = 0;
-      this.scene = 'assen';
-      this.world = new World(this.scene);
+      this.scene = settings.track || 'assen';
+      this.world = new World(this, this.scene);
 
       this.localPlayer = undefined;
       this.opponents = new Map();
@@ -27,8 +28,20 @@ export default class GameEngine {
     }
 
     async init (game) {
+      this.camera = new CameraManager(this, document.querySelector('#camera-viewport'))
       
       const possibleSpawnpoints = await this.world.load();
+
+      // 0. Chart the area, note interesting areas/surfaces
+      await this.world.findSurfaces();
+
+      // 1. Find spawnpoints
+      await this.world.findSpawnPoints('training');
+      
+      // 2. Find walls, trees (obstacles, sprites)
+      await this.world.findWalls();
+      await this.world.findTrees();
+
       let spawnPoint = possibleSpawnpoints[Math.floor(Math.random() * possibleSpawnpoints.length)];
 
       this.localPlayer = new Player('me', this.settings.name, this.settings.driverNumber, this.settings.color, true, game);
@@ -36,14 +49,16 @@ export default class GameEngine {
       this.localPlayer.x = spawnPoint.x;
       this.localPlayer.y = spawnPoint.y;
 
+      this.world.lapTimer = new LapTimer(this.world, [...this.world.paths.sectors]);
+
       this.start();
       
-      this.camera = new CameraManager(this, document.querySelector('#camera-viewport'))
       this.camera.target = this.localPlayer;
     
       // if(this.network.isHost) {
       //  await this.spawnBots(game);
       // }
+
       this.cameraTweaker.refresh();
     }
 
@@ -140,6 +155,7 @@ export default class GameEngine {
     }
 
     start() {
+
         console.log(`starting game loop`, this)
         const loop = () => {
           const currentTime = performance.now(); 

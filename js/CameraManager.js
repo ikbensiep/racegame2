@@ -7,6 +7,23 @@ export default class CameraManager {
     this.isTransitioning = false;
     this.worldSize = worldSize;
     this.dayTimeUpdater = 0;
+    this.cullingObserverObtions = {
+      root: this.element,
+      rootMargin: "256px",
+      threshold: 0.05,
+    };
+    
+    this.cullingObserver = new IntersectionObserver( (entries, self) => {
+        entries.forEach (entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.remove('off-screen')
+                
+            } else {
+                entry.target.classList.add('off-screen')
+            }
+        });
+    }, this.cullingObserverObtions);
+  
 
     // VIRTUAL STATE: Lees NOOIT de DOM in de update loop
     this.camX = 0;
@@ -15,6 +32,20 @@ export default class CameraManager {
     // Alleen bij resize de viewport meten
     this.updateViewport();
     window.addEventListener('resize', () => this.updateViewport());
+    
+  }
+
+  createCullingObserver () {
+    return new IntersectionObserver( (entries, self) => {
+        entries.forEach (entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.remove('off-screen')
+                
+            } else {
+                entry.target.classList.add('off-screen')
+            }
+        });
+    }, this.createCullingObserver);
   }
 
   updateViewport() {

@@ -27,7 +27,7 @@ export default class MaterialManager {
             faceColor: rect.getAttribute('fill') || rect.style.fill || '#555555',
             faceOpacity: rect.getAttribute('fill-opacity') || rect.style.fillOpacity || 1,
             columnColor: rect.getAttribute('fill') || rect.style.stroke || '#fff',
-            depth: Math.max(1, strokeWidth),
+            depth: strokeWidth,
             wall: parseInt(parts[0]) || 10,
             gap: parseInt(parts[1]) || 0,
             grunge: 1.0 - (parseFloat(tempEl.style.getPropertyValue('stroke-opacity')) || 1.0),

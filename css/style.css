@@ -3,7 +3,7 @@
 @import url('./blocks/world.css');
 
 @import url('./components/animations.css');
-/* @import url('./components/buildings.css'); */
+@import url('./components/buildings.css');
 @import url('./components/camera.css');
 @import url('./components/tweaker.css');
 
@@ -37,10 +37,11 @@
 }
 
 body {
-  background-color: aquamarine;
+  background-color: var(--player-color, aquamarine);
   display: grid;
   font-family: sans-serif;
   overflow: hidden;
+  transition: background-color .75s cubic-bezier(0.165, 0.84, 0.44, 1)
 }
 
 /* TODO: organize */

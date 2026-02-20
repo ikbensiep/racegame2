@@ -16,13 +16,13 @@
   /* set shake animation */
   /* pretty much never a delay on this baby because impacts should make you FEEL SOMETHING */
   /* animation: shake calc(var(--animation-duration, 0.2) * 1s) calc(var(--animation-delay, 0) * 1s) 1; */
-  filter: saturate(1.05) brightness(1.02);
+  filter: saturate(1.15) brightness(1.12);
   transition-duration: 0s !important;
 }
 
 .vehicle[data-state="colliding"] {
     > div {
-      transition: rotate .25s linear !important;
+      transition: rotate .5s linear !important;
     } 
   }
 
@@ -50,6 +50,18 @@
   inherits: true;
 }
 
+@property --pp-brightness {
+  syntax: "<number>";
+  initial-value: 0.0;
+  inherits: true;
+}
+
+@property --pp-contrast {
+  syntax: "<number>";
+  initial-value: 0.0;
+  inherits: true;
+}
+
 [data-post-processing="crt"] {
   &::before {
     pointer-events: none;
@@ -68,6 +80,8 @@
     backdrop-filter: 
       blur( calc( var(--pp-blur) * 1px))
       saturate( var(--pp-saturate) )
+      brightness( var(--pp-brightness) )
+      contrast( var(--pp-contrast) )
       hue-rotate( calc( var(--pp-hue) * 1deg))
   }
 

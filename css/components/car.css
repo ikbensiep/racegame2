@@ -1,5 +1,11 @@
 @import url(vehicle.css);
 
+@property --driver-color {
+  syntax: "<color>";
+  initial-value: "#BADA55";
+  inherits: true;
+}
+
 /* driver number badge on livery */
 @property --driver-id {
   syntax: "<string>";
@@ -36,6 +42,7 @@
   display: grid;
   place-content: center;
   
+  --driver-color: var(--player-color);
   --driver-id: attr(id);
 
   /* 

@@ -1,10 +1,9 @@
-import LapTimer from "./LapTimer.js";
 import BuildingFactory from "./BuildingFactory.js";
-
 export default class World {
-  constructor(scene) {
+  constructor(game) {
     this.isLoaded = false;
-    this.scene = scene;
+    this.game = game;
+    this.scene = game.scene;
     this.width = 0;
     this.height = 0;
     this.element = document.querySelector('main#canvas');
@@ -23,8 +22,9 @@ export default class World {
     this.trackElement = null;
     this.trackWidth = 500;
     this.structures = [];
-    this.buildingFactory = new BuildingFactory(this);
+    this.buildingFactory = new BuildingFactory(this.game);
 
+    console.log(this.logicCtx)
 
     this.paths = {
       
@@ -36,7 +36,7 @@ export default class World {
   }
   
   _initWorld () {
-
+    
     /* Basically a tiling system that would get its dimensions from the css variables defined on #canvas
     /*
 
@@ -81,7 +81,6 @@ export default class World {
         url('${artworkBasePath}/tiles/${this.scene}_track-0-1.png'),
         url('${artworkBasePath}/tiles/${this.scene}_track-1-1.png') 
         `;
-        console.log(this.element)
     } catch (e) {
       console.error(e)
     }
@@ -101,15 +100,7 @@ export default class World {
       
     }
 
-    // 0. Chart the area, note interesting areas/surfaces
-    await this.findSurfaces();
 
-    // 1. Find spawnpoints
-    await this.findSpawnPoints('training');
-    
-    
-    // 2. Find walls (obstacles)
-    await this.findWalls();
     
     // 3. Find building ground plates for 3D box factory
     
@@ -117,7 +108,7 @@ export default class World {
     await this.generateBuildings();
     console.timeEnd('generate-buildings');
     
-    this.lapTimer = new LapTimer(this, [...this.paths.sectors]);
+    
 
     this.isLoaded = true;
     this.element.querySelector('#worldmap svg').remove();
@@ -129,7 +120,7 @@ export default class World {
     const timingGroup = this.svgElement.getElementById('timing');
 
       this.paths.worldBG =     new Path2D(this.svgElement.querySelector('#world-bg').getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
-      this.paths.fuelStation = new Path2D(this.svgElement.querySelector('#fuel-station').getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
+      this.paths.fuelStation = new Path2D(this.svgElement.querySelector('#fuel-station')?.getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
       this.paths.grandstands = new Path2D(this.svgElement.querySelector('#sfx-triggers path#grandstands').getAttribute('d'))  // fill, sfx (crowd noise) detection
       this.paths.gravel =      new Path2D(this.svgElement.querySelector('#gravel').getAttribute('d')) // fill, vehicle dynamics / sfx
       this.paths.gridslot =    new Path2D(this.svgElement.querySelector('#gridslot')?.getAttribute('d') || "") // fill, race start position (spawnpoint)
@@ -162,7 +153,9 @@ export default class World {
         break;
     }
     
-    let spawnContainers = possibleSpawnLocations.filter( group => group.getAttributeNS('http://www.inkscape.org/namespaces/inkscape', 'label') == `players-${spawnFilter}`)
+    let spawnContainers = possibleSpawnLocations.filter( group => { 
+      return group.getAttributeNS('http://www.inkscape.org/namespaces/inkscape', 'label') == `players-${spawnFilter}`
+    });
 
     let spawners = spawnContainers[0].querySelectorAll('circle');
     
@@ -180,32 +173,73 @@ export default class World {
     }
   }
 
+  // TODO: maybe update `findWalls ()` below to be a smarter algorythm like this bad boy
+  async findTrees () {
+    const treeLines = this.svgElement.querySelectorAll('#trees path');
+    
+    treeLines.forEach(path => {
+      const length = path.getTotalLength();
+      console.log(`🌳 treeline ${path.id}`)
+
+      const {strokeWidth, strokeDasharray, stroke, strokeLinecap} = path.style;
+      // const stepSize = strokeDasharray[0] + strokeDasharray[1];
+      const stepSize = 512;
+      for (let i = 0; i < length; i += stepSize) {
+        
+        const circle = path.getPointAtLength(i);
+
+        this.collidibles.push({
+          x: circle.x,
+          y: circle.y,
+          r: 16, // TODO: is this an appropriate prop to assume and use as tree trunk size?
+          type: 'tree'
+        });
+
+
+        const template = document.getElementById("shrubbery");
+        const clone = document.importNode(template.content, true);
+        const sprite = clone.querySelector('b');
+        sprite.id = `tree-${path.id}-${stepSize}`;
+        sprite.className = `tree ${strokeLinecap}`
+        sprite.style.setProperty('--tree-type', strokeLinecap);
+        sprite.style.setProperty('--tree-color', stroke);
+        sprite.style.translate = `calc(${circle.x}px - 50%) calc(${circle.y}px - 50%)`;
+        this.element.appendChild(sprite);
+        this.game.camera.cullingObserver.observe(sprite);
+      }
+    })
+    
+  }
+
   async findWalls () {
     const wallPaths = this.svgElement.querySelectorAll('#obstacles path');
     
     wallPaths.forEach(path => {
       const length = path.getTotalLength();
       
-      // Jouw interval
-      // TODO: multiply `step` and `r` by stroke width?
-      const step = 64; 
       
-      console.log(`collidible-wall ${Math.floor(length)}`);
-
-        for (let i = 0; i < length; i += step) {
-          const circle = path.getPointAtLength(i);
-
+      // TODO: multiply `step` and `r` by stroke-dasharray and stroke-width?
+      
+      const stepSize = 64; 
+      
+      let wallId = 0;
+      for (let i = 0; i < length; i += stepSize) {
+        const circle = path.getPointAtLength(i);
+        
           this.collidibles.push({
             x: circle.x,
             y: circle.y,
-            r: 16 // Radius van het "hek-onderdeel"
+            r: 16, // Radius van het "hek-onderdeel"
+            id: `path-${path.id}-wall-${wallId}`
           });
+          wallId++;
         }
+        console.log(`collidible-wall (length: ${Math.floor(length)}, segments: ${wallId})`);
     });
   }
 
   async generateBuildings() {
-    // building-3D-groundplates is the ID in your SVG
+    // #building-3D-groundplates is the ID in your SVG
     
     this.buildingFactory.generate(this.svgElement, this.element)
     console.log("🏙️ 3D World populated via BuildingFactory");

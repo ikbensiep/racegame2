@@ -1,7 +1,9 @@
 /* maybe move this to world.css,˙idk if its necessary yet */
 
 #canvas {
-    overflow: scroll;
+    /* had to remove `overflow: scroll` as it had some
+    impact on 3D elements being clipped, forgot where I
+    learned this (google) */
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none;  /* IE/Edge */
 }

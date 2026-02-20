@@ -28,10 +28,12 @@ export default class CameraTweaker {
         <legend>compositing</legend>
         <label><input type="radio" name="postProcessing" value="" checked /> OFF</label>
         <label><input type="radio" name="postProcessing" value="crt" /> CRT</label>
-        <label for="opacity"><input type="range" name="opacity" id="opacity" value="0.5" max="1" step=".1" />opacity <output for="opacity"></output></label>
-        <label for="blur"><input type="range" name="blur" id="blur" value="0" max="128" step="1" />blur <output for="blur"></output></label>
-        <label for="saturate"><input type="range" name="saturate" id="saturate" value="0" max="20" step=".5"/>saturate <output for="saturate"></output></label>
-        <label for="hue"><input type="range" name="hue" id="hue" value="0" max="360" step="1" />hue <output for="hue"></output></label>
+        <label for="opacity"><input type="range" name="opacity" id="opacity" value="0.5" min="0" max="1" step=".1" />opacity <output for="opacity"></output></label>
+        <label for="blur"><input type="range" name="blur" id="blur" value="0" min="0" max="128" step="1" />blur <output for="blur"></output></label>
+        <label for="saturate"><input type="range" name="saturate" id="saturate" value="0" min="0" max="5" step=".1"/>saturate <output for="saturate"></output></label>
+        <label for="brightness"><input type="range" name="brightness" id="brightness" value="1" min="0" max="10" step=".05"/>brightness <output for="brightness"></output></label>
+        <label for="contrast"><input type="range" name="contrast" id="contrast" value="1" min="0" max="2.5" step=".01"/>contrast <output for="contrast"></output></label>
+        <label for="hue"><input type="range" name="hue" id="hue" value="0" min="0" max="360" step="1" />hue <output for="hue"></output></label>
       </fieldset>
     `;
 

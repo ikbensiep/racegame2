@@ -1,4 +1,23 @@
 /* Sidebar basis */
+
+label[for="debugger"] {
+    position: absolute;
+    transition: .25s;
+    cursor: pointer;
+    &:hover {
+        color: white;
+    }
+}
+
+input#debugger {
+    position: fixed;
+    opacity: .01;
+}
+
+input#debugger:not(:checked) + aside#debug {
+    translate: -100% 0;
+}
+
 aside#debug {
     position: fixed;
     width: 280px;
@@ -7,7 +26,7 @@ aside#debug {
     color: #fff;
     padding: 1rem;
     overflow-y: scroll;
-    
+    transition: .25s cubic-bezier(0.075, 0.82, 0.165, 1);
     z-index: 1000;
 }
 

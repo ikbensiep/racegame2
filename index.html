@@ -17,6 +17,10 @@
       <div id="worldmap"></div>
     </main>
   </section>
+  <label for="debugger" style="position: fixed; z-index: 10000; padding: 1ex; filter:brightness(.25) invert(.5);">
+    🛠️ debugger
+  </label>
+    <input type="checkbox" name="debugger" id="debugger" />
   <aside id="debug">
 
   </aside>
@@ -26,15 +30,41 @@
       <h2>🏁 Join Race</h2>
       
       <div class="input-group">
-        <label for="p-name">Naam:</label>
+        <label for="p-name">Name</label>
         <input type="text" id="player-name" value="Kees" placeholder="Racer" maxlength="20" required autofocus>
       </div>
 
-      <div class="input-group">
-        <label for="player-color">Kleur:</label>
-        
-        <input type="color" id="player-color" value="" list="color-palette" />
+      <div class="input-group" style="position: relative; height: 256px; width: 256px">
+        <span id="player-id-wrap">
+          <label for="player-number">Driver number</label>
+          <label for="player-color">Paint job</label>
+          <input type="color" id="player-color" value="hotpink" list="color-palette" />
+          <input type="number" id="player-number" value="67" min="0" max="99" placeholder="99" required>
+        </span>
         <datalist id="color-palette">
+          
+          
+          <option value="#ff6e61">#ff6e61</option>;
+          <option value="#ffcb5c">#ffcb5c</option>;
+          <option value="#69af4b">#69af4b</option>;
+          <option value="#4b91e2">#4b91e2</option>;
+          <option value="#ee5d5d">#ee5d5d</option>;
+          
+          
+          <option value="#1b1e37">#1b1e37</option>;
+          <option value="#4d4a8c">#4d4a8c</option>;
+          <option value="#a4a4d6">#a4a4d6</option>;
+          <option value="#e1b8ff">#e1b8ff</option>;
+          <option value="#ff7142">#ff7142</option>;
+          
+          
+          <option value="#ff6e61">#ff6e61</option>;
+          <option value="#6c5b80">#6c5b80</option>;
+          <option value="#88d8b1">#88d8b1</option>;
+          <option value="#f7b5a1">#f7b5a1</option>;
+          <option value="#ff9d00">#ff9d00</option>;
+          
+          
           <!-- ja lachn maar helaas zijn het wat viezige kleuren bijelkaar in één palet
           <option>#a55</option>
           <option>#ac1d1c</option>
@@ -47,35 +77,89 @@
           <option>#facade</option>
           <option>#0ff1ce</option>
           -->
-
-
-  <option value="#ff6e61">#ff6e61</option>;
-  <option value="#ffcb5c">#ffcb5c</option>;
-  <option value="#69af4b">#69af4b</option>;
-  <option value="#4b91e2">#4b91e2</option>;
-  <option value="#ee5d5d">#ee5d5d</option>;
-
-
-  <option value="#1b1e37">#1b1e37</option>;
-  <option value="#4d4a8c">#4d4a8c</option>;
-  <option value="#a4a4d6">#a4a4d6</option>;
-  <option value="#e1b8ff">#e1b8ff</option>;
-  <option value="#ff7142">#ff7142</option>;
-  
-
-  <option value="#ff6e61">#ff6e61</option>;
-  <option value="#6c5b80">#6c5b80</option>;
-  <option value="#88d8b1">#88d8b1</option>;
-  <option value="#f7b5a1">#f7b5a1</option>;
-  <option value="#ff9d00">#ff9d00</option>;
-
-
         </datalist>
-      </div>
 
+        <style id="fixme-sobad">
+          #player-id-wrap {
+            position: absolute;
+            cursor: pointer;
+            background: url(/assets/cars/default/interior-scaled.png);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: grid;
+            grid-template-columns: auto 2rem;
+            height: 256px;
+            width: 256px;
+            will-change: transform;
+            
+            transition: .5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+            &:has(:focus) {
+                rotate: -90deg;
+            }
+
+            #player-number {
+              grid-area: 1 / 1 / -1 / -1;
+              z-index: 2;
+              width: 3rem;
+              text-align: center;
+              transform: rotate(90deg);
+              height: 2rem;
+              place-self: center end;
+              font-weight: bold;
+              font-size: 18px;
+              padding: 0;
+              border-top-width: 5px;
+              text-indent: 1ex;
+            }
+            #player-color { 
+              grid-area: 1 / 1 / -1 / -1;
+              height: 100%;
+              width: 100%;
+              border: none;
+              padding: 0;
+              mask-image: url('/assets/cars/porsche/porsche-mask.png');
+              mask-size: contain;
+              mask-repeat: no-repeat;
+              mask-position: center;
+            }
+            label {
+              &[for="player-number"] {
+                grid-area: 1 / 1 / -1 / -1;
+                place-self: end;
+              }
+              &[for="player-color"] {
+                grid-area: 1 / 1 / -1 / -1;
+                place-self: start;
+              }
+            }
+          }
+          
+        </style>
+
+        <script>
+          let colorInput = document.querySelector('#player-color');
+          let options = [...document.querySelector('#color-palette').options];
+          let color = options[Math.floor(options.length * Math.random())].value;
+          document.body.style.setProperty('--player-color', color);
+          colorInput.value = color;
+
+          colorInput.addEventListener('input', (e) => {
+            document.body.style.setProperty('--player-color', e.target.value);
+          });
+
+        </script>
+      </div>
       <div class="input-group">
-        <label for="player-number">Nummer:</label>
-        <input type="number" id="player-number" value="58" min="0" max="99">
+        <label for="track-assen">
+          <input name="track" type="radio" id="track-assen" value="assen" required />
+          Assen
+        </label>
+        <label for="track-monaco">
+          <input name="track" type="radio" id="track-monaco" value="monaco" required />
+          Monaco
+        </label>
       </div>
 
       <button type="submit" id="start-race-btn" >START RACE</button>
@@ -105,7 +189,7 @@
   </template>
 
   <template id="structure">
-    <div class="structure">
+    <div class="structure building">
       <div class="wall-n"></div>
       <div class="wall-e"></div>
       <div class="wall-s"></div>
@@ -114,6 +198,12 @@
     </div>
   </template>
 
+  <template id="shrubbery">
+    <b>
+      <span class="card"></span>
+      <span class="card"></span5214>
+    </b>
+  </template>
 
   <svg id="filters">
           <filter id="displacementFilter">

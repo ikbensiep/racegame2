@@ -1,0 +1,21 @@
+
+<svg  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" ><foreignObject width="100%" height="100%"><div class="host" width="100%" height="100%" xmlns="http://www.w3.org/1999/xhtml"><style>
+ *, *::after, *::before{box-sizing:border-box;}:host, .host{display:block;visibility:visible;width:auto;height:auto;contain:content;--cssd-uniform-time:0
+}:host([hidden]), .host[hidden]{display:none
+} .container{position:relative;width:100%;height:100%;display:grid;grid:inherit;grid-area:inherit;grid-auto-columns:inherit;grid-auto-flow:inherit;grid-auto-rows:inherit;grid-column:inherit;grid-column-end:inherit;grid-column-gap:inherit;grid-column-start:inherit;grid-gap:inherit;grid-lanes:inherit;grid-lanes-direction:inherit;grid-lanes-pack:inherit;grid-row:inherit;grid-row-end:inherit;grid-row-gap:inherit;grid-row-start:inherit;grid-template:inherit;grid-template-areas:inherit;grid-template-columns:inherit;grid-template-rows:inherit;} cell{position:relative;display:grid;place-items:center
+} svg{position:absolute;width:100%;height:100%
+}:host([cssd-paused-animation]),
+:host([cssd-paused-animation]) *{animation-play-state:paused !important
+} 
+:host, .host{grid-template-rows:repeat(2, 1fr);grid-template-columns:repeat(2, 1fr);} :host, .host{width:100%;
+height:100%;
+
+ width:100%;height:100%;}  #c-1-1-1{background:#3C2B34;
+-webkit-transform-origin:100% 100%; transform-origin:100% 100%;
+-webkit-transform:rotateX(45deg) skewY(34deg); transform:rotateX(45deg) skewY(34deg);}#c-2-1-1{background:#F7F0E9;
+-webkit-transform-origin:0 100%; transform-origin:0 100%;
+-webkit-transform:rotateX(45deg) skewY(-34deg); transform:rotateX(45deg) skewY(-34deg);}#c-1-2-1{background:#F7F0E9;
+-webkit-transform-origin:100% 0; transform-origin:100% 0;
+-webkit-transform:rotateX(45deg) skewY(-34deg); transform:rotateX(45deg) skewY(-34deg);}#c-2-2-1{background:#3C2B34;
+-webkit-transform-origin:0 0; transform-origin:0 0;
+-webkit-transform:rotateX(45deg) skewY(34deg); transform:rotateX(45deg) skewY(34deg);} </style><svg id="defs" xmlns="http://www.w3.org/2000/svg" style="width:0;height:0"></svg><grid class="container"><cell id="c-1-1-1"></cell><cell id="c-2-1-1"></cell><cell id="c-1-2-1"></cell><cell id="c-2-2-1"></cell></grid></div></foreignObject></svg>

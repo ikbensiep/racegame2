@@ -15,7 +15,8 @@ lobbyDialog.addEventListener('close', () => {
   const settings = {
     name: document.getElementById('player-name').value,
     color: document.getElementById('player-color').value,
-    driverNumber: parseInt(document.getElementById('player-number').value)
+    driverNumber: parseInt(document.getElementById('player-number').value),
+    track: document.querySelector('input[name=track]:checked').value
   };
 
   // Initialiseer de game met deze settings

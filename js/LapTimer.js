@@ -1,13 +1,13 @@
 export default class LapTimer {
-  constructor(world) {
+  constructor(world, sectors) {
     this.world = world;
-    this.sectors = world.paths.sectors;
+    this.sectors = sectors;
 
     this.currentSector = 0; 
     this.lastSectorTime = 0;
     this.laps = [];
     this.bestLap = Infinity;
-
+    console.log(this.world.logicCtx)
   }
 
   checkSectors(x, y) {

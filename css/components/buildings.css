@@ -1,4 +1,4 @@
-/* TODO: building faces property type definitions 
+/* TODO: building faces property type definitions */
 
 @property --face-color {
   syntax: "<color>";
@@ -12,30 +12,229 @@
 }
 
 @property --floor-count {
-  syntax: "<color>";
+  syntax: "<number>";
   initial-value: 1;
   
-  ? will child elems need to know the numver of floors? 
-  inherits: false; 
+  /* ? will child elems need to know the numver of floors? */
+  inherits: true; 
 }
 
 @property --column-size {
-  initial-value: 8px;
+  syntax: "<number>";
+  initial-value: 8;
+  inherits: true;
 }
 
 @property --column-fill-size {
-  initial-value: 60px;
+  syntax: "<number>";
+  initial-value: 56;
+  inherits: true;
 }
 
 @property --grunge {
-  syntax: "*";
+  syntax: "<number>";
   initial-value: 0;
+  inherits: true;
 }
 
 @property --weathering {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
 }
 
 @property --roof-type {
 }
 
+/* */
+
+/* 
+   DE HOKJESFABRIEK (Full Version) 
+   Logica: Container op de grond, muren klappen omhoog, dak op Z-hoogte.
 */
+
+.building {
+  position: absolute;
+  transform-style: preserve-3d;
+  width: var(--w);
+  height: var(--h);
+  left: 0;
+  top: 0;
+
+  /* Volgorde: Eerst naar X,Y (wereld), dan rotatie om eigen as */
+  transform: rotateZ(var(--rz)) translate3d(var(--x), var(--y), 0);
+  transform-origin: 0 0;
+  --d: calc( var(--floor-count, 1) * 64px);
+
+  transform-style: preserve-3d;
+
+  z-index: 20;
+  
+  /* FIXME: fake ambient occlusion / contact shadow + ambient light coming from windows */
+  box-shadow: 0 0 10px #0006, 0 0 42px 26px rgb(from var(--face-color) r g b / .25);
+
+  transition: .2s linear;
+  
+  &:not([class]) {
+    background-image: url('/assets/uvmap.png');
+  }
+  
+
+  &.off-screen {
+    /* opacity: 0.5; */
+  }
+}
+
+
+/* Basis voor alle muren-containers en hun pseudo-elementen */
+.wall-n, 
+.wall-e, 
+.wall-s, 
+.wall-w,
+.roof {
+  position: absolute;
+  transform-style: preserve-3d;
+  color: inherit;
+  font-size: xx-large;
+  text-align: center;
+  display: grid;
+  place-content: center;
+  transition: opacity .5s 1.5s;
+}
+
+.off-screen {
+  .wall-n, 
+  .wall-e, 
+  .wall-s, 
+  .wall-w,
+  .roof {
+    /* opacity: 0; */
+  }
+}
+
+/* --- NOORD (Red) --- */
+.wall-n {
+  inset: 0;
+  height: calc(var(--d) * 1);
+  transform-origin: top;
+  transform: rotateX(90deg); /* Klap omhoog vanaf de bovenkant */
+
+}
+
+/* --- OOST (Orange) --- */
+.wall-e {
+  width: var(--h);
+  height: var(--d); 
+  padding: 0;
+  content: 'EAST face';
+  position: absolute;
+  inset: 0;
+  
+  transform-origin: left top;
+  
+  transform: 
+    translateX(var(--w))
+    translateY(var(--h))
+    translateZ(var(--d))
+    rotateX(-90deg) 
+    rotateY(90deg)
+  ;
+}
+
+/* --- ZUID (Purp) --- */
+
+.wall-s {
+  /* inset: 0; */
+  
+  
+  /* Schuif naar de onderkant van het gebouw (Zuid) */
+  /* De lokale Z-as wijst nu naar voren door de 90deg rotatie */
+  transform-origin: bottom;
+  transform:  rotateX(-90deg);
+  bottom: 0;
+  height: var(--d);
+  width: var(--w);
+}
+
+/* --- WEST (Green) --- */
+.wall-w {
+  top: 0;
+  left: 0;
+  width: var(--h); /* De diepte van de SVG-rect wordt de breedte van deze muur */
+  height: var(--d);
+  transform-origin: left top;
+  
+  /* Jouw specifieke as-correctie voor Inkscape */
+  transform: rotateY(-90deg) rotateZ(90deg) translateY(-100%);
+  
+}
+
+/* --- DA ROOF --- */
+.building .roof {
+  position: absolute;
+  inset: 0;
+  /* background: var(--c); */
+  /* trsnalted to --floor-count * 64px in Z direction */
+  transform: translateZ(var(--d));
+}
+
+/* --- GRANDSTANDS (.grandstands class) --- */
+
+.building.mat-grandstands {
+  --d: 128px;
+}
+
+/* FIXME: don't use roof for grandstand seats */
+.building.mat-grandstands .roof {
+  transform-origin: bottom;
+
+  /* 1. Bereken de exacte lengte van het schuine vlak (Pythagoras) */
+  /* De nieuwe hoogte = wortel uit (hoogte_gebouw² + diepte_gebouw²) */
+  --roof-length: calc(sqrt(pow(var(--d), 2) + pow(var(--h), 2)));
+  
+  /* 2. Zet de hoogte van het dak op deze berekende lengte */
+  height: var(--roof-length);
+  
+  /* 3. Corrigeer de positie omdat de height nu groter is dan de --h */
+  /* We trekken het dak 'omhoog' zodat de onderkant op de zuidlijn blijft */
+  /* top: auto; */
+  bottom: 0;
+
+  /* 4. De hoek berekenen we met de boogtangens (atan2) */
+  /* Geen gegokte graden meer, maar pure geometrie */
+  transform: 
+    translateZ(0) 
+    rotateX(calc(atan2(var(--d), var(--h)) * -1));
+  opacity: 1;
+}
+
+/* Grandstand front gets a fence with advertising (for now) */
+.building.mat-grandstands .wall-e,
+.building.mat-grandstands .wall-s,
+.building.mat-grandstands .wall-w {
+  background: url('/assets/environment/advertising/honkin.svg') repeat-x left bottom, linear-gradient(to top, white, white 44px, transparent 45px, transparent), repeating-linear-gradient(45deg, #333 0, #999 1px, transparent 0, transparent 10px),    repeating-linear-gradient(-45deg, #666 0, #333 1px, transparent 0, transparent 10px), repeating-linear-gradient(90deg, #333, #333 5px, transparent 6px, transparent 128px);
+  background-size: 128px 48px, 100%;
+}
+
+/* FIXME: update StructureFactory markup output for walls n fences: 
+ * add wall types (ads, 100m boards etc). 
+ */
+
+.fence-wall {
+  position: absolute;
+  
+  transform-style: flat;
+  
+  transform-origin: top left; 
+  transform: 
+    rotateZ(var(--rz)) 
+    rotateX(90deg); 
+
+  will-change: auto; 
+  transition: opacity .5s linear;
+
+  /* FIXME: build generic/central intr6nObserver 3D-culling fix  */
+  &.off-screen { 
+    /* opacity: 0; */
+  }
+}

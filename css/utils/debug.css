@@ -32,24 +32,19 @@
     background-attachment: local;
 }
 
-html {
-  --s: 100px; /* control the size*/
-  --c1: black; /* large gridlines*/
-  --c2: #0003; /* small gridlines */ 
-  --_g: #fff3 90deg,var(--c1) 0; /* background */
-}
-
 .vehicle {
   --collider-color: transparent;
   /* general purpose vehicle debug canvas @ 256px */
   &::after {
-    content: var(--driver-id) " " attr(data-state);
+    content: var(--driver-id) " [v:" attr(data-speed) "] " attr(data-state);
     position: absolute;
     inset: auto;
     color: var(--player-color);
-    background-color: #0002;
+    background-color: #fff3;
     padding: .5ex;
-
+    font-size: 1rem;
+    filter: brightness(0);
+    place-self: start center;
   }
 
   /* collider viz circle */

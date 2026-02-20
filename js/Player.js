@@ -158,26 +158,26 @@ export default class Player extends Vehicle {
       this.speed = this.vx * Math.cos(this.angle) + this.vy * Math.sin(this.angle);
     } else {
       // fallback — houd het oude invert/dampen-gedrag voor zeer lage snelheden
-      this.speed *= 0.975;
-      this.vx *= 0.975;
-      this.vy *= 0.975;
+      //this.speed *= 0.975;
+      this.vx *= -0.999;
+      this.vy *= -0.999;
     }
 
     this.handleCollision(gamepad);
   }
 
   handleCollision (gamepad) {
+
     // 1. Controller Trillen (Rumble)
     // De meeste moderne gamepads ondersteunen 'dual-rumble'
-    if (gamepad && gamepad.vibrationActuator && gamepad.vibrationActuator) {
-        this.playHapticFeedBack (gamepad, 
-        {
-          startDelay: 0,
-          duration: 10,      // Kort maar krachtig
-          weakMagnitude: 0.25, // De lichte trilmotor
-          strongMagnitude: 0.1 // De zware trilmotor (voor de klap)
-        });
-    }
+    this.playHapticFeedBack (gamepad, 
+      {
+        startDelay: 0,
+        duration: 50 * this.speed,     
+        weakMagnitude: 1, // De lichte trilmotor
+        strongMagnitude: (this.speed / 50) / 100
+      });
+    
 
     // 2. Geluid afspelen
     // We gebruiken een simpele Audio-object check
@@ -211,6 +211,7 @@ export default class Player extends Vehicle {
   }
 
   playHapticFeedBack (gamepad, haptics) {
+    if(!gamepad || !gamepad.vibrationActuator ) return;
     gamepad.vibrationActuator.playEffect("dual-rumble", {
       startDelay: haptics.startDelay || 0,
       duration: haptics.duration || 20,      // Kort maar krachtig
@@ -231,25 +232,55 @@ export default class Player extends Vehicle {
   }
 
   update(gamepad, dt) {
+
+    if (!this.isLocal || !gamepad) return;
+
+    const surface = this.game.world.getSurfaceType(this.x, this.y);
+
+
     if(this.intervalUpdateTimer < 10) {
       this.intervalUpdateTimer += dt;
     } else {
+
       this.intervalUpdateTimer = 0;
       this.element.dataset.speed = Math.floor(this.speed);
       this.element.dataset.vx = Math.floor(this.vx);
       this.element.dataset.vy = Math.floor(this.vy);
       this.element.dataset.angle = Math.floor(this.angle);
-    }
-
-    if (!this.isLocal || !gamepad) return;
-    
-    const surface = this.game.world.getSurfaceType(this.x, this.y);
-
-    if(this.activeSurface !== surface) {
-      this.activeSurface = surface;
       
-      /* Maybe later? */
-      // this.game.effects.trigger(this, surface, 500);
+      let play = false;
+
+      if(this.activeSurface !== surface) {
+        this.activeSurface = surface;
+        this.element.dataset.state = surface;
+        /* Maybe later? */
+        // this.game.effects.trigger(this, surface, 500);
+  
+        let haptics = {
+          startDelay: 0,
+          duration: 1000,
+          weakMagnitude: 1, // De lichte trilmotor
+          strongMagnitude: 0
+        }
+        
+        
+        switch(this.activeSurface) {
+          case 'sand':
+          case 'gravel': 
+            haptics.strongMagnitude = this.speed / 20;
+            play = true;
+            break;
+          case 'racetrack':
+            haptics.weakMagnitude = this.speed / 100;
+            haptics.strongMagnitude = .1;
+            play = true;
+            break;
+          default:
+            play = false;
+        }
+      }
+  
+      play ?? this.playHapticFeedBack (gamepad, haptics) 
     }
 
     const sectorId = this.game.world.lapTimer.checkSectors(this.x, this.y);
@@ -296,7 +327,7 @@ export default class Player extends Vehicle {
 
       this._resolveCollision(wallHit, gamepad)
       this.game.effects?.trigger(this, 'colliding', 300);
-      this.game.effects?.trigger(this.game.world, 'colliding', 1000);
+      // this.game.effects?.trigger(this.game.world, 'colliding', 1000);
 
     } else if (!wallHit) {
       this.isColliding = false;

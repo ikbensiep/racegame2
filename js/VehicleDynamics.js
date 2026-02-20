@@ -14,8 +14,8 @@ export const DefaultDynamics = {
   //   between movement direction and impact point (1.0 = apply fully).
   // - collisionReflection: multiplier applied to the reflected velocity vector
   //   after collision (0..1, lower = more damping).
-  collisionRotationFactor: .2,
-  collisionReflection: 0.4
+  collisionRotationFactor: .11,
+  collisionReflection: 0.89
 };
 
 // 1. De Basislijn: De 'Golf/Volvo' Gezinsauto

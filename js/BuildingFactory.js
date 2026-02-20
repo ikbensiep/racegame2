@@ -2,8 +2,9 @@ import MaterialManager from './MaterialManager.js';
 
 export default class BuildingFactory {
 
-    constructor(world) {
-        this.world = world;
+    constructor(game) {
+        this.game = game;
+        this.world = game.world;
     }
 
     /**
@@ -20,40 +21,34 @@ export default class BuildingFactory {
         const groundplates = svgElement.querySelectorAll('g#building-3D-groundplates  > rect');
         
         groundplates.forEach( rect  => {
-
             console.log(`🏗️ building rect.${rect.getAttribute('class')}#${rect.id}`);
-
             const building = this.generateBuilding(rect);
             worldLayer.appendChild(building);
-            this.world.structures.push(building);
+            this.game.world.structures.push(building);
+            console.log(this.game.camera.cullingObserver)
+            this.game.camera.cullingObserver.observe(building);
         });
 
-
-        // TODO: move to function
-        let buildingObserverOptions = {
-            root: document.querySelector('#camera-viewport'),
-            rootMargin: "256px",
-            threshold: 0.05,
-        };
-
-        let structures = this.world.structures;
         
-        let buildingObserver = new IntersectionObserver( (entries, self) => {
-            entries.forEach (entry => {
-            if (entry.isIntersecting) {
-                console.log('intersecting!', entry)
-                entry.target.classList.remove('off-screen')
-                
-            } else {
-                entry.target.classList.add('off-screen')
-            }
-            });
-        }, buildingObserverOptions);
+        
+        
+        // let structures = this.game.world.structures;
+        
+        // let buildingObserver = new IntersectionObserver( (entries, self) => {
+        //     entries.forEach (entry => {
+        //         if (entry.isIntersecting) {
+        //             console.log('intersecting!', entry)
+        //             entry.target.classList.remove('off-screen')
+                    
+        //         } else {
+        //             entry.target.classList.add('off-screen')
+        //         }
+        //     });
+        // }, buildingObserverOptions);
 
+//  structures.forEach( building => { });
         
-        structures.forEach( building => { buildingObserver.observe(building)});
         
-        console.warn(buildingObserver, structures)
     }
 
     /**
@@ -79,17 +74,31 @@ export default class BuildingFactory {
         const props = MaterialManager.getProperties(rect);
 
         // 4. Construct DOM element
-        const el = document.createElement('div');
-        el.className = `building ${props.materialClass}`;
+        const template = document.getElementById("structure");
+        const clone = document.importNode(template.content, true);
+        const structure = clone.querySelector('.structure');
+
+        /* TODO: use building <template> from index.html */
+        
+        structure.querySelector('.roof').innerHTML = `
+            <div class="sign">
+                <h3>${ props.title ? props.title : 'ROOF'}</h3>
+                <p>${ props.description ? props.description : 'rooftop patio'}</p>
+            </div>
+        </div>
+        `;
+
+        props.materialClass.split(' ').forEach( materialName => structure.classList.add(materialName))
+        // structure.classList.add(`${props.materialClass}`);
         
         // Use cssText for high performance single-write to the DOM
-        el.style.cssText = `
+        structure.style.cssText = `
             --w: ${w}px; 
-            --h: ${h + props.depth}px; 
+            --h: ${(h + props.depth).toFixed(2)}px; 
             --x: ${x}px; 
             --y: ${y}px; 
             --rz: ${rotation}deg;
-            
+
             --column-color: ${props.columnColor};
             --face-color: ${props.faceColor};
             --face-opacity: ${props.faceOpacity};
@@ -99,21 +108,7 @@ export default class BuildingFactory {
             --weathering: ${props.grunge};
             --roof-type: ${props.roof}
         `;
-        /* TODO: use building <template> from index.html */
-        el.innerHTML = `
-        <div class="wall-n" title"NOORD wand"></div>
-        <div class="wall-e" title="OOST blok"></div>
-        <div class="wall-s" title="ZUYD zijde"></div>
-        <div class="wall-w" title="WESTley wand"></div>
-        <div class="roof">
-            <div class="sign">
-                <h3>${ props.title ? props.title : 'ROOF'}</h3>
-                <p>${ props.description ? props.description : 'rooftop patio'}</p>
-            </div>
-        </div>
-        `;
-
-        return el;
+        return structure;
     }
 
     /**
@@ -149,7 +144,7 @@ export default class BuildingFactory {
                 --rz: ${angle}deg;
             `;
             worldLayer.appendChild(fence);
-            this.world.structures.push(fence);
+            this.game.world.structures.push(fence);
             
         }
     });

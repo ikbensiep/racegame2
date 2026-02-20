@@ -1,4 +1,6 @@
 
+@import url('./patterns.css');
+
 .building {
 
   .roof {
@@ -6,7 +8,9 @@
     box-shadow: inset 0 0 0 16px #222;
     display: grid;
     place-content: end center;
-    text-shadow: 1px 1px 5px var(--column-color), -1px -1px 5px var(--column-color);
+    text-shadow: 
+       1px 1px 4px hsla(from var(--column-color) h s 30% / 30%), 
+      -1px -1px 4px hsla(from var(--column-color) h s l / 30%);
     color: var(--face-color);
     padding: 8px;
 
@@ -17,14 +21,14 @@
       flex-direction: column-reverse;
 
       h3 {
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.856), #111111ee);
+        background: linear-gradient(to top, var(--column-color), var(--column-color));
         opacity: 1;
         transform-origin: bottom;
         transform: rotateX(-90deg);
         padding: .25ex .5ex;
         border-radius: .25ex;
         font-size: smaller;
-
+        color: var(--face-color);
       }
       p {
         text-shadow: none;
@@ -34,7 +38,6 @@
     }
   }
   
-
   &::before {
     content: 'building floor level';
     position: absolute;
@@ -43,7 +46,7 @@
     color: pink;
   }
 
-  &:not(.foodtruck)::after {
+  &::after {
     content: 'structure: ' attr(class);
     background-color: #676767;
     border-radius: 32px;
@@ -58,6 +61,7 @@
   .wall-s,
   .wall-w {
     backface-visibility: hidden;
+    background-color: rgb(from var(--face-color, #999) r g b / var(--face-opacity, .5));
   }
 
 }
@@ -67,15 +71,16 @@
 
   &::after {
     content: 'building lot (under construction)' !important;
-    background-color: #0003;
+    background-color: #0001 !important;
     border-radius: 0 !important;
     outline: 2px dashed currentColor;
     color: #ee06;
     background-image: 
-      repeating-linear-gradient(45deg, rgb(from currentColor r g b / .5) 0, rgb(from currentColor r g b / .5) 8px, transparent 9px, transparent 16px);
+      repeating-linear-gradient(45deg, rgb(from currentColor r g b / .05) 0, 
+      rgb(from currentColor r g b / .05) 8px, transparent 9px, transparent 16px);
     
   }
-
+  
   .wall-n { --face-dev-color: var(--axis-x-color);}
   .wall-e { --face-dev-color: var(--axis-y-color);}
   .wall-s { --face-dev-color: hsl(from var(--axis-x-color) h s 24 );}
@@ -87,16 +92,26 @@
   .wall-w, 
   .wall-s, 
   .roof {
-    opacity: .5;
     border: 2px dashed  var(--face-dev-color) !important;
     background-image: 
-      repeating-linear-gradient(45deg, var(--face-dev-color) 0, var(--face-dev-color) 8px, transparent 9px, transparent 16px);
+      repeating-linear-gradient(-45deg, 
+        hsla( from var(--face-dev-color) h s l / 25%) 0, 
+        hsla( from var(--face-dev-color) h s l / 25%) 8px, transparent 9px, transparent 16px),
+        url(/assets/uvmap.png);
+        ;
+    background-clip: border-box;
+    padding: 2rem;
+  }
+  
+  .sign {
+    
+    h3 { background: transparent !important; border: 2px dashed currentColor}  
   }
 }
 
-  /* --- Paddock Buildings --- */
-
+/* --- Paddock Buildings --- */
 .mat-paddock {
+
   .wall-n, 
   .wall-e,
   .wall-w, 
@@ -126,34 +141,72 @@
         rgb(from var(--face-color, #999) r g b / var(--face-opacity, 1)) calc( (var(--column-size) + var(--column-fill-size)) * 1px)
         )
       ;
-
+    /* one big fat stroke around the thing for good measure */
     border: calc((var(--column-fill-size) * 1px))  solid var(--column-color, red); 
+    /* */
+    border-bottom-color: var(--column-color);
+  }
+
+  .wall-s {
+  
+    /* clips a door in the facade of .mat-paddock buildings.. (FIXME: gestures) ..somewhere in the bottom */
+    clip-path: polygon(
+      0 0%, 
+      100% 0, 
+      100% 100%, 
+      calc(50% - 8px) 100%, 
+      calc(50% - 8px) calc(100% - 20px), 
+      36% calc(100% - 20px), 
+      36% 100%, 0 100%
+    )
+  }
+}
+
+/* --- Paddock Concession stands --- */
+
+.foodtruck, 
+.mat-dixi {
+  &::after {
+    content: none;
+  }
+
+  .roof {
+    .sign {
+      h3 {
+        font-size: initial !important;
+      }
+    }
   }
 }
 
 
 /* --- GRANDSTANDS  --- */
-.mat-grandstands {
 
-  .walls-ew, 
-  .walls-ew::before {
+/* Grandstand front gets a fence with advertising (for now) */
+
+
+.mat-grandstands {
+  > div {
+    backface-visibility: visible !important;
+  }
+  .wall-e, 
+  .wall-w {
     background-color: #7773;
     background-image: repeating-linear-gradient(90deg, black 0px, black 10px, transparent 11px, transparent 100px);
     outline: 2px solid #333;
   }
 
-  .walls-ns, 
-  .walls-ns::before { 
-    height: calc(var(--d) * 1.75);background: #999;outline: 2px solid;
+  .wall-n, 
+  .wall-s { 
+    height: calc(var(--d) * 1.25);background: #999;outline: 2px solid;
   }
 
-  .walls-ns::before {
-    background: 
+  .wall-s {
+     background: 
       repeating-linear-gradient(25deg, #999 0, #999 1px, transparent 0, transparent 10px),
-      repeating-linear-gradient(-25deg, #999 0, #999 1px, transparent 0, transparent 10px);
+      repeating-linear-gradient(-25deg, #999 0, #999 1px, transparent 0, transparent 10px); 
   }
-
-
+ 
   .roof {
     background-color: #2196F3;
     background-image: 
@@ -167,6 +220,21 @@
         
       box-shadow: inset 0 20px 20px rgba(255,255,255,0.95);
   }
+
+ /* HONKIN (tm) #1 Beer for Thirsty Racefans(R) MAIN GRANDSTANDS */
+ /* FIXME: the chain fence design along the main straight.. it's like Meowschwitz in here */
+.wall-e,
+.wall-s,
+.wall-w {
+  background: 
+    url('/assets/environment/advertising/honkin.svg') repeat-x left bottom, 
+    linear-gradient(to top, white, white 44px, transparent 45px, transparent), 
+    repeating-linear-gradient(45deg, #3336 0, #9996 1px, transparent 0, transparent 10px), 
+    repeating-linear-gradient(-45deg, #6666 0, #3336 1px, transparent 0, transparent 10px), 
+    repeating-linear-gradient(90deg, #3336, #3336 5px, transparent 6px, transparent 128px);
+  background-size: 128px 48px, 128px 128px;
+}
+
 }
 
 .mat-fence {
@@ -177,5 +245,3 @@
 }
 
 .mat-fence .roof { display: none; } /* Een hek heeft geen dak */
-
-
