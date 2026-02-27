@@ -21,7 +21,7 @@
 }
 
 .vehicle[data-state="colliding"] {
-    > div {
+    & > div {
       transition: rotate .5s linear !important;
     } 
   }

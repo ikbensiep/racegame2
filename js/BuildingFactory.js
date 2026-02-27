@@ -18,37 +18,16 @@ export default class BuildingFactory {
         this.generateFences(svgElement, worldLayer);
 
         //FIXME: betere selector(s) natuurlijk
-        const groundplates = svgElement.querySelectorAll('g#building-3D-groundplates  > rect');
+        const groundplates = svgElement.querySelectorAll('g#building-3D-groundplates rect, #building-groundplates rect');
         
         groundplates.forEach( rect  => {
-            console.log(`🏗️ building rect.${rect.getAttribute('class')}#${rect.id}`);
             const building = this.generateBuilding(rect);
-            worldLayer.appendChild(building);
             this.game.world.structures.push(building);
-            console.log(this.game.camera.cullingObserver)
             this.game.camera.cullingObserver.observe(building);
+            worldLayer.appendChild(building);
         });
 
-        
-        
-        
-        // let structures = this.game.world.structures;
-        
-        // let buildingObserver = new IntersectionObserver( (entries, self) => {
-        //     entries.forEach (entry => {
-        //         if (entry.isIntersecting) {
-        //             console.log('intersecting!', entry)
-        //             entry.target.classList.remove('off-screen')
-                    
-        //         } else {
-        //             entry.target.classList.add('off-screen')
-        //         }
-        //     });
-        // }, buildingObserverOptions);
 
-//  structures.forEach( building => { });
-        
-        
     }
 
     /**
@@ -58,7 +37,8 @@ export default class BuildingFactory {
      * @returns 
      */
     generateBuilding(rect) {
-      
+        console.log(`🏗️ building rect.${rect.getAttribute('class')}#${rect.id}`);
+
         // 1. Extract raw data from SVG
         const w = parseFloat(rect.getAttribute('width'));
         const h = parseFloat(rect.getAttribute('height'));
@@ -78,23 +58,27 @@ export default class BuildingFactory {
         const clone = document.importNode(template.content, true);
         const structure = clone.querySelector('.structure');
 
-        /* TODO: use building <template> from index.html */
-        
+        // 5. FF bordje op dak/gevel
         structure.querySelector('.roof').innerHTML = `
             <div class="sign">
-                <h3>${ props.title ? props.title : 'ROOF'}</h3>
-                <p>${ props.description ? props.description : 'rooftop patio'}</p>
+                <h3>${ props.title ? props.title : 'ROOF &lt;TITLE&gt; SIGN'}</h3>
+                ${ props.description ? '<p>' + props.description + '</p>': ''}
             </div>
         </div>
         `;
 
         props.materialClass.split(' ').forEach( materialName => structure.classList.add(materialName))
-        // structure.classList.add(`${props.materialClass}`);
         
-        // Use cssText for high performance single-write to the DOM
+        // Use cssText for single-fast-as-all-hell-write to the DOM
+        // NOTE: (for now) we're capping the elevation level to 5 floors because we don't
+        // want the geometry to get all funky up in the Z-direction. Infinity calculations 
+        // in the rearview mirror tend to be closer than they appear.
+
+        // 1. Grab rect dimensions, location, orientation
+        // 2. Grab rect styles to use for our CSS 3D buildings' restyling
         structure.style.cssText = `
             --w: ${w}px; 
-            --h: ${(h + props.depth).toFixed(2)}px; 
+            --h: ${(h + props.strokeWidth).toFixed(2)}px; 
             --x: ${x}px; 
             --y: ${y}px; 
             --rz: ${rotation}deg;
@@ -102,10 +86,10 @@ export default class BuildingFactory {
             --column-color: ${props.columnColor};
             --face-color: ${props.faceColor};
             --face-opacity: ${props.faceOpacity};
-            --floor-count: ${props.depth};
+            --floor-count: ${Math.min(props.strokeWidth, 5)}; 
             --column-size: ${props.gap};
             --column-fill-size: ${props.wall};
-            --weathering: ${props.grunge};
+            --weathering: ${props.strokeOpacity};
             --roof-type: ${props.roof}
         `;
         return structure;

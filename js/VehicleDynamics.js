@@ -1,12 +1,12 @@
 // Vehicles
 
 export const DefaultDynamics = {
-  maxSpeed: 1500,
-  acceleration: .75,
-  friction: 0.985,         
-  steeringSensitivity: 0.05,
-  driftFactor: 0.25,       
-  handbrakeDrift: .01,     
+  maxSpeed: 80,
+  acceleration: .8,
+  friction: 0.980,         
+  steeringSensitivity: 0.035,
+  driftFactor: 0.35,       
+  handbrakeDrift: .95,     
   grassFriction: 0.90,
 
   // Collision tuning (exposed to the Dynamics tweaker)

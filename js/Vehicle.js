@@ -1,3 +1,5 @@
+import VehicleSound from './VehicleSound.js';
+
 export default class Vehicle {
   constructor (id, name, driverNumber, color, game) {
     this.id = id;
@@ -6,25 +8,34 @@ export default class Vehicle {
     this.color = color;
     this.game = game;
 
-    this.speed = 0;
     this.x = 0;
     this.y = 0;
-    this.angle = 0; // steering angle
+    this.radius = 64;
+    this.height = undefined;
+    this.width = undefined;
+    // we use radius for collision, width & height pertain mostly to the vehicle/emitter Sprite end of the business.
+
+
+    this.speed = 0;
+    this.angle = 0;
     this.steerInput = 0;
+
+    this.engineSound = undefined;
 
     // vehicle body rotations voor coolen flips en salto's
     this.rotation = {
         pitch: 0, // X
         roll: 0,  // Y
-        yaw: 0    // Z (onafhankelijk van this.angle voor debug)
+        yaw: 0    // Z (this.angle = facing direction, yaw is used to rotate the vehicle body parts)
     };
 
-    this.radius = 64;
     this.element = this._createVisual();
-    // this.gizmo = this._createGizmo();
+    this._createEngineSound();
+    // this.gizmo = this._createGizmo(); // 3D axis viz gizmo
   }
 
   _createVisual () {
+
     const template = document.getElementById("racecar");
     const clone = document.importNode(template.content, true);
     const carElement = clone.querySelector('.car');
@@ -40,7 +51,10 @@ export default class Vehicle {
     if (body) {
       carElement.style.setProperty('--radius', this.radius)
       body.dataset.drivername = this.name;
-      body.querySelector('.livery').dataset.drivernum = this.driverNumber;
+      body.dataset.drivernum = this.driverNumber;
+      let rect = body.getBoundingClientRect();
+      this.width = rect.width;
+      this.height = rect.height;
       console.log(body);
     }
 
@@ -51,6 +65,26 @@ export default class Vehicle {
     }
     return carElement;
   }
+
+async _createEngineSound() {
+    const soundId = `engine-${this.driverNumber}-${this.name}`;
+    const soundPath = '/assets/sound/porsche-onboard-acc-full.ogg';
+
+    try {
+        // STAP 1: Wacht tot het bestand geladen en gedecodeerd is
+        await this.game.soundManager.load(soundId, soundPath);
+
+        // STAP 2: Maak de instance aan
+        this.engineSound = new VehicleSound(this.game.soundManager, soundId);
+
+        // STAP 3: Start de loop
+        this.engineSound.start();
+        
+        console.log(`Motor geluid gestart voor ${this.name}`);
+    } catch (error) {
+        console.error("Geluidsbestand laden mislukt:", error);
+    }
+}
 
   _createGizmo() {
       const gizmo = document.createElement('div');

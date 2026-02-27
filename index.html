@@ -9,11 +9,13 @@
   <link rel="shortcut icon" href="favicon.svg" type="image/svg" />
 </head>
 <body>
-  <section id="camera-viewport" data-post-processing="off">
+  <section id="camera-viewport" data-post-processing="crt">
     <main id="canvas" class="world">
       <!-- this is for dev only so we can 'live paint' the svg while developing -->
       <!-- eventually we'll only dislpay the map as a css background image!-->
-      <div id="light-layer"></div>
+      <div id="light-layer">
+        <b class="vehicle-lights player"></b>
+      </div>
       <div id="worldmap"></div>
     </main>
   </section>
@@ -43,27 +45,63 @@
         </span>
         <datalist id="color-palette">
           
+          <!-- Retro Vibes -->
+          <option title="coating-pack-A-1" value="#ff6e61">#ff6e61</option>
+          <option title="coating-pack-A-2" value="#707eff">#707eff</option>
+          <option title="coating-pack-A-3" value="#f2e03a">#f2e03a</option>
+          <option title="coating-pack-A-4" value="#4ce1d7">#4ce1d7</option>
+          <option title="coating-pack-A-5" value="#ff3d7e">#ff3d7e</option>
+  
+          <!-- Retro Cyber Elegance -->
+          <option title="coating-pack-B-1" value="#4d9dff">#4d9dff</option>
+          <option title="coating-pack-B-2" value="#ff4d8e">#ff4d8e</option>
+          <option title="coating-pack-B-3" value="#ffd54d">#ffd54d</option>
+          <option title="coating-pack-B-4" value="#681b98">#681b98</option>
+          <option title="coating-pack-B-5" value="#00bdad">#00bdad</option>
+
+
+          <!-- Sonic Adventure -->
+          <option title="coating-pack-C-1" value="#1b6a98">#1b6a98</option>
+          <option title="coating-pack-C-2" value="#f1c40e">#f1c40e</option>
+          <option title="coating-pack-C-3" value="#e74d3c">#e74d3c</option>
+          <option title="coating-pack-C-4" value="#2ecc70">#2ecc70</option>
+          <option title="coating-pack-C-5" value="#8d43ad">#8d43ad</option>
+
+          <!-- 90s Anime -->
+          <option title="coating-pack-D-1" value="#ff6e61">#ff6e61</option>
+          <option title="coating-pack-D-2" value="#ffb84d">#ffb84d</option>
+          <option title="coating-pack-D-3" value="#6d9dc5">#6d9dc5</option>
+          <option title="coating-pack-D-4" value="#5e4b8b">#5e4b8b</option>
+          <option title="coating-pack-D-5" value="#da1b61">#da1b61</option>
+
+          <!-- 1994 -->
+          <option title="coating-pack-E-1" value="#d1513d">#d1513d</option>
+          <option title="coating-pack-E-2" value="#f69c3c">#f69c3c</option>
+          <option title="coating-pack-E-3" value="#f8c48b">#f8c48b</option>
+          <option title="coating-pack-E-4" value="#9ed6e0">#9ed6e0</option>
+          <option title="coating-pack-E-5" value="#4c8a9a">#4c8a9a</option>
+
+          <!-- 90s Miami Sunset --/>
+          <option title="coating-pack-F-1" value="#ff6e61">#ff6e61</option>
+          <option title="coating-pack-F-2" value="#ffcb5c">#ffcb5c</option>
+          <option title="coating-pack-F-3" value="#69af4b">#69af4b</option>
+          <option title="coating-pack-F-4" value="#4b91e2">#4b91e2</option>
+          <option title="coating-pack-F-5" value="#ee5d5d">#ee5d5d</option>
           
-          <option value="#ff6e61">#ff6e61</option>;
-          <option value="#ffcb5c">#ffcb5c</option>;
-          <option value="#69af4b">#69af4b</option>;
-          <option value="#4b91e2">#4b91e2</option>;
-          <option value="#ee5d5d">#ee5d5d</option>;
+          Y2K Vibe 
+          <option title="coating-pack-G-1" value="#1b1e37">#1b1e37</option>
+          <option title="coating-pack-G-2" value="#4d4a8c">#4d4a8c</option>
+          <option title="coating-pack-G-3" value="#a4a4d6">#a4a4d6</option>
+          <option title="coating-pack-G-4" value="#e1b8ff">#e1b8ff</option>
+          <option title="coating-pack-G-5" value="#ff7142">#ff7142</option>
           
-          
-          <option value="#1b1e37">#1b1e37</option>;
-          <option value="#4d4a8c">#4d4a8c</option>;
-          <option value="#a4a4d6">#a4a4d6</option>;
-          <option value="#e1b8ff">#e1b8ff</option>;
-          <option value="#ff7142">#ff7142</option>;
-          
-          
-          <option value="#ff6e61">#ff6e61</option>;
-          <option value="#6c5b80">#6c5b80</option>;
-          <option value="#88d8b1">#88d8b1</option>;
-          <option value="#f7b5a1">#f7b5a1</option>;
-          <option value="#ff9d00">#ff9d00</option>;
-          
+          Scenekid 
+          <option title="coating-pack-H-1" value="#ff6e61">#ff6e61</option>
+          <option title="coating-pack-H-2" value="#6c5b80">#6c5b80</option>
+          <option title="coating-pack-H-3" value="#88d8b1">#88d8b1</option>
+          <option title="coating-pack-H-4" value="#f7b5a1">#f7b5a1</option>
+          <option title="coating-pack-H-5" value="#ff9d00">#ff9d00</option>
+          -->
           
           <!-- ja lachn maar helaas zijn het wat viezige kleuren bijelkaar in één palet
           <option>#a55</option>
@@ -160,6 +198,12 @@
           <input name="track" type="radio" id="track-monaco" value="monaco" required />
           Monaco
         </label>
+        <label for="track-sachsenring">
+          <input name="track" type="radio" id="track-sachsenring" value="sachsenring" required />
+          sachsenring-v0.1
+        </label>
+        
+
       </div>
 
       <button type="submit" id="start-race-btn" >START RACE</button>
@@ -168,32 +212,34 @@
 
   <template id="racecar">
     <div class="vehicle car racecar">
-      <div class="car-body">
-        <i class="chassis"><i class="interior"></i></i>
+      <div class="filter-wrap">
+       <div class="car-body">
+          <i class="chassis"><i class="interior"></i></i>
 
-        <!-- bodywork stack: -->
-        <!-- (all layers below are masked)-->
-        <!-- filter fx (fire emitter, displacement filter)-->
-        <!-- weathering / damage layers: (masked layers, blend: multi) research masking by contents? -->
-        <!-- mods (spoilers) -->
-        <!-- no? / default / custom livery, ::before, ::after (driver badge) -->
-        <!-- .base-color (--player-color) ::before(gloss / metallic shading) radial gradient w/ splash of white, blend:multiply?, metallic: optionally masked by slight noise? (experiment)-->
+          <!-- bodywork stack: -->
+          <!-- (all layers below are masked)-->
+          <!-- filter fx (fire emitter, displacement filter)-->
+          <!-- weathering / damage layers: (masked layers, blend: multi) research masking by contents? -->
+          <!-- mods (spoilers) -->
+          <!-- no? / default / custom livery, ::before, ::after (driver badge) -->
+          <!-- .base-color (--player-color) ::before(gloss / metallic shading) radial gradient w/ splash of white, blend:multiply?, metallic: optionally masked by slight noise? (experiment)-->
 
-        <i class="bodywork">
-          <i class="base-color"></i>
-          <i class="livery" data-drivernum></i>
-          <i class="mods"></i>
-        </i>
+          <i class="bodywork">
+            <i class="base-color"></i>
+            <i class="livery" data-drivernum></i>
+            <i class="mods"></i>
+          </i>
+        </div>
       </div>
     </div>
   </template>
 
   <template id="structure">
     <div class="structure building">
-      <div class="wall-n"></div>
-      <div class="wall-e"></div>
-      <div class="wall-s"></div>
-      <div class="wall-w"></div>
+      <div class="wall-n">noord</div>
+      <div class="wall-e">east</div>
+      <div class="wall-s">soufsiiiide</div>
+      <div class="wall-w">wesss</div>
       <div class="roof"></div>
     </div>
   </template>
@@ -204,58 +250,89 @@
       <span class="card"></span5214>
     </b>
   </template>
+<section class="sprites off-screen">
+  <span id="rubberTrackSprite" class="sprite rubber"><img src="assets/cars/tire-rubber-128.png" alt="" /></span>
+  <span id="smokeSprite" class="sprite smoke"><img src="assets/smoke/smoke-sprite.png" alt="" class="smoke" loading="eager"/></span>
+  <span id="exhaustPopSprite" class="sprite exhaust"><img src="assets/car/exhaust-pop.png" alt="" class="pop"/></span>
+  <span id="explosionsSprite" class="sprite explosion"><img src="assets/boom3.png" alt="" id="" class="explosion"/></span>
+  <span id="ahornTreeSprite" class="sprite tree ahorn"></span>
+  <span id="palmTreeSprite" class="sprite tree palm"></span>
+  <span id="hokjeSprite" class="sprite hokje"></span>
+  <span id="lampPostSprite" class="sprite lamp-post"></span>
+  <img id="marshalSprite" class="sprite marshal" src="assets/people/oldman_walk_sheet_2.png" class="uv" width="512px" height="64px"/>
+  <img id="pylonSprite" class="sprite pylon" src="assets/environment/cone-1.png">
+  <img id="pylonSpriteWorn1" class="sprite pylon" src="assets/environment/cone-2.png">
+  <img id="pylonSpriteWorn2" class="sprite pylon" src="assets/environment/cone-3.png">
+  <span id="truckSprite" class="sprite truck"><img src="assets/environment/truck.png"></span>
+  <div class="helicopter">
+    <img src="assets/environment/helicopter-body.png" alt="" class="helicopter-body" style="scale: -1 1"/>
+    <div class="rotor-blur"></div>
+    <img src="assets/environment/helicopter-rotor.png" alt="" class="helicopter-rotor"/>
+  </div>
+</section>
 
+<section class="audio">
+  <audio src="./assets/sound/porsche-onboard-acc-full.ogg" class="engine" id="engineSound" loop volume="0.0"></audio>
+  <audio src="./assets/sound/porsche-onboard-downshift.ogg" class="engine" id="downshiftSound" volume="0.0"></audio>
+  <audio src="./assets/sound/porsche-ambient-loop.ogg" id="ambientSfx" loop volume="0.0"></audio>
+  <audio src="./assets/sound/ui/click.wav" id="changeSfx"></audio>
+  <audio src="./assets/sound/horn-hooter.ogg" controls class="horn" type="audio/ogg"></audio>
+  <audio src="./assets/sound/701327__sef7__walkie-talkie-power-on.ogg" type="audio/ogg" id="teamRadio"></audio>
+  <audio src="./assets/sound/591528__rudmer-rotteveel__ratchet-wrench-slow-multiple.ogg" class="tuningSfx" id="ratchetSound" type="audio/ogg" volume="0.25"></audio>
+  <audio src="./assets/sound/349398__sevenbsb__air-impact-wrench.ogg" class="tuningSfx" id="airWrenchSound" type="audio/ogg" volume="0.15"></audio>
+
+</section>
   <svg id="filters">
-          <filter id="displacementFilter">
-            <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
-                <animate attributeName="seed" from="0" to="600" begin="0s" dur="100s" repeatCount="indefinite"></animate>
-            </feTurbulence>
+    <filter id="displacementFilter">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
+          <animate attributeName="seed" from="0" to="600" begin="0s" dur="100s" repeatCount="indefinite"></animate>
+      </feTurbulence>
 
-            <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G">
-            </feDisplacementMap>
-          </filter>
-          
-          <filter id="specularLight"
-            style="color-interpolation-filters:sRGB;"
-            inkscape:label="Specular Light"
-            x="-0.050315805"
-            y="-0.050315805"
-            width="1.1006316"
-            height="1.1006316">
-          <feGaussianBlur
-                in="SourceAlpha"
-                stdDeviation="10"
-                result="blur"
-                id="feGaussianBlur67" />
-          <feSpecularLighting
-                in="blur"
-                specularExponent="35.0"
-                specularConstant="10"
-                surfaceScale="5"
-                lighting-color="#fce48d"
-                result="specular"
-                id="feSpecularLighting67">
-              <feDistantLight
-                    azimuth="270"
-                    elevation="156"
-                    id="feDistantLight67" />
-          </feSpecularLighting>
-          <feComposite
-                in="specular"
-                in2="SourceGraphic"
-                k3="1"
-                k2="1"
-                operator="arithmetic"
-                result="composite1"
-                id="feComposite67" />
-          <feComposite
-              in="composite1"
-              in2="SourceAlpha"
-              operator="in"
-              result="composite2"
-              id="feComposite68" />
-          </filter>
-            <filter id="water-loop" x="0" y="0" width="100%" height="100%">
+      <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G">
+      </feDisplacementMap>
+    </filter>
+    
+    <filter id="specularLight"
+      style="color-interpolation-filters:sRGB;"
+      inkscape:label="Specular Light"
+      x="-0.050315805"
+      y="-0.050315805"
+      width="1.1006316"
+      height="1.1006316">
+    <feGaussianBlur
+          in="SourceAlpha"
+          stdDeviation="10"
+          result="blur"
+          id="feGaussianBlur67" />
+    <feSpecularLighting
+          in="blur"
+          specularExponent="35.0"
+          specularConstant="10"
+          surfaceScale="5"
+          lighting-color="#fce48d"
+          result="specular"
+          id="feSpecularLighting67">
+        <feDistantLight
+              azimuth="270"
+              elevation="156"
+              id="feDistantLight67" />
+    </feSpecularLighting>
+    <feComposite
+          in="specular"
+          in2="SourceGraphic"
+          k3="1"
+          k2="1"
+          operator="arithmetic"
+          result="composite1"
+          id="feComposite67" />
+    <feComposite
+        in="composite1"
+        in2="SourceAlpha"
+        operator="in"
+        result="composite2"
+        id="feComposite68" />
+    </filter>
+    <filter id="water-loop" x="0" y="0" width="100%" height="100%">
     
     <!-- 1. Noice -->
     <feTurbulence 
@@ -270,7 +347,7 @@
       <animate 
         attributeName="values" 
         from="0" to="360" 
-        dur="8s" 
+        dur="5s" 
         repeatCount="indefinite" />
     </feColorMatrix>
 

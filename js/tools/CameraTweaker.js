@@ -26,13 +26,13 @@ export default class CameraTweaker {
       </fieldset>
       <fieldset class="post-processing">
         <legend>compositing</legend>
-        <label><input type="radio" name="postProcessing" value="" checked /> OFF</label>
-        <label><input type="radio" name="postProcessing" value="crt" /> CRT</label>
-        <label for="opacity"><input type="range" name="opacity" id="opacity" value="0.5" min="0" max="1" step=".1" />opacity <output for="opacity"></output></label>
-        <label for="blur"><input type="range" name="blur" id="blur" value="0" min="0" max="128" step="1" />blur <output for="blur"></output></label>
-        <label for="saturate"><input type="range" name="saturate" id="saturate" value="0" min="0" max="5" step=".1"/>saturate <output for="saturate"></output></label>
-        <label for="brightness"><input type="range" name="brightness" id="brightness" value="1" min="0" max="10" step=".05"/>brightness <output for="brightness"></output></label>
-        <label for="contrast"><input type="range" name="contrast" id="contrast" value="1" min="0" max="2.5" step=".01"/>contrast <output for="contrast"></output></label>
+        <label><input type="radio" name="postProcessing" value="" /> OFF</label>
+        <label><input type="radio" name="postProcessing" value="crt" checked/> CRT</label>
+        <label for="opacity"><input type="range" name="opacity" id="opacity" value="0.6" min="0" max="1" step=".1" />opacity <output for="opacity"></output></label>
+        <label for="blur"><input type="range" name="blur" id="blur" value="16" min="0" max="64" step="1" />blur <output for="blur"></output></label>
+        <label for="saturate"><input type="range" name="saturate" id="saturate" value="2" min="0" max="5" step=".1"/>saturate <output for="saturate"></output></label>
+        <label for="brightness"><input type="range" name="brightness" id="brightness" value=".8" min="0" max="10" step=".05"/>brightness <output for="brightness"></output></label>
+        <label for="contrast"><input type="range" name="contrast" id="contrast" value="1.75" min="0" max="2.5" step=".01"/>contrast <output for="contrast"></output></label>
         <label for="hue"><input type="range" name="hue" id="hue" value="0" min="0" max="360" step="1" />hue <output for="hue"></output></label>
       </fieldset>
     `;
@@ -46,7 +46,7 @@ export default class CameraTweaker {
     postProcessOptions.forEach ( option => {
       option.addEventListener('input', (e) => {
         if (e.target.type == 'radio') {
-          console.log('hoi')
+          
           this.game.camera.element.dataset[e.target.name] = e.target.value;
         }
         if(e.target.type == 'range') { 
@@ -54,6 +54,8 @@ export default class CameraTweaker {
         }
 
       });
+      let initEvent = new Event('input');
+      option.dispatchEvent(initEvent);
     })
 
     document.getElementById('debug').appendChild(this.container);

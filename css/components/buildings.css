@@ -44,6 +44,9 @@
 }
 
 @property --roof-type {
+  syntax: "<string>";
+  initial-value: "normal";
+  inherits: true;
 }
 
 /* */
@@ -68,7 +71,7 @@
 
   transform-style: preserve-3d;
 
-  z-index: 20;
+  z-index: 30;
   
   /* FIXME: fake ambient occlusion / contact shadow + ambient light coming from windows */
   box-shadow: 0 0 10px #0006, 0 0 42px 26px rgb(from var(--face-color) r g b / .25);
@@ -78,13 +81,36 @@
   &:not([class]) {
     background-image: url('/assets/uvmap.png');
   }
-  
 
-  &.off-screen {
-    /* opacity: 0.5; */
+  &.bridge {
+    
+    transform: rotateZ(var(--rz)) translate3d(var(--x), var(--y), var(--d));
+    
+    &::after {
+      inset: 0;
+      border-radius: 0;
+      transform: translateZ(0);
+      background-color: hsl(from var(--column-color) h s 12%);
+    }
+    
+    /* stairs*/ 
+    &>.wall-e {
+      transform: 
+        translateX(var(--w))
+        translateY(var(--h))
+        translateZ(0)
+        rotateX(-90deg) 
+        rotateY(90deg)
+        scaleZ(4) rotateX(50deg)
+    }
+    /* stairs*/ 
+    &>.wall-w {
+      transform: rotateY(-15deg) scaleX(3.7) rotateZ(90deg) translateY(0%);
+    }
+
   }
+  
 }
-
 
 /* Basis voor alle muren-containers en hun pseudo-elementen */
 .wall-n, 
@@ -99,16 +125,19 @@
   text-align: center;
   display: grid;
   place-content: center;
-  transition: opacity .5s 1.5s;
+  transition: opacity .5s .25s;
+  box-sizing: border-box;
 }
 
 .off-screen {
+  visibility: hidden;
+  
   .wall-n, 
   .wall-e, 
   .wall-s, 
   .wall-w,
   .roof {
-    /* opacity: 0; */
+    opacity: 0;
   }
 }
 
@@ -117,7 +146,7 @@
   inset: 0;
   height: calc(var(--d) * 1);
   transform-origin: top;
-  transform: rotateX(90deg); /* Klap omhoog vanaf de bovenkant */
+  transform: translateZ(var(--d)) rotateX(-90deg) rotateY(-180deg); 
 
 }
 
@@ -145,8 +174,7 @@
 
 .wall-s {
   /* inset: 0; */
-  
-  
+
   /* Schuif naar de onderkant van het gebouw (Zuid) */
   /* De lokale Z-as wijst nu naar voren door de 90deg rotatie */
   transform-origin: bottom;
@@ -208,13 +236,6 @@
   opacity: 1;
 }
 
-/* Grandstand front gets a fence with advertising (for now) */
-.building.mat-grandstands .wall-e,
-.building.mat-grandstands .wall-s,
-.building.mat-grandstands .wall-w {
-  background: url('/assets/environment/advertising/honkin.svg') repeat-x left bottom, linear-gradient(to top, white, white 44px, transparent 45px, transparent), repeating-linear-gradient(45deg, #333 0, #999 1px, transparent 0, transparent 10px),    repeating-linear-gradient(-45deg, #666 0, #333 1px, transparent 0, transparent 10px), repeating-linear-gradient(90deg, #333, #333 5px, transparent 6px, transparent 128px);
-  background-size: 128px 48px, 100%;
-}
 
 /* FIXME: update StructureFactory markup output for walls n fences: 
  * add wall types (ads, 100m boards etc). 

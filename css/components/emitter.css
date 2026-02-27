@@ -1,0 +1,109 @@
+@property --rot {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0;
+}
+
+.emitter-object {
+  position: absolute;
+  display: block;
+  left: 0;
+  top: 0;
+  transform-origin: center;
+  translate: calc(var(--left) + -50%) calc(var(--top) + -50%);
+  rotate: var(--rot, 0deg);
+  aspect-ratio: 1;
+  overflow: hidden;
+
+  --step: 0;
+  --row: 0;
+  --spriteSize: 128px;
+  --pos-y: calc(var(--row, 0) * var(--spriteHeight, 128px ) * -1px);
+  --pos-x: calc(var(--step, 0) * var(--spriteWidth, 128px ) * -1px);
+  object-fit: cover;
+  object-position: var(--pos-x,0) var(--pos-y,0);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--pos-x,0) var(--pos-y,0);
+  }
+
+  &.fade {
+    animation: fadeSprite 10s var(--animation-delay, 5s) linear forwards 1;
+  }
+
+  &.marshal {
+    width: 64px !important;
+    border-radius: 100%;
+    &.dead {
+      background-image: url('../assets/people/splat.png'); 
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: 90%;
+    }
+  }
+
+  &.smoke {
+
+    background: white;
+    
+    mask-image: var(--mask-image);
+    mask-size: cover;
+    mask-repeat: no-repeat;
+    mask-position: var(--pos-x) var(--pos-y);
+    mask-type: alpha;
+    
+    scale: 1;
+    --to-scale: 3;
+
+    --mask-image: url('../assets/smoke/smoke-sprite-2.png');
+    animation: smoke 1.3s .5s linear forwards 1 !important;
+    
+    &.smoke-alt {
+      background-color: skyblue;
+      /* --mask-image: url('../assets/smoke/smoke-sprite.png'); */
+    }
+    
+
+    &.dust {
+      opacity: 1;
+      background: transparent;
+      background-image: url('../assets/noise.png'), radial-gradient(#61572ff5, rgba(255, 255, 0, 0.103));
+      background-size: 200%, 100%;
+      --mask-image: url('../assets/smoke/smoke-sprite-2.png');
+      
+    } 
+
+    img {
+      opacity: 0;
+    }
+  }
+
+  &.rubber {
+    /* receive velocity and calculate width (ie, length of tiretrack) and opacity */
+    --from-opacity: calc((100 - var(--speed) / 100 ));
+    scale: calc(1.5 + var(--speed) / 200) .9;
+    transform-origin: center;
+    --animation-delay: 10s;
+    img {
+      object-fit: fill;
+    }
+
+    &.dirt {
+      opacity: .75;
+      --animation-delay: 0s;
+      /* mask-image: url('../assets/environment/fibers.png');
+      mask-position: 40px;
+      filter: drop-shadow(0 -4px white); */
+    }
+  }
+
+}
+
+@keyframes fadeSprite {
+  to {
+    opacity: 0.5;
+  }
+}

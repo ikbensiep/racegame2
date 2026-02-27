@@ -4,6 +4,12 @@
   initial-value: 0;
 }
 
+@property --world-size {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 8192px;
+}
+
 #canvas.world {
   
   /* 8k: easy to remember, fun to type number (provided u have a numpad) */
@@ -27,7 +33,7 @@
 
   
     /* TODO light layering tests */
-  #light-layer {
+  & > #light-layer {
     /**
       * We place a layer exactly over the camera window, that translates along with the camera.
       * Its blend-mode multiplies darkens / lightens the world.
@@ -38,7 +44,6 @@
     position: fixed;
     inset: 0;
     translate: calc((var(--cam-x) * 1px) ) calc((var(--cam-y) * 1px) );
-    background-image: url(/levels/monaco/monaco_lights.webp);
     
     background-size: var(--world-size) var(--world-size);
     background-position: calc(var(--cam-x) * -1px + 10vw) calc(var(--cam-y) * -1px + 10vh);
@@ -57,92 +62,6 @@
 
     transition: opacity 1s;
 
-    mask-type: alpha;
-     mask-image: 
-     radial-gradient(circle, transparent 256px, white 720px),
-     conic-gradient(from calc(var(--player-angle) * 1rad - 90deg), black, black 140deg, transparent 160deg, transparent 210deg, black 220deg),
-     radial-gradient(circle, white 64px, transparent 128px)
-    ; 
-
-    mask-position: 
-      calc(var(
-    --player-x) - var(--cam-x) * 1px) 
-      calc(var(--player-y) - var(--cam-y) * 1px);
   }
 
-}
-
-.tree {
-  position: absolute;
-  width: 256px;
-  height: 256px;
-  
-  color: hsl(from var(--tree-color) h s 8%);
-  display: grid;
-  /* place-content: start center; */
-  transform-style: preserve-3d;
-  
-  &:before {
-    content: '';
-    place-self: center;
-    width: 16px;
-    height: 16px;
-    border: 1px solid var(--tree-color);
-    border-radius: 50%;
-  }
-
-  /* debug viz */
-  &::after {
-    /* content: attr(class); */
-    grid-area: 1 / 1 / -1 / -1;
-    display: block;
-    inset: 0;
-    position: absolute;
-    padding: 2ex;
-    background: rgb(from var(--tree-color) r g b / 20%);
-    border: 6px dotted rgb(from var(--tree-color) r g b / 50%);
-    border-radius: 7%;
-  }
-
-  > span { /* tree card */
-    transform-origin: bottom;
-    height: 256px;
-    width: 256px;
-    background: green url('/assets/environment/pine-1.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    transform: rotateX(-90deg);
-    position: absolute;
-    bottom: 50%;
-    left: 0;
-    background-position: bottom;
-    transform-style: preserve-3d;
-    transition: 1.5s;
-  }
-  
-  > span + span { /* tree card but rotated 90deg*/
-    background-color: darkgreen;
-    transform: rotateX(0deg) rotateY(90deg) rotateZ(-90deg);
-    transform-style: preserve-3d;
-    
-    /* let's have a good think about this */
-    /* for one: these lil shits need to be */ 
-    /* IntersectionObserver'd tf out of the rendering PL, like yesterday lmao */
-    /* also: maybe only to "realtime" shadown anim in walking mode.
-    
-    /* tree shadow */
-    /*
-    &::after { 
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: inherit;
-      
-      transform-origin: bottom;
-      transform: rotateX(90deg) translateZ(1px) rotateZ(140deg) scaleY(2.5);
-      filter: brightness(0) opacity(.25) blur(50px);
-      transition: 10s;
-    }
-    */
-  }
 }
