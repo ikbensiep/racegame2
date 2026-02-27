@@ -81,6 +81,8 @@ export default class World {
         url('${artworkBasePath}/tiles/${this.scene}_track-0-1.png'),
         url('${artworkBasePath}/tiles/${this.scene}_track-1-1.png') 
         `;
+      this.element.querySelector('#light-layer').style.backgroundImage = 
+        `url(${artworkBasePath}/${this.scene}_lights.png), url(${artworkBasePath}/${this.scene}_lights.webp)`
     } catch (e) {
       console.error(e)
     }
@@ -121,7 +123,7 @@ export default class World {
 
       this.paths.worldBG =     new Path2D(this.svgElement.querySelector('#world-bg').getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
       this.paths.fuelStation = new Path2D(this.svgElement.querySelector('#fuel-station')?.getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
-      this.paths.grandstands = new Path2D(this.svgElement.querySelector('#sfx-triggers path#grandstands').getAttribute('d'))  // fill, sfx (crowd noise) detection
+      this.paths.grandstands = new Path2D(this.svgElement.querySelector('#sfx-triggers path#grandstands')?.getAttribute('d') || "")  // fill, sfx (crowd noise) detection
       this.paths.gravel =      new Path2D(this.svgElement.querySelector('#gravel').getAttribute('d')) // fill, vehicle dynamics / sfx
       this.paths.gridslot =    new Path2D(this.svgElement.querySelector('#gridslot')?.getAttribute('d') || "") // fill, race start position (spawnpoint)
       this.paths.paddock =     new Path2D(this.svgElement.querySelector('#paddock').getAttribute('d')) // fill, in this area player is allowed to enter 'RPG mode' (ie, exit car)
@@ -203,6 +205,7 @@ export default class World {
         sprite.className = `tree ${strokeLinecap}`
         sprite.style.setProperty('--tree-type', strokeLinecap);
         sprite.style.setProperty('--tree-color', stroke);
+        sprite.style.setProperty('rotate', Math.floor(Math.random() * 90) + 'deg');
         sprite.style.translate = `calc(${circle.x}px - 50%) calc(${circle.y}px - 50%)`;
         this.element.appendChild(sprite);
         this.game.camera.cullingObserver.observe(sprite);

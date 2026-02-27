@@ -3,6 +3,7 @@
 /* https://colormagic.app/api         */
 
 :root {
+  
   /* Retro Vibes */
   --coating-pack-A-1: #ff6e61;
   --coating-pack-A-2: #707eff;
@@ -16,13 +17,14 @@
   --coating-pack-B-3: #ffd54d;
   --coating-pack-B-4: #681b98;
   --coating-pack-B-5: #00bdad;
-  
+
   /* Sonic Adventure */
   --coating-pack-C-1: #1b6a98;
   --coating-pack-C-2: #f1c40e;
   --coating-pack-C-3: #e74d3c;
   --coating-pack-C-4: #2ecc70;
   --coating-pack-C-5: #8d43ad;
+  
   
   /* 90s Anime */
   --coating-pack-D-1: #ff6e61;

@@ -36,14 +36,16 @@
   --collider-color: transparent;
   /* general purpose vehicle debug canvas @ 256px */
   &::after {
-    content: var(--driver-id) " [v:" attr(data-speed) "] " attr(data-state);
+    white-space: pre-wrap;
+    content: var(--driver-id) " (" attr(data-speed) " kmh)  \a" attr(data-state);
     position: absolute;
     inset: auto;
-    color: var(--player-color);
-    background-color: #fff3;
-    padding: .5ex;
-    font-size: 1rem;
-    filter: brightness(0);
+    color: white;
+    background-color: var(--driver-color);
+    padding: .65ex;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 2px;
     place-self: start center;
   }
 

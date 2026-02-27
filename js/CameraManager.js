@@ -78,7 +78,7 @@ export default class CameraManager {
     if (!this.target || this.freeRoam) return;
 
     // 1. Bereken het ideale doelpunt (DestX/Y)
-    const lookahead = 15;
+    const lookahead = 10;
     const tx = this.target.x + (this.target.vx || 0) * lookahead;
     const ty = this.target.y + (this.target.vy || 0) * lookahead;
 

@@ -5,6 +5,7 @@
 @import url('./components/animations.css');
 @import url('./components/buildings.css');
 @import url('./components/camera.css');
+@import url('./components/emitter.css');
 @import url('./components/tweaker.css');
 
 @import url('./effects/vfx.css');
@@ -45,6 +46,10 @@ body {
 }
 
 /* TODO: organize */
+
+bodyu > .off-screen {
+  display: none;
+}
 
 svg#filters {
   height: 0;

@@ -1,3 +1,6 @@
+import Emitter from './tools/Emitter.js'
+import InputHandler from './InputHandler.js';
+import { sidesFromHypotenhuse } from './tools/MathUtils.js';
 import Vehicle from './Vehicle.js';
 import { TweakManager } from './tools/Tweaker.js';
 import * as Presets from './VehicleDynamics.js';
@@ -37,71 +40,127 @@ export default class Player extends Vehicle {
     this.lastSectorId = null; // Om herhaling te voorkomen terwijl je op het vlak staat
     this.currentSector = 2; // Begin op 2, zodat s0 de eerstvolgende logische stap is
     this.lapStartTime = performance.now();
-    
+    this.inputHandler = new InputHandler();
     this.intervalUpdateTimer = 0;
+    this.engineShutDownTimer = 0;
+
+    this.init();
   }
 
-  /* new  */
-  _applyPhysics(gamepad, dt) {
-    const d = this.dynamics;
-    const s = this.SurfaceData[this.activeSurface] || this.SurfaceData.asphalt; // De actieve modifier
-    
-    // 0. Inputs uitlezen
-    const gas = gamepad.buttons[7].value;         // R2
-    const brake = gamepad.buttons[6].value;       // L2
-    const handbrake = gamepad.buttons[5].pressed || gamepad.buttons[5].value; // R1
-    this.isBraking = brake > 0;
+  async init () {
+    this.tireTrackPool = [];
+    this.maxTireTracks = 20;
+    this.tireTrackInterval = 0;
+    this.createTireTracks();
 
-    // Pas de multipliers toe op de basiswaarden
-    const currentAccel = d.acceleration * s.power;
-    const currentFriction = d.friction * s.drag;
-    const currentGrip = (1 - d.driftFactor) * s.grip;
+    this.smokePool = [];
+    this.maxSmoke = 10;
+    this.smokeInterval = 0;
+    // this.createSmokePuffs();
 
-    // 1. Versnelling & Remmen (Gebruik acceleration uit Dynamics)
-    if (gas > 0) this.speed += (gas * currentAccel) * dt;
-    if (brake > 0) this.speed -= (brake * currentFriction) * dt;
+  }
 
-    // Snelheidslimiet (Voorkom dat achteruit sneller is dan vooruit)
-    // We limiteren vooruit op maxSpeed, achteruit op de helft daarvan
-    if (this.speed > d.maxSpeed) this.speed = d.maxSpeed;
-    if (this.speed < -d.maxSpeed / 2) this.speed = -d.maxSpeed / 4;
-
-    // 2. Wrijving (Friction)
-    this.speed *= (1 - (1 - d.friction) * dt);
-
-    // 3. Sturen (Steering)
-    if (Math.abs(gamepad?.axes[0]) > 0.1) {
-        // speedFactor zorgt dat je niet kunt sturen als je stilstaat
-        const speedFactor = Math.min(Math.abs(this.speed) / 5, 1.0); 
-        const direction = this.speed >= 0 ? 1 : -1;
-        const steerAmount = (gamepad.axes[0] * d.steeringSensitivity * speedFactor * direction) * dt;
-        
-        this.angle += steerAmount;
+  createTireTracks () {
+    for(let i=0; i<this.maxTireTracks; i++) {
+      this.tireTrackPool.push(new Emitter(this.game, window.rubberTrackSprite, 128, 85, 1, false, this.game.world.element, false));
     }
+  }
 
-    // 4. Grip & Drift
-    // We pakken de drift-waarde uit Dynamics. Als handbrake ingedrukt is, 
-    // gebruiken we de handbrakeDrift (bijv. 0.85), anders de gewone driftFactor (bijv. 0.95)
-    const currentDrift = handbrake ? d.handbrakeDrift : d.driftFactor;
-    
-    // Hoe lager de waarde (bijv 0.05), hoe meer de auto 'glijdt'
-    // Let op: we draaien de logica om zodat 'drift' uit de class logisch voelt
-    const grip = 1 - currentDrift; 
+  getTireTrack () {
+    for(let i=0; i< this.tireTrackPool.length; i++) {
+      if (this.tireTrackPool[i].free) {
+        this.tireTrackPool[i].domElement.classList.add('fade');
+        return this.tireTrackPool[i];
+      }
+    }
+  }
 
-    const targetVX = Math.cos(this.angle) * this.speed;
-    const targetVY = Math.sin(this.angle) * this.speed;
+  _applyPhysics(input, dt) {
+      const d = this.dynamics;
+      const s = this.SurfaceData[this.activeSurface] || this.SurfaceData.asphalt;
+      
+      // 0. Inputs uitlezen (geabstraheerd)
+      const gas = input.gas;
+      const brake = input.brake;
+      const handbrake = input.handbrake;
+      const steerInput = Math.max(-1, Math.min(1, input.steer)); // Clamp tussen -1 en 1
+      
+      this.isBraking = brake > 0;
 
-    // Lerp met deltaTime voor consistente snelheid op alle schermen
-    const lerpFactor = 1 - Math.pow(1 - currentGrip, dt);
-    this.vx += (targetVX - this.vx) * lerpFactor;
-    this.vy += (targetVY - this.vy) * lerpFactor;
+      // Multipliers
+      const currentAccel = d.acceleration * s.power;
+      const currentFriction = d.friction * s.drag;
+      const currentGrip = (1 - d.driftFactor) * s.grip;
 
-    // 5. Beweging
-    this.x += this.vx * dt;
-    this.y += this.vy * dt;
+      this.element.dataset.accel = currentAccel.toFixed(2);
+      this.element.dataset.friction = currentFriction.toFixed(2);
+      this.element.dataset.grip = currentGrip.toFixed(2);
+
+      // 1. Versnelling & Remmen
+      if (gas > 0) this.speed += (gas * currentAccel) * dt;
+      if (brake > 0) this.speed -= (brake * currentFriction) * dt;
+
+      // Snelheidslimiet
+      if (this.speed > d.maxSpeed) this.speed = d.maxSpeed;
+      if (this.speed < -d.maxSpeed / 2) this.speed = -d.maxSpeed ;
+
+      // 2. Wrijving
+      this.speed *= (1 - (1 - d.friction) * dt);
+
+      // 3. Verbeterd Sturen
+      if (Math.abs(steerInput) > 0.1) {
+          // speedFactor: voorkomt sturen bij stilstand
+          const speedFactor = Math.min(Math.abs(this.speed) / 5, 1.0); 
+          
+          // High-speed stability: verminder de stuurkracht naarmate je harder gaat
+          // Hoe hoger de deler (bijv. 1.5), hoe stabieler op hoge snelheid
+          const stabilityFactor = 1 / (1 + (Math.abs(this.speed) / (d.maxSpeed / 1.5)));
+          
+          const direction = this.speed >= 0 ? 1 : -1;
+          
+          // Combineer alles voor de uiteindelijke hoek-verandering
+          const steerAmount = (steerInput * d.steeringSensitivity * speedFactor * stabilityFactor * direction) * dt;
+          
+          this.angle += steerAmount;
+      }
+
+      // 4. Grip & Drift 
+      const currentDrift = handbrake ? d.handbrakeDrift : d.driftFactor;
+      this.element.dataset.drift = currentDrift.toFixed(2);
+      const targetVX = Math.cos(this.angle) * this.speed;
+      const targetVY = Math.sin(this.angle) * this.speed;
+
+      const lerpFactor = 1 - Math.pow(1 - currentGrip, dt);
+      this.vx += (targetVX - this.vx) * lerpFactor;
+      this.vy += (targetVY - this.vy) * lerpFactor;
+
+      // 5. Beweging
+      this.x += this.vx * dt;
+      this.y += this.vy * dt;
+
+
+      if( (this.tireTrackInterval > 3) && 
+        (
+          (brake && this.speed > 10) || 
+          (this.speed > 10 && (currentGrip < .2 || currentDrift > .5))
+          
+        )
+        ) {
+        let tiretrack = this.getTireTrack();
+        if(tiretrack) {
+          let offset = sidesFromHypotenhuse(this.width * .25, this.angle)
+          !this.isOnRoad ? tiretrack.domElement.classList.add('dirt') : tiretrack.domElement.classList.remove('dirt');
+          tiretrack.domElement.dataset.velocity = Math.floor(this.speed);
+          tiretrack.domElement.style.setProperty('--speed', Math.floor(this.speed * 2));
+          tiretrack.start(this.x - offset.width, this.y - offset.height, this.angle );
+        }
+        this.tireTrackInterval = 0;
+      } else {
+        this.tireTrackInterval += dt;
+      }
   }
   
-  _resolveCollision(hit, gamepad) {
+  _resolveCollision(hit) {
 
     const hitRadius = hit.r !== undefined ? hit.r : hit.radius;
     
@@ -163,14 +222,14 @@ export default class Player extends Vehicle {
       this.vy *= -0.999;
     }
 
-    this.handleCollision(gamepad);
+    this.handleCollision();
   }
 
-  handleCollision (gamepad) {
+  handleCollision () {
 
     // 1. Controller Trillen (Rumble)
     // De meeste moderne gamepads ondersteunen 'dual-rumble'
-    this.playHapticFeedBack (gamepad, 
+    this.playHapticFeedBack ( 
       {
         startDelay: 0,
         duration: 50 * this.speed,     
@@ -210,7 +269,8 @@ export default class Player extends Vehicle {
     this.game.world.lapTimer.lastSectorTime = now;
   }
 
-  playHapticFeedBack (gamepad, haptics) {
+  playHapticFeedBack (haptics) {
+    const gamepad = this.inputHandler.gamePad;
     if(!gamepad || !gamepad.vibrationActuator ) return;
     gamepad.vibrationActuator.playEffect("dual-rumble", {
       startDelay: haptics.startDelay || 0,
@@ -231,12 +291,12 @@ export default class Player extends Vehicle {
     }
   }
 
-  update(gamepad, dt) {
+  update(dt) {
 
-    if (!this.isLocal || !gamepad) return;
-
+    if (!this.isLocal) return;
+    
+    const input = this.inputHandler.getInputs();
     const surface = this.game.world.getSurfaceType(this.x, this.y);
-
 
     if(this.intervalUpdateTimer < 10) {
       this.intervalUpdateTimer += dt;
@@ -248,7 +308,7 @@ export default class Player extends Vehicle {
       this.element.dataset.vy = Math.floor(this.vy);
       this.element.dataset.angle = Math.floor(this.angle);
       
-      let play = false;
+      let playHaptics = false;
 
       if(this.activeSurface !== surface) {
         this.activeSurface = surface;
@@ -268,19 +328,41 @@ export default class Player extends Vehicle {
           case 'sand':
           case 'gravel': 
             haptics.strongMagnitude = this.speed / 20;
-            play = true;
+            playHaptics = true;
             break;
           case 'racetrack':
             haptics.weakMagnitude = this.speed / 100;
             haptics.strongMagnitude = .1;
-            play = true;
+            playHaptics = true;
             break;
           default:
-            play = false;
+            playHaptics = false;
+            break;
         }
       }
-  
-      play ?? this.playHapticFeedBack (gamepad, haptics) 
+      
+      playHaptics ?? this.playHapticFeedBack (haptics)
+
+      this.engineSound && this.engineSound.update((Math.abs(Math.floor(this.speed)) * .025));
+      
+      // if(this.speed == 0) {
+      //   this.engineShutDownTimer += dt;
+
+      //   if (this.engineShutDownTimer > 10) {
+      //     this.engineSound && this.engineSound.stop();
+      //     this.engineShutDownTimer = 0;
+      //   }
+
+      // }
+
+      // if(this.speed == 0 && this.engineShutDownTimer > 10) {
+        
+      // } else if ((Math.abs(this.speed) > 1) && this.engineShutDownTimer == 0) {
+      //   console.log('starting engine?')
+      //   this.engineSound.start();
+      // } else {
+      //   this.engineShutDownTimer += dt;
+      // }
     }
 
     const sectorId = this.game.world.lapTimer.checkSectors(this.x, this.y);
@@ -307,8 +389,7 @@ export default class Player extends Vehicle {
       this.lastSectorId = null;
     }
 
-    this._applyPhysics(gamepad, dt)
-
+    this._applyPhysics(input, dt)
 
     // Prevent going out of bounce 🔊🔊🔊
     const oldPos = { x: this.x, y: this.y };
@@ -322,17 +403,13 @@ export default class Player extends Vehicle {
     const wallHit = this.game.world.getCollision(this.x, this.y, this.radius);
 
     if (wallHit && !this.isColliding) {
-
-      console.log("⛑️ HIT WALL", wallHit)
-
-      this._resolveCollision(wallHit, gamepad)
+      this._resolveCollision(wallHit)
       this.game.effects?.trigger(this, 'colliding', 300);
-      // this.game.effects?.trigger(this.game.world, 'colliding', 1000);
-
     } else if (!wallHit) {
       this.isColliding = false;
     }
 
+    // Update opponents
     this.game.opponents.forEach(opp => {
       const dx = this.x - opp.x;
       const dy = this.y - opp.y;
@@ -342,7 +419,7 @@ export default class Player extends Vehicle {
       if (distanceSq < minDistance * minDistance && !this.isColliding) {
         // We hebben een botsing met een andere speler!
         console.log('🚑 HIT VEHICLE', opp)
-        this._resolveCollision(opp, gamepad);
+        this._resolveCollision(opp);
         this.game.network.send({
           type: 'bang',
           id: this.id,

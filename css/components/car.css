@@ -6,8 +6,13 @@
   inherits: true;
 }
 
-/* driver number badge on livery */
-@property --driver-id {
+@property --driver-num {
+  syntax: "<string>";
+  initial-value: "0";
+  inherits: true;
+}
+
+@property --driver-name {
   syntax: "<string>";
   initial-value: "me";
   inherits: true;
@@ -44,6 +49,7 @@
   
   --driver-color: var(--player-color);
   --driver-id: attr(id);
+  --driver-num: attr(data-drivernum);
 
   /* 
   So in order to limit the paint rectangle size for every player 
@@ -63,8 +69,14 @@
     calc((var(--x) - var(--size) * .5) * 1px) 
     calc((var(--y) - var(--size) * .5)  * 1px);
 
+  .filter-wrap {
+    filter: 
+      drop-shadow(0px -12px 16px #0009)
+      drop-shadow(0px -5px 3px #0006)
+      url(#specularLight);
+  }
 
-  > .car-body {
+  .car-body {
 
     width: 172px;
     height: 96px;
@@ -93,7 +105,44 @@
 
     transition: transform cubic-bezier(0.68, -0.55, 0.265, 1.55) .25s;
 
-    * {
+    &::after {
+       content: attr(data-drivernum);
+       position: absolute;
+       right: 1.3ex;
+       top: 50%;
+       rotate: 90deg;
+       translate: 0 -50%;
+       z-index: 1;
+
+      /* TODO: design different badge shapes */
+       --badge-bg: white; /* or gradient(s)... */
+       --badge-outline-color: black;
+       --badge-outline-width: 2px;
+       --badge-radius: 1px;
+       --badge-drivernum-color: black;
+       --badge-league-bg-color: green; /* a badge has a league-identifying mark, in this case a thick colored stroke acrioss the top */
+       --badge-league-text-color: white;
+       background-color: var(--badge-bg);
+       color: var(--badge-drivernum-color);
+       padding: 0.15ex 0.25ex;
+       text-align: center;
+       outline: 1px solid var(--badge-outline-color, black);
+
+      /* font shorthand order: */
+       /* 
+      font-style: italic;
+      font-weight: bold;
+      font-size: 0.8em;
+      line-height: 1.2;
+      font-family: "Arial", sans-serif;
+      */
+       font-family: initial normal 10px/10px
+        var(--player-font, "Impact"), fantasy, sans-serif; /* FIXME: --player-font *must* be one of preset selection for de-hassling (and/or legal) reasons I think? */
+       border-radius: 1px;
+       border-top: 4px solid orange;
+     }
+
+    i {
       background-size: contain;
       background-position: center;
       mask-size: contain;
@@ -102,7 +151,7 @@
     } 
 
     /* TODO: currently using <i> elements for economic reasons, research <b>, <q>, <u> * friends*/ 
-    > * {
+    * {
       position: absolute;
       inset: 0;
     }
@@ -117,10 +166,12 @@
     }
     
     .bodywork {
-      translate: 0 0 2px; /* lift the body a little from the chassis for pseudo 3d effect */
+      translate: 0 0 0px; /* lift the body a little from the chassis for pseudo 3d effect */
       
       /* a default racing stripe */
       --pattern: linear-gradient(transparent, transparent 35%, white 35%, white 48%, transparent 48%, transparent 52%, white 52%, white 65%, transparent 65%);
+      
+      
 
       &:not(:has(.custom-livery)) {
         --livery-bg: var(--pattern);
@@ -154,6 +205,8 @@
         normal,
         normal;
 
+         /* racer id badge always goes on top of livery */
+     
     }
 
     /* custom livery layer */
@@ -163,44 +216,6 @@
      justify-content: center;
      
 
-     /* racer id badge always goes on top of livery */
-     &::after {
-       content: attr(data-drivernum);
-       position: absolute;
-       right: 1ex;
-       top: 50%;
-       rotate: 90deg;
-       translate: 0 -50%;
-       z-index: 1;
-
-      /* TODO: design different badge shapes */
-      --badge-bg: white; /* or gradient(s)... */
-      --badge-outline-color: black;
-      --badge-outline-width: 2px;
-      --badge-radius: 1px;
-      --badge-drivernum-color: black;
-      --badge-league-bg-color: green; /* a badge has a league-identifying mark, in this case a thick colored stroke acrioss the top */
-      --badge-league-text-color: white;
-
-      background-color: var(--badge-bg);
-      color: var(--badge-drivernum-color);
-      padding: .25ex .35ex;
-      text-align: center;
-      outline: 2px solid var(--badge-outline-color, black);
-
-      /* font shorthand order: */
-      /* 
-      font-style: italic;
-      font-weight: bold;
-      font-size: 0.8em;
-      line-height: 1.2;
-      font-family: "Arial", sans-serif;
-      */
-      font-family:
-        initial normal 12px/12px
-        var(--player-font, "Impact"), fantasy, sans-serif; /* FIXME: --player-font *must* be one of preset selection for de-hassling (and/or legal) reasons I think? */
-       
-     }
    }
 
     .mods {

@@ -7,6 +7,7 @@ import EffectManager from './EffectManager.js';
 import CameraManager from './CameraManager.js';
 import CameraTweaker from './tools/CameraTweaker.js';
 import LapTimer from "./LapTimer.js";
+import { SoundManager } from './Sound.js';
 
 export default class GameEngine {
     constructor(settings) {
@@ -20,9 +21,11 @@ export default class GameEngine {
       this.opponents = new Map();
       this.effects = new EffectManager(this);
       this.network = new NetworkManager(this, (data) => this.handleNetworkData(data));
+      this.soundManager = new SoundManager();
       this.camera = {};
 
       this.cameraTweaker = new CameraTweaker(this);
+
 
       this.init(this);
     }
@@ -117,8 +120,7 @@ export default class GameEngine {
       
       if (!this.world.isLoaded) return;
 
-      const gp = navigator.getGamepads()[0];
-      this.localPlayer.update(gp, dt);
+      this.localPlayer.update(dt);
       
       if (this.network.isHost) {
       this.opponents.forEach(opp => {
