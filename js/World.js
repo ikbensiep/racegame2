@@ -186,7 +186,7 @@ export default class World {
     
     treeLines.forEach(path => {
       const length = path.getTotalLength();
-      console.group(`🌳 treeline ${path.id}`)
+      console.groupCollapsed(`🌳 treeline ${path.id}`)
 
       const {strokeWidth, strokeDasharray, stroke, strokeLinecap} = path.style;
       // const stepSize = strokeDasharray[0] + strokeDasharray[1];
