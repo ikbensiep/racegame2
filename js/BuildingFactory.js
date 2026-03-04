@@ -103,13 +103,14 @@ export default class BuildingFactory {
     generateFences(svgElement, worldLayer) {
 
     const paths = svgElement.querySelectorAll('g#fencing > path');
-    const segmentWidth = 200; 
+    const segmentWidth = 512; 
 
     paths.forEach( (path, index) => {
         const totalLength = path.getTotalLength();
         const numSegments = Math.floor(totalLength / segmentWidth);
         
         for (let i = 0; i < numSegments; i++) {
+            
             console.log(`🚧 fencing off perimiter, fence ${i}: ${path.className}#${path.id}`);
 
             const p1 = path.getPointAtLength(i * segmentWidth);
@@ -117,8 +118,8 @@ export default class BuildingFactory {
             const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
 
             const fence = document.createElement('div');
-            
-            fence.className = 'fence-wall mat-fence';
+
+            fence.className = `fence-wall mat-fence ${path.getAttribute('class')}`;
             
             fence.style.cssText = `
                 width: ${segmentWidth}px;
@@ -129,6 +130,7 @@ export default class BuildingFactory {
             `;
             worldLayer.appendChild(fence);
             this.game.world.structures.push(fence);
+            this.game.camera.cullingObserver.observe(fence)
             
         }
     });

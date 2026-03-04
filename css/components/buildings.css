@@ -125,7 +125,7 @@
   text-align: center;
   display: grid;
   place-content: center;
-  transition: opacity .5s .25s;
+  /* transition: opacity .5s .25s; */
   box-sizing: border-box;
 }
 
@@ -209,7 +209,7 @@
 /* --- GRANDSTANDS (.grandstands class) --- */
 
 .building.mat-grandstands {
-  --d: 128px;
+  
 }
 
 /* FIXME: don't use roof for grandstand seats */
@@ -231,7 +231,7 @@
   /* 4. De hoek berekenen we met de boogtangens (atan2) */
   /* Geen gegokte graden meer, maar pure geometrie */
   transform: 
-    translateZ(0) 
+    translateZ(16px) 
     rotateX(calc(atan2(var(--d), var(--h)) * -1));
   opacity: 1;
 }
@@ -246,11 +246,13 @@
   
   transform-style: flat;
   
-  transform-origin: top left; 
+  transform-origin: bottom left; 
+  transform: translateY(-80px) rotateZ(var(--rz)) rotateX(-90deg);
+  /*
   transform: 
     rotateZ(var(--rz)) 
     rotateX(90deg); 
-
+  */
   will-change: auto; 
   transition: opacity .5s linear;
 
