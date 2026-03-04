@@ -1,12 +1,12 @@
 // Vehicles
 
 export const DefaultDynamics = {
-  maxSpeed: 80,
-  acceleration: .8,
-  friction: 0.980,         
-  steeringSensitivity: 0.035,
-  driftFactor: 0.35,       
-  handbrakeDrift: .95,     
+  maxSpeed: 50,
+  acceleration: .795,
+  friction: 0.984,         
+  steeringSensitivity: 0.033,
+  driftFactor: 0.5,       
+  handbrakeDrift: .975,     
   grassFriction: 0.90,
 
   // Collision tuning (exposed to the Dynamics tweaker)
@@ -14,14 +14,14 @@ export const DefaultDynamics = {
   //   between movement direction and impact point (1.0 = apply fully).
   // - collisionReflection: multiplier applied to the reflected velocity vector
   //   after collision (0..1, lower = more damping).
-  collisionRotationFactor: .11,
-  collisionReflection: 0.89
+  collisionRotationFactor: .075,
+  collisionReflection: 0.98
 };
 
 // 1. De Basislijn: De 'Golf/Volvo' Gezinsauto
 // Stabiel, traag sturen, veel rolweerstand
 export const SaloonDynamics = {
-  maxSpeed: 10,             // Bescheiden topsnelheid
+  maxSpeed: 40,             // Bescheiden topsnelheid
   acceleration: 0.12,      // Rustig optrekken
   friction: 0.97,          // Gemiddelde rolweerstand
   steeringSensitivity: 0.035, // Zwaarder sturen (geen racestuur)

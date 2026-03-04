@@ -10,7 +10,7 @@ export default class CameraManager {
     this.cullingObserverObtions = {
       root: this.element,
       rootMargin: "256px",
-      threshold: 0.05,
+      threshold: 0.0,
     };
     
     this.cullingObserver = new IntersectionObserver( (entries, self) => {
@@ -55,6 +55,7 @@ export default class CameraManager {
   // De switch in setTarget
   setTarget(newTarget) {
     this.target = newTarget;
+    this.isTransitioning = true;
     console.log(`🎬 Camera Lock:`, this.target);
   }
 
@@ -91,8 +92,8 @@ export default class CameraManager {
 
     if (this.isTransitioning) {
         // 2. LERP in JS (Geen DOM-reads meer!)
-        this.camX += (destX - this.camX) * 0.05;
-        this.camY += (destY - this.camY) * 0.05;
+        this.camX += (destX - this.camX) * 0.5;
+        this.camY += (destY - this.camY) * 0.5;
 
         // Check of we er zijn
         if (Math.hypot(destX - this.camX, destY - this.camY) < 2) {
@@ -103,8 +104,8 @@ export default class CameraManager {
         // this.camX = destX;
         // this.camY = destY;
         // Nee, meer LERP
-        this.camX += (destX - this.camX) * 0.95;
-        this.camY += (destY - this.camY) * 0.95;
+        this.camX += (destX - this.camX) * 0.925;
+        this.camY += (destY - this.camY) * 0.925;
     }
 
     // 4. WRITE: Slechts één DOM-schrijfactie per frame

@@ -22,19 +22,40 @@ export default class CameraTweaker {
       </fieldset>
       <fieldset class="time">
         <legend>Time of Day</legend>
-        <label for="time-of-day"><input type="range" name="time-of-day" id="time-of-day" value="0" min="-1" max="1" step=".0725" />time <output for="time-of-day"></output></label>
+        time <label for="time-of-day"><input type="range" name="time-of-day" id="time-of-day" value="0" min="-1" max="1" step=".0725" /><output for="time-of-day"></output></label>
       </fieldset>
       <fieldset class="post-processing">
         <legend>compositing</legend>
         <label><input type="radio" name="postProcessing" value="" /> OFF</label>
+        <label><input type="radio" name="postProcessing" value="on" checked/> ON</label>
         <label><input type="radio" name="postProcessing" value="crt" checked/> CRT</label>
-        <label for="opacity"><input type="range" name="opacity" id="opacity" value="0.6" min="0" max="1" step=".1" />opacity <output for="opacity"></output></label>
-        <label for="blur"><input type="range" name="blur" id="blur" value="16" min="0" max="64" step="1" />blur <output for="blur"></output></label>
-        <label for="saturate"><input type="range" name="saturate" id="saturate" value="2" min="0" max="5" step=".1"/>saturate <output for="saturate"></output></label>
-        <label for="brightness"><input type="range" name="brightness" id="brightness" value=".8" min="0" max="10" step=".05"/>brightness <output for="brightness"></output></label>
-        <label for="contrast"><input type="range" name="contrast" id="contrast" value="1.75" min="0" max="2.5" step=".01"/>contrast <output for="contrast"></output></label>
-        <label for="hue"><input type="range" name="hue" id="hue" value="0" min="0" max="360" step="1" />hue <output for="hue"></output></label>
       </fieldset>
+      <fieldset class="post-processing-settings">
+        <label for="opacity"><span>opacity</span><input type="range" name="opacity" id="opacity" value="0.5" min="0" max="1" step=".1" /><output for="opacity">0.6</output></label>
+        <label for="blur"><span>blur</span><input type="range" name="blur" id="blur" value="1" min="0" max="64" step="1" /><output for="blur">16</output></label>
+        <label for="saturate"><span>saturate</span><input type="range" name="saturate" id="saturate" value="1.4" min="0" max="5" step=".1"/><output for="saturate">2</output></label>
+        <label for="brightness"><span>brightness</span><input type="range" name="brightness" id="brightness" value=".9" min="0" max="10" step=".05"/><output for="brightness">0.8</output></label>
+        <label for="contrast"><span>contrast</span><input type="range" name="contrast" id="contrast" value="1.2" min="0" max="2.5" step=".01"/><output for="contrast">1.7</output></label>
+        <label for="hue"><span>hue</span><input type="range" name="hue" id="hue" value="0" min="0" max="360" step="1" /><output for="hue">0</output></label>
+      </fieldset>
+      <style> 
+      .post-processing-settings {
+        display: flex; flex-direction: column;
+        gap: 1ex;
+        padding: 1ex;
+        label {
+          display: flex;
+          gap: 1ex;
+          span {
+            flex: 0 0 5ch;
+            overflow: hidden;
+            font-size: smaller;
+          }
+            input {max-width: 5rem}
+           output {font-size: smaller;}
+        }
+       } 
+      </style>
     `;
 
     this.container.querySelector('#cam-freeroam').onchange = (e) => {
@@ -51,6 +72,7 @@ export default class CameraTweaker {
         }
         if(e.target.type == 'range') { 
           this.game.camera.element.style.setProperty(`--pp-${e.target.name}`, e.target.value)
+          e.target.parentNode.querySelector('output').textContent = Number(e.target.value).toFixed(2)
         }
 
       });
