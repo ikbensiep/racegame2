@@ -17,7 +17,8 @@ export default class NetworkManager {
         debug: 2
       });
       
-      this.conn = null;
+      // keep track of all active peer connections (host and clients)
+      this.connections = new Map();
       this.onOpponentUpdate = onOpponentUpdate;
       console.warn(game)
       this._init();
@@ -50,15 +51,26 @@ export default class NetworkManager {
 
     _setupConnection(c) {
 
-      this.conn = c;
-      c.on('data', (data) => { 
-        if (data.id === this.peer.id) return; 
-          this.onOpponentUpdate(data)
+      // remember this connection by peer id (allows multiple players)
+      this.connections.set(c.peer, c);
+
+      c.on('data', (data) => {
+        // ignore our own echoed messages
+        if (data.id === this.peer.id) return;
+
+        // notify game logic
+        this.onOpponentUpdate(data);
+
+        // if we're the host, forward the message to everyone else
+        if (this.isHost) {
+          this.broadcast(data, c.peer);
+        }
       });
 
       c.on('open', () => {
         console.log("🤝 Handshakey! 🔌 Connected to:", c.peer);
         
+        // send our own identity immediately
         const pakketje = { 
             type: 'hello',
             id: this.peer.id,
@@ -66,13 +78,43 @@ export default class NetworkManager {
             driverNumber: this.game.localPlayer.driverNumber,
             color: this.game.localPlayer.color || 'blue'
         };
-        
-        // Stuur direct je 'paspoort' naar de nieuwe peer
         c.send(pakketje);
+
+        // if we're the host, also let the newcomer know about everyone who's already joined
+        if (this.isHost) {
+            this.game.opponents.forEach(opp => {
+                // skip AI opponents, only network peers
+                if (opp.id && opp.id !== this.peer.id) {
+                    c.send({
+                        type: 'hello',
+                        id: opp.id,
+                        name: opp.name,
+                        driverNumber: opp.driverNumber,
+                        color: opp.color
+                    });
+                }
+            });
+        }
+      });
+
+      c.on('close', () => {
+        this.connections.delete(c.peer);
       });
     }
 
+    // send data to every connected peer.  If `excludeId` is provided the connection
+    // belonging to that peer will be skipped (useful to avoid echoing a message back
+    // to the originator when the host is forwarding).
+    broadcast(data, excludeId = null) {
+        this.connections.forEach((conn, peerId) => {
+            if (peerId === excludeId) return;
+            if (conn.open) conn.send(data);
+        });
+    }
+
     send(data) {
-        if (this.conn && this.conn.open) this.conn.send(data);
+        // clients only have one connection (to the host), so this is a simple alias.
+        // hosts will loop through all conns as well since broadcast is the same implementation.
+        this.broadcast(data);
     }
 }

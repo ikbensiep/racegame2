@@ -11,6 +11,7 @@ constructor(id, name, driverNumber, color, game) {
           this.x = data.x;
           this.y = data.y;
           this.angle = data.angle;
+          this.speed = data.speed;
         }
     }
 }
