@@ -13,10 +13,11 @@
 #canvas.world {
   
   /* 8k: easy to remember, fun to type number (provided u have a numpad) */
-  --world-size: calc(4 * 8192px);
+  
   --animation-duration: 1;
   --player-position: calc(var(--player-x) * 1px) calc(var(--player-y) * 1px);
   --player-position-with-offset: calc(var(--cam-x) * -1px ) calc(var(--cam-y) * -1px );
+  /*
   width: var(--world-size);
   height: var(--world-size);
   background-repeat: no-repeat;
@@ -24,12 +25,32 @@
   background-position: 
     0 0, calc(var(--world-size) * .5) 0, 
     0 calc(var(--world-size) * .5), calc(var(--world-size) * .5) calc(var(--world-size) * .5);
+  */
+
+  overflow: visible;
+
   translate: var(--player-position-with-offset) -128px;
   perspective: calc(512px * 1);
-  perspective-origin: var(--player-position);
+  /* perspective-origin: var(--player-position); */
+  perspective-origin: calc((var(--cam-x) * 1px ) + 50vw ) calc((var(--cam-y) * 1px) + 50vh);
   will-change: translate;
   transform-style: preserve-3d;
-  transition:  translate 0s linear, filter 1.5s;
+  transition: filter 1.5s;
+
+  #worldmap {
+    display: grid;
+    grid-template-columns: calc(var(--world-size) / 2) calc(var(--world-size) / 2);
+    grid-template-rows: calc(var(--world-size) / 2) calc(var(--world-size) / 2);
+
+    svg {
+      grid-template: 1 / 1 / -1 / -1;
+    }
+
+    img {
+        aspect-ratio: 1;
+        width: calc(var(--world-size) / 2);
+    }
+  }
 
   
     /* TODO light layering tests */
@@ -46,18 +67,18 @@
     translate: calc((var(--cam-x) * 1px) ) calc((var(--cam-y) * 1px) );
     
     background-size: var(--world-size) var(--world-size);
-    background-position: calc(var(--cam-x) * -1px + 10vw) calc(var(--cam-y) * -1px + 10vh);
+    background-position: calc(var(--cam-x) * -1px) calc(var(--cam-y) * -1px);
     mix-blend-mode: multiply;
     pointer-events: none;
     z-index: 100;
-    width: 120vw;
-    height: 120vh;
+    width: 100vw;
+    height: 100vh;
     translate: 
       calc(var(--cam-x) * 1px ) 
       calc(var(--cam-y) * 1px ) 
       0px; /* Z translate y tho?? */
-    left: -10vw;
-    top: -10vh;
+    left: 0;
+    top: 0;
     opacity: abs(var(--pp-time-of-day, 0));
 
     transition: opacity 1s;
