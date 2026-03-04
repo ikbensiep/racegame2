@@ -1,5 +1,6 @@
 @import url('./blocks/layout.css');
 @import url('./blocks/menu.css');
+@import url('./blocks/ui.css');
 @import url('./blocks/world.css');
 
 @import url('./components/animations.css');
@@ -40,8 +41,10 @@
 body {
   background-color: var(--player-color, aquamarine);
   display: grid;
-  font-family: sans-serif;
   overflow: hidden;
+  font-family: sans-serif;
+  font-size: 1.33em;
+  user-select: none;
   transition: background-color .75s cubic-bezier(0.165, 0.84, 0.44, 1)
 }
 

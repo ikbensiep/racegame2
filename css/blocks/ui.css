@@ -1,0 +1,557 @@
+@keyframes movinggrid {
+  to {
+    background-position: 4px 4px;
+  }
+}
+
+/* FIXME: selectors should be specific to the main menu? */
+
+@keyframes orbit {
+  to {
+    rotate: 360deg;
+  }
+}
+
+.material-icons {
+  transition: all .15s;
+}
+
+form {
+  clip-path: inset(0 0 0 0 round 10px);
+  
+  .button,
+  button {
+    border: none;
+    background-color: rgb(0 0 0 / .5);
+    color: inherit;
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-size: 1em;
+    line-height: inherit;
+    padding-inline: 2ex;
+    cursor: pointer;
+    color: rgb(255 255 255/ .5);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color .2s;
+    &:hover,&:focus {
+      color: white;
+    }
+    &:active {
+      color: rgb(234, 175, 26);
+    }
+  }
+  
+  details:has(fieldset:invalid) {
+    &[open] {
+      summary {
+        position: relative;
+
+        &::before {
+          content : '!';
+          color: black;
+          background-color: var(--gelbe);
+          clip-path: polygon(0 100%, 50% 11%, 100% 100%, 0 100%);
+        }
+      }
+    }
+    ~ details {
+      
+      opacity: .5;
+
+      summary {
+        pointer-events: none;
+      }
+    }
+  }
+
+  details {
+    
+    margin-bottom: 1px;
+
+    &::details-content {
+      display: flex;
+      gap: 4rem;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden auto;
+      scroll-behavior: smooth;
+      scroll-snap-type:x mandatory;
+      padding: 0 5rem; 
+      backdrop-filter: blur(0px);
+      background: #0003;
+      background-image: radial-gradient( #0009 0px, #000000ed 3px);
+      background-size: 4px 4px;
+      animation: movinggrid .5s linear forwards infinite;
+      transition: .25s ease-in-out, backdrop-filter 1s;
+      transition-behavior: allow-discrete;
+      interpolate-size: allow-keywords;
+      height: auto;
+      max-height: 0;
+    }
+    
+    /* this is a hack to hide the ::details-content on the last menu section (buttons)
+    fix the markup for the submit section */
+    &:has(summary:last-child)::details-content {
+      min-height: 0;
+    }
+
+    summary {
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.75);
+      line-height: 2;
+      padding-inline-start: 1ex;
+      color: #fffa;
+      font-size: 1.2em;
+      transition: .2s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      &:hover, &:focus, &:has(+ fieldset:focus-within) {
+        color: white;
+        background: #000d;
+      }
+      
+      &::before {
+        position: absolute;
+        inset: auto 1rem auto auto;
+        padding: 0.5rem 0.3rem .1rem;
+        line-height: 1.1;
+        text-align: center;
+        font-weight: bold;
+        font-size: var(--font-size);
+        aspect-ratio: 1 !important;
+        width: var(--font-size);
+        --font-size: 1rem;
+      }
+
+      &::marker {
+        content: '';
+      }
+
+      & .material-icons {
+        margin-inline-end: .5rem;
+      }
+    }
+    
+    &[open] {
+    /* always keep one tab open */
+      
+      > summary {
+        pointer-events: none;
+        background: #000f;
+        
+        > .material-icons {
+          margin-inline-end: .75rem;
+        }
+      }
+
+      &::details-content {
+        backdrop-filter: blur(5px);
+        min-height: 30rem;
+        max-height: 100vh;
+      } 
+    }
+  }
+
+  fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 1rem 0;
+    margin: 0 3vw 1px;
+    border: none;
+    justify-content: space-between;
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 1ex;
+      flex-flow: column-reverse;
+      cursor: pointer;
+      
+      
+      > span {
+        display: flex;
+        flex-flow: column;
+        align-items: center;
+        color: rgb(255 255 255 / .5);
+      }
+      
+      .material-icons {
+        font-size: 4rem;
+        scale: .75;
+      }
+
+      input {
+        font-family: inherit;
+        font-size: 1.1em;
+        line-height: 2rem;
+
+        background-color: transparent;
+        border-style: none none dotted;
+        border-color: #fff3;
+        color: white;
+        opacity: .5;
+        outline: none;
+
+        &:focus {
+          opacity: 1;
+          color: var(--gelbe);
+        }
+
+        &[type="number"] {
+          width: 4rem;
+        }
+        &[type=range] {
+          width: 5rem;
+          height: 5rem;
+          rotate: -90deg;
+        }
+      }
+      
+      input[type="radio"],
+      input[type="checkbox"] {
+        opacity: 0.01;
+        height: 0px;
+        ~ * {
+          opacity: .5;
+          transition: all .2s cubic-bezier(0.075, 0.82, 0.165, 1);
+        }
+        ~ img {
+          width: 15rem;
+          margin: 0 auto;
+          
+        }
+
+        &:checked {
+          ~ * {
+            color: white;
+            opacity: 1;
+            filter: grayscale(0);
+          }
+
+        }
+      }
+
+      input[disabled] ~ * {
+        opacity: .25 !important;
+        cursor: default;
+      }
+
+      &:hover, &:focus {
+        input:not(:checked):not([disabled]) {
+          ~ span, img {
+            opacity: .75;
+          }
+        }
+      }
+    }
+
+    &.car {
+      label {
+        position: relative;
+        input {
+          ~ img {
+            opacity: 1;
+            object-position: -100px 0;
+            transition: all 1.5s cubic-bezier(0.075, 0.82, 0.165, 1);
+            mask: linear-gradient(to right, transparent 15%, white);
+            rotate: 90deg;
+            filter: drop-shadow( 5px -5px 5px black) blur(5px);
+          }
+          &:checked ~ img {
+            object-position: -10px 0 !important;
+            transition-duration: 1s;
+            mask: linear-gradient(to right, transparent 3%, white 90%);
+            filter: drop-shadow( 5px -5px 5px black) blur(0px) !important;
+
+          }
+        }
+        &:focus, &:hover {
+          input ~ img {
+            object-position: -50px 0;
+            filter: drop-shadow( 5px -5px 5px black) blur(2px);
+            
+        }
+        
+        &::after {
+          content: '';
+          position: absolute;
+          pointer-events: none;
+          inset: 0;
+        }
+
+      }
+    }
+    }
+    
+    &.track {
+      gap: 5rem;
+      justify-content: center;
+      max-width: 70cqw;
+
+      & label {
+        scroll-snap-align: center;
+      }
+    }
+  }
+
+  .scroll-strip {
+    overflow: scroll;
+    display: flex;
+    inline-size: calc(100cqw - 14rem);
+    height: 256px;
+    scroll-behavior: smooth;
+    background: red;
+    scroll-snap-type: x mandatory;
+
+    & > * {
+      display: block;
+      flex: 1 0 90%;
+      scroll-snap-align: start;
+      
+    }
+  }
+
+  + .backdrops {
+    position: absolute;
+    margin: -4vw;
+    z-index: -1;
+    mask-image: linear-gradient( transparent 20%, white);
+    mask-size: 100%;
+    mask-type: alpha;
+    inset: 4vw; 
+
+    opacity: 0;
+      > div {      
+      position: fixed;
+      width: 100vw;
+      height: 100vw;
+      aspect-ratio: 1;
+
+      transform: perspective(50vw) translateY(20vh) rotateX(30deg) translateZ(320px) rotateZ(0deg);
+      transition-behavior: allow-discrete;
+      
+      /* mask: linear-gradient(transparent 20%, white 60%); */
+      > img {
+        
+        width: 100vw;
+        translate: 0 -600px;
+        transition: 1.5s;
+        object-fit: cover;
+        animation: orbit 60s linear forwards infinite;
+
+        &.active {
+          opacity: .75;
+          scale: 1;
+        }
+}
+}
+}
+}
+
+.hud {
+  position: absolute;
+  inset: 0;
+  line-height: 2;
+  color: #fffc;
+  pointer-events: none;
+  
+  & ul {
+    list-style: none;
+    display: flex;
+    flex-flow: column;
+    align-items: start;
+    margin: 0;
+    & li {
+      width: 100%;
+    }
+  }
+
+  & > * {    
+    display: flex;
+    flex-flow: column;
+    width: 22ch;
+    position: absolute;
+    display: inline-flex;
+    padding-inline: 0;
+    transition: opacity .25s;
+
+    &:empty {opacity: 0;}
+
+    /* lekker duidelijke selectors, vriend */
+    & > * {
+      background: rgb(0 0 0 / 0.5);
+      margin-block-end: 1px;
+      padding-inline: 1ex;
+      transition: all .5s cubic-bezier(0.075, 0.82, 0.165, 1), color .25s .25s linear;
+      
+      &:empty {
+        translate: calc(100% - 2rem) 0;
+        color: transparent;
+        &:before {
+          opacity: .25!important;
+        }
+      }
+    }
+
+    &.session {
+      top: 1ex;
+      left: 1ex;
+      text-align: center;
+
+      .status {
+        &[data-status*='yellow flag'] {
+          background-color: goldenrod;
+          color: black;
+          transition-delay: .5s;
+        }
+        &[data-status*='red flag'] {
+          background-color: var(--rode);
+          color: black;
+          transition-delay: .5s;
+        }
+      }
+    }
+
+    &.timing {
+      top: 1ex;
+      right: 1ex;
+      text-align: end;
+      
+      li {
+        display: flex;
+        justify-content: space-between;
+      
+        &.thislap::before {
+            content: 'lap ' attr(data-lap);
+          }
+
+        &.bestlap::before{ 
+          content: 'best';
+        }
+
+        &.lastlap::before{ 
+          content: 'last'
+        }
+        &:empty::before {
+          display: none;
+        }
+        &.fastest {
+          background-color: purple;
+        }
+      }
+    }
+
+    &.racecontrol {
+      width: 45ch;
+      inset-inline: 50%;
+      top: 1ex;
+      translate: -50% 0;
+
+      > :empty {
+        translate: 0 calc(-100% - 2rem);
+      }
+      
+      & .notice {
+        display: flex;
+
+        &:before {
+          font-family: 'Material icons';
+          content: '\ef49';
+          vertical-align: text-bottom;
+          margin-inline-end: 1ex;
+          color: white;
+          opacity: 1;
+        }
+
+      }
+
+      .fastest { color: purple }
+      .invalidated { color: var(--gelbe)}
+    }
+
+    &.team {
+      right: 1ex;
+      top: 50%;
+      translate: 0 -50%;
+      & .radio{ 
+        display: flex;
+        flex-wrap: wrap;
+
+        &:before {
+          font-family: 'Material icons';
+          content: '\f0e2';
+          vertical-align: text-bottom;
+          margin-inline-end: 1ex;
+          color: white;
+          opacity: 1;
+        }
+        b, span {
+          margin-inline-start: .6ex;
+        }
+        .pitbox {
+          color: var(--rode)
+        }
+        .pitlane {
+          color: var(--gelbe)
+        }
+        .racetrack {
+          color: var(--gront);
+        }
+      }
+    }
+
+    &.car {
+      right: 1ex;
+      bottom: 1ex;
+    }
+
+    &.help {
+      bottom: 1ex;
+      left: 1ex;
+    }
+    & .competitors li {
+      text-align: start;
+      position: relative;
+      
+      --text-color: white;
+
+      &.ferrari {--bg-color: rgb(255, 17, 0); }
+      &.lamborghini {--bg-color: rgb(234, 175, 26); --text-color: black; }
+      &.porsche {--bg-color: white; --text-color: #d61b1b; }
+      &.ford {--bg-color: darkblue }
+
+      &:before {
+        content: attr(data-carnumber);
+        font-weight: bold;
+        margin-inline-end: 1ex;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        padding-inline: .5ex;
+        height: 2rem;
+        display: inline-block;
+        line-height: 1.5; 
+        border-radius: .3ex;
+        min-width: 1.2rem;
+        text-align: center;
+      }
+
+
+      &:after {
+        content: attr(data-shortname);
+        text-transform: uppercase;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+    }
+    
+    
+    
+    & [data-fps^="3"] { color: var(--gront)}
+    & [data-fps^="2"] { color: var(--gelbe)}
+    & [data-fps^="1"] { color: var(--rode)}
+
+  }
+}

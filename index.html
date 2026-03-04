@@ -7,8 +7,15 @@
   <link rel="stylesheet" href="css/style.css" type="text/css"/>
   <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
   <link rel="shortcut icon" href="favicon.svg" type="image/svg" />
+  <!-- G fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:ital,wght@0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+  <!-- G icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
-<body>
+
+<body data-screen="lobby-menu">
   <section id="camera-viewport" data-post-processing="crt">
     <main id="canvas" class="world">
       <!-- this is for dev only so we can 'live paint' the svg while developing -->
@@ -27,22 +34,35 @@
 
   </aside>
   
-  <dialog id="lobby-dialog">
-    <form method="dialog" id="player-setup-form">
-      <h2>🏁 Join Race</h2>
-      
-      <div class="input-group">
-        <label for="p-name">Name</label>
-        <input type="text" id="player-name" value="Kees" placeholder="Racer" maxlength="20" required autofocus>
-      </div>
+  <dialog id="lobby-menu">
+    <form method="dialog" id="player-settings">
+      <details name="game-settings" open>
+        <summary>
+          <div><span class="material-icons">sports_motorsports</span> Driver &amp; Car</div>
+        </summary>
 
-      <div class="input-group" style="position: relative; height: 256px; width: 256px">
-        <span id="player-id-wrap">
-          <label for="player-number">Driver number</label>
-          <label for="player-color">Paint job</label>
-          <input type="color" id="player-color" value="hotpink" list="color-palette" />
-          <input type="number" id="player-number" value="67" min="0" max="99" placeholder="99" required>
-        </span>
+        <fieldset>
+          <label for="player-name">
+            <span>Name</span>
+            <input type="text" id="player-name" value="Kees" name="player-name" placeholder="Racer" maxlength="20" required autofocus>
+          </label>
+          <label for="player-number">
+            <span>Number</span>
+            <input type="number" id="player-number" name="player-number" value="67" placeholder="99" min="1" max="999" required>
+          </label>
+          <label for="audio-pan-screen">
+            <input type="checkbox" id="audio-pan-screen" checked />
+            <span>Screen-space panning</span>
+          </label>
+
+        </fieldset>
+
+        <div class="input-group" style="position: relative; height: 256px; width: 256px">
+          <span id="player-id-wrap">
+            <label for="player-number">Driver number</label>
+            <label for="player-color">Paint job</label>
+            <input type="color" id="player-color" value="hotpink" list="color-palette" name="player-color" />
+          </span>
         <datalist id="color-palette">
           
           <!-- Retro Vibes -->
@@ -103,18 +123,6 @@
           <option title="coating-pack-H-5" value="#ff9d00">#ff9d00</option>
           -->
           
-          <!-- ja lachn maar helaas zijn het wat viezige kleuren bijelkaar in één palet
-          <option>#a55</option>
-          <option>#ac1d1c</option>
-          <option>#b4d455</option>
-          <option>#b00b00</option>
-          <option>#c0ff33</option>
-          <option>#c0ffee</option>
-          <option>#deface</option>
-          <option>#defec8</option>
-          <option>#facade</option>
-          <option>#0ff1ce</option>
-          -->
         </datalist>
 
         <style id="fixme-sobad">
@@ -189,24 +197,33 @@
 
         </script>
       </div>
-      <div class="input-group">
-        <label for="track-assen">
-          <input name="track" type="radio" id="track-assen" value="assen" required />
-          Assen
-        </label>
-        <label for="track-monaco">
-          <input name="track" type="radio" id="track-monaco" value="monaco" required />
-          Monaco
-        </label>
-        <label for="track-sachsenring">
-          <input name="track" type="radio" id="track-sachsenring" value="sachsenring" required />
-          sachsenring-v0.1
-        </label>
-        
 
-      </div>
+      </details>
+      <details name="game-settings">
+        <summary>
+          <div><span class="material-icons">sports_motorsports</span> Track &amp; Session</div>
+        </summary>
+        <div class="scroll-strip">
+          <span><input type="radio" id="assen" value="assen" name="track"/>TT Circuit, Assen</span>
+          <span><input type="radio" id="monaco" value="monaco" name="track"/>Monte Carlo, Monaco</span>
+          <span><input type="radio" id="sachsenring" value="sachsenring" name="track"/>Sachsenring, DE</span>
+          <span><input type="radio" id="st-petersburg" value="st-petersburg" name="track"/>st. Petersburg GP, FL</span>
+        </div>
 
-      <button type="submit" id="start-race-btn" >START RACE</button>
+        <fieldset class="track">
+          <label for="assen">assen</label>
+          <label for="monaco">monaco</label>
+          <label for="sachsenring">sachsenring</label>
+          <label for="st-petersburg">st. Petersburg</label>
+        </fieldset>
+      </details>
+      <details>
+        <summary style="pointer-events: all !important;">
+          <div><span class="material-icons">sports_score</span>Ready</div> 
+          <button type="submit" name="startGame" value="true">Drive</button>
+        </summary>
+      </details>
+
     </form>
   </dialog>
 
@@ -236,10 +253,10 @@
 
   <template id="structure">
     <div class="structure building">
-      <div class="wall-n">noord</div>
-      <div class="wall-e">east</div>
-      <div class="wall-s">soufsiiiide</div>
-      <div class="wall-w">wesss</div>
+      <div class="wall-n"></div>
+      <div class="wall-e"></div>
+      <div class="wall-s"></div>
+      <div class="wall-w"></div>
       <div class="roof"></div>
     </div>
   </template>
@@ -250,38 +267,39 @@
       <span class="card"></span5214>
     </b>
   </template>
-<section class="sprites off-screen">
-  <span id="rubberTrackSprite" class="sprite rubber"><img src="assets/cars/tire-rubber-128.png" alt="" /></span>
-  <span id="smokeSprite" class="sprite smoke"><img src="assets/smoke/smoke-sprite.png" alt="" class="smoke" loading="eager"/></span>
-  <span id="exhaustPopSprite" class="sprite exhaust"><img src="assets/car/exhaust-pop.png" alt="" class="pop"/></span>
-  <span id="explosionsSprite" class="sprite explosion"><img src="assets/boom3.png" alt="" id="" class="explosion"/></span>
-  <span id="ahornTreeSprite" class="sprite tree ahorn"></span>
-  <span id="palmTreeSprite" class="sprite tree palm"></span>
-  <span id="hokjeSprite" class="sprite hokje"></span>
-  <span id="lampPostSprite" class="sprite lamp-post"></span>
-  <img id="marshalSprite" class="sprite marshal" src="assets/people/oldman_walk_sheet_2.png" class="uv" width="512px" height="64px"/>
-  <img id="pylonSprite" class="sprite pylon" src="assets/environment/cone-1.png">
-  <img id="pylonSpriteWorn1" class="sprite pylon" src="assets/environment/cone-2.png">
-  <img id="pylonSpriteWorn2" class="sprite pylon" src="assets/environment/cone-3.png">
-  <span id="truckSprite" class="sprite truck"><img src="assets/environment/truck.png"></span>
-  <div class="helicopter">
-    <img src="assets/environment/helicopter-body.png" alt="" class="helicopter-body" style="scale: -1 1"/>
-    <div class="rotor-blur"></div>
-    <img src="assets/environment/helicopter-rotor.png" alt="" class="helicopter-rotor"/>
-  </div>
-</section>
 
-<section class="audio">
-  <audio src="./assets/sound/porsche-onboard-acc-full.ogg" class="engine" id="engineSound" loop volume="0.0"></audio>
-  <audio src="./assets/sound/porsche-onboard-downshift.ogg" class="engine" id="downshiftSound" volume="0.0"></audio>
-  <audio src="./assets/sound/porsche-ambient-loop.ogg" id="ambientSfx" loop volume="0.0"></audio>
-  <audio src="./assets/sound/ui/click.wav" id="changeSfx"></audio>
-  <audio src="./assets/sound/horn-hooter.ogg" controls class="horn" type="audio/ogg"></audio>
-  <audio src="./assets/sound/701327__sef7__walkie-talkie-power-on.ogg" type="audio/ogg" id="teamRadio"></audio>
-  <audio src="./assets/sound/591528__rudmer-rotteveel__ratchet-wrench-slow-multiple.ogg" class="tuningSfx" id="ratchetSound" type="audio/ogg" volume="0.25"></audio>
-  <audio src="./assets/sound/349398__sevenbsb__air-impact-wrench.ogg" class="tuningSfx" id="airWrenchSound" type="audio/ogg" volume="0.15"></audio>
+  <section class="sprites off-screen">
+    <span id="rubberTrackSprite" class="sprite rubber"><img src="assets/cars/tire-rubber-128.png" alt="" /></span>
+    <span id="smokeSprite" class="sprite smoke"><img src="assets/smoke/smoke-sprite.png" alt="" class="smoke" loading="eager"/></span>
+    <span id="exhaustPopSprite" class="sprite exhaust"><img src="assets/car/exhaust-pop.png" alt="" class="pop"/></span>
+    <span id="explosionsSprite" class="sprite explosion"><img src="assets/boom3.png" alt="" id="" class="explosion"/></span>
+    <span id="ahornTreeSprite" class="sprite tree ahorn"></span>
+    <span id="palmTreeSprite" class="sprite tree palm"></span>
+    <span id="hokjeSprite" class="sprite hokje"></span>
+    <span id="lampPostSprite" class="sprite lamp-post"></span>
+    <img id="marshalSprite" class="sprite marshal" src="assets/people/oldman_walk_sheet_2.png" class="uv" width="512px" height="64px"/>
+    <img id="pylonSprite" class="sprite pylon" src="assets/environment/cone-1.png">
+    <img id="pylonSpriteWorn1" class="sprite pylon" src="assets/environment/cone-2.png">
+    <img id="pylonSpriteWorn2" class="sprite pylon" src="assets/environment/cone-3.png">
+    <span id="truckSprite" class="sprite truck"><img src="assets/environment/truck.png"></span>
+    <div class="helicopter">
+      <img src="assets/environment/helicopter-body.png" alt="" class="helicopter-body" style="scale: -1 1"/>
+      <div class="rotor-blur"></div>
+      <img src="assets/environment/helicopter-rotor.png" alt="" class="helicopter-rotor"/>
+    </div>
+  </section>
 
-</section>
+  <section class="audio">
+    <audio src="./assets/sound/porsche-onboard-acc-full.ogg" class="engine" id="engineSound" loop volume="0.0"></audio>
+    <audio src="./assets/sound/porsche-onboard-downshift.ogg" class="engine" id="downshiftSound" volume="0.0"></audio>
+    <audio src="./assets/sound/porsche-ambient-loop.ogg" id="ambientSfx" loop volume="0.0"></audio>
+    <audio src="./assets/sound/ui/click.wav" id="changeSfx"></audio>
+    <audio src="./assets/sound/horn-hooter.ogg" controls class="horn" type="audio/ogg"></audio>
+    <audio src="./assets/sound/701327__sef7__walkie-talkie-power-on.ogg" type="audio/ogg" id="teamRadio"></audio>
+    <audio src="./assets/sound/591528__rudmer-rotteveel__ratchet-wrench-slow-multiple.ogg" class="tuningSfx" id="ratchetSound" type="audio/ogg" volume="0.25"></audio>
+    <audio src="./assets/sound/349398__sevenbsb__air-impact-wrench.ogg" class="tuningSfx" id="airWrenchSound" type="audio/ogg" volume="0.15"></audio>
+
+  </section>
   <svg id="filters">
     <filter id="displacementFilter">
       <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
