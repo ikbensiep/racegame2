@@ -70,35 +70,20 @@ export default class World {
     // TODO: appending this for development only, allowing for live painting while dev/debuggonmg
     this.svgElement = svgDoc.querySelector('svg');
     this.element.querySelector('#worldmap').appendChild(this.svgElement);
-    
-    // Render je eigen vectoren maar. We Bitmappin' nao biatch.
-    // FIXME: temp fix
-    try {
-
-      this.element.style.backgroundImage = `
-        url('${artworkBasePath}/tiles/${this.scene}_track-0-0.png'), 
-        url('${artworkBasePath}/tiles/${this.scene}_track-1-0.png'), 
-        url('${artworkBasePath}/tiles/${this.scene}_track-0-1.png'),
-        url('${artworkBasePath}/tiles/${this.scene}_track-1-1.png') 
-        `;
-      this.element.querySelector('#light-layer').style.backgroundImage = 
-        `url(${artworkBasePath}/${this.scene}_lights.png), url(${artworkBasePath}/${this.scene}_lights.webp)`
-    } catch (e) {
-      console.error(e)
-    }
-    
 
     this.width = parseInt(this.svgElement.getAttribute('width'));
     this.height = parseInt(this.svgElement.getAttribute('height'));
-
-    const trackElement = this.svgElement.getElementById('racetrack');
+    
+    this.element.style.setProperty('--world-size', `${this.width}px`);
+    this.trackElement = this.svgElement.getElementById('racetrack').cloneNode();
+    
     const timingGroup = this.svgElement.getElementById('timing');
 
     // Arbitrary check to see if the bare mninimum exists, probably nonsense test by now 
-    if (trackElement && timingGroup) {
+    if (this.trackElement && timingGroup) {
       
       // We halen ook de stroke-width op uit de SVG (belangrijk voor de breedte van de baan!)
-      this.trackWidth = parseFloat(window.getComputedStyle(trackElement).strokeWidth) || 520;
+      this.trackWidth = parseFloat(window.getComputedStyle(this.trackElement).strokeWidth) || 520;
       
     }
 
@@ -109,11 +94,30 @@ export default class World {
     console.time('generate-buildings');
     await this.generateBuildings();
     console.timeEnd('generate-buildings');
-    
-    
 
     this.isLoaded = true;
     this.element.querySelector('#worldmap svg').remove();
+    
+    try {
+
+      let rows = 2;
+      let cols = 2;
+      let mapElement = this.element.querySelector('#worldmap');
+      for (let i = 0; i<rows; i++) {
+        for (let j = 0; j<cols; j++) {
+          let tileImg =  new Image()
+          tileImg.src = `${artworkBasePath}/tiles/${this.scene}_track_${j}-${i}.png`;
+          tileImg.alt = `${this.scene}_track-${j}-${i}.png`;
+          mapElement.appendChild(tileImg);
+          this.game.camera.cullingObserver.observe(tileImg);
+        }
+      }
+
+      this.element.querySelector('#light-layer').style.backgroundImage = 
+        `url(${artworkBasePath}/${this.scene}_lights.png), url(${artworkBasePath}/${this.scene}_lights.webp)`
+    } catch (e) {
+      console.error(e)
+    }
     return this.spawnPoints;
   }
   
@@ -124,12 +128,12 @@ export default class World {
       this.paths.worldBG =     new Path2D(this.svgElement.querySelector('#world-bg').getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
       this.paths.fuelStation = new Path2D(this.svgElement.querySelector('#fuel-station')?.getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
       this.paths.grandstands = new Path2D(this.svgElement.querySelector('#sfx-triggers path#grandstands')?.getAttribute('d') || "")  // fill, sfx (crowd noise) detection
-      this.paths.gravel =      new Path2D(this.svgElement.querySelector('#gravel').getAttribute('d')) // fill, vehicle dynamics / sfx
+      this.paths.gravel =      new Path2D(this.svgElement.querySelector('#gravel')?.getAttribute('d')) // fill, vehicle dynamics / sfx
       this.paths.gridslot =    new Path2D(this.svgElement.querySelector('#gridslot')?.getAttribute('d') || "") // fill, race start position (spawnpoint)
       this.paths.paddock =     new Path2D(this.svgElement.querySelector('#paddock').getAttribute('d')) // fill, in this area player is allowed to enter 'RPG mode' (ie, exit car)
-      this.paths.pitbox =      new Path2D(this.svgElement.querySelector('#pitbox').getAttribute('d')) // fill, vehicle dynamics (tune car settings) a marked service area directly off the pitlane
+      this.paths.pitbox =      new Path2D(this.svgElement.querySelector('#pitbox')?.getAttribute('d') || "") // fill, vehicle dynamics (tune car settings) a marked service area directly off the pitlane
       this.paths.pitlane =     new Path2D(this.svgElement.querySelector('#pitlane').getAttribute('d'));  // stroke, vehicle dynamics (speed limiter)
-      this.paths.racetrack =   new Path2D(this.svgElement.querySelector('#racetrack').getAttribute('d')); // stoke, vehicle dynamics (grip level, weather?)
+      this.paths.racetrack =   new Path2D(this.svgElement.querySelector('#racetrack').getAttribute('d')); // stroke, (AI) vehicle pathinding
       this.paths.sectors =     new Map(); // timing sectors
       this.paths.tunnel =      new Path2D(this.svgElement.querySelector('#tunnel')?.getAttribute('d'));  // fill, sfx (ie, reverb) detection
 
@@ -150,7 +154,7 @@ export default class World {
       case 'race':
         spawnFilter = 'grid'
         break;
-      case 'training':
+      case 'paddock':
         spawnFilter = 'paddock'
         break;
     }
@@ -159,7 +163,8 @@ export default class World {
       return group.getAttributeNS('http://www.inkscape.org/namespaces/inkscape', 'label') == `players-${spawnFilter}`
     });
 
-    let spawners = spawnContainers[0].querySelectorAll('circle');
+    // Grab the first available garage 
+    let spawners = spawnContainers[0].querySelectorAll('g > circle, g > ellipse');
     
     if (!spawners.length) {
       // some random location probably close to the paddock
@@ -181,7 +186,7 @@ export default class World {
     
     treeLines.forEach(path => {
       const length = path.getTotalLength();
-      console.log(`🌳 treeline ${path.id}`)
+      console.group(`🌳 treeline ${path.id}`)
 
       const {strokeWidth, strokeDasharray, stroke, strokeLinecap} = path.style;
       // const stepSize = strokeDasharray[0] + strokeDasharray[1];
@@ -202,14 +207,17 @@ export default class World {
         const clone = document.importNode(template.content, true);
         const sprite = clone.querySelector('b');
         sprite.id = `tree-${path.id}-${stepSize}`;
-        sprite.className = `tree ${strokeLinecap}`
+        sprite.className = `tree ${strokeLinecap} ${path.className.baseVal}`
         sprite.style.setProperty('--tree-type', strokeLinecap);
         sprite.style.setProperty('--tree-color', stroke);
         sprite.style.setProperty('rotate', Math.floor(Math.random() * 90) + 'deg');
-        sprite.style.translate = `calc(${circle.x}px - 50%) calc(${circle.y}px - 50%)`;
+        sprite.style.left = `${circle.x}px`;
+        sprite.style.top = `${circle.y}px`;
         this.element.appendChild(sprite);
         this.game.camera.cullingObserver.observe(sprite);
+        console.log(path, sprite)
       }
+      console.groupEnd()
     })
     
   }
