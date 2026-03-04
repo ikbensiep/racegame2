@@ -30,7 +30,8 @@ export default class Vehicle {
     };
 
     this.element = this._createVisual();
-    this._createEngineSound();
+    // Engine sound creation is deferred until the vehicle has a valid position
+    // to avoid spatial audio errors. Call `initEngineSound()` after positioning.
     // this.gizmo = this._createGizmo(); // 3D axis viz gizmo
   }
 
@@ -85,6 +86,13 @@ async _createEngineSound() {
         console.error("Geluidsbestand laden mislukt:", error);
     }
 }
+
+  // Public helper to initialize engine sound after vehicle has been positioned
+  async initEngineSound() {
+    // Avoid double-initialization
+    if (this.engineSound) return;
+    await this._createEngineSound();
+  }
 
   _createGizmo() {
       const gizmo = document.createElement('div');

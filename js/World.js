@@ -10,6 +10,7 @@ export default class World {
     this.svgElement = undefined;
 
     this.spawnPoints = [];
+    this.garages = []; // Garage assignments: {id, garageGroup, circlePos: {x, y}, rectangleElement, occupant: null}
     this.collisionPaths = [];
     this.collidibles = [];
 
@@ -163,19 +164,39 @@ export default class World {
       return group.getAttributeNS('http://www.inkscape.org/namespaces/inkscape', 'label') == `players-${spawnFilter}`
     });
 
-    // Grab the first available garage 
-    let spawners = spawnContainers[0].querySelectorAll('g > circle, g > ellipse');
+    // Build garages from group elements containing circle/ellipse
+    let garageGroups = spawnContainers[0].querySelectorAll('g');
     
-    if (!spawners.length) {
+    if (!garageGroups.length) {
       // some random location probably close to the paddock
       this.spawnPoints.push({x:10000, y: 10500});
     } else {
-      spawners.forEach( point => {
-        this.spawnPoints.push ({ 
-            x: parseFloat(point.getAttribute('cx')), 
-            y: parseFloat(point.getAttribute('cy')),
-            id: point.getAttribute('id')
-        });
+      garageGroups.forEach( garageGroup => {
+        const circle = garageGroup.querySelector('circle, ellipse');
+        const rectangle = garageGroup.querySelector('rect');
+        
+        if (circle) {
+          const circlePos = {
+            x: parseFloat(circle.getAttribute('cx')),
+            y: parseFloat(circle.getAttribute('cy'))
+          };
+          
+          // Store in spawnPoints for backward compatibility
+          this.spawnPoints.push({ 
+            x: circlePos.x, 
+            y: circlePos.y,
+            id: circle.getAttribute('id')
+          });
+          
+          // Store in garages for garage assignment
+          this.garages.push({
+            id: circle.getAttribute('id'),
+            garageGroup: garageGroup,
+            circlePos: circlePos,
+            rectangleElement: rectangle,
+            occupant: null
+          });
+        }
       });
     }
   }

@@ -13,8 +13,8 @@ export default class Player extends Vehicle {
 
     this.id = id;
     this.isLocal = isLocal;
-    this.x = 10500;
-    this.y = 10000;
+    this.x = null;
+    this.y = null;
     this.radius = 64;
     
     this.dynamics = {};
@@ -442,7 +442,7 @@ export default class Player extends Vehicle {
 
       if (distanceSq < minDistance * minDistance && !this.isColliding) {
         // We hebben een botsing met een andere speler!
-        console.log('🚑 HIT VEHICLE', opp)
+        // console.log('🚑 HIT VEHICLE', opp)
         this._resolveCollision(opp);
         this.game.network.send({
           type: 'bang',

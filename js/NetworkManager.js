@@ -1,7 +1,10 @@
+import AIOpponent from './AIOpponent.js';
+
 export default class NetworkManager {
     constructor(game, onOpponentUpdate) {
       this.isHost = false; 
       this.game = game;
+      this.peerReady = false;
       this.peer = new Peer(undefined, {
         config: {
         'iceServers': [
@@ -29,6 +32,7 @@ export default class NetworkManager {
         const joinId = urlParams.get('join');
 
         this.peer.on('open', (id) => {
+            this.peerReady = true;
             if (joinId) {
               // we joined an invite
               this.connect(joinId);
@@ -47,6 +51,13 @@ export default class NetworkManager {
 
     connect(id) {
         this._setupConnection(this.peer.connect(id));
+    }
+
+    async waitForPeerReady() {
+        // Wait until the peer 'open' event fires and isHost is determined
+        while (!this.peerReady) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+        }
     }
 
     _setupConnection(c) {
@@ -71,6 +82,7 @@ export default class NetworkManager {
         console.log("🤝 Handshakey! 🔌 Connected to:", c.peer);
         
         // send our own identity immediately
+        // Note: Don't include garageIndex yet - wait for host to tell us what's available
         const pakketje = { 
             type: 'hello',
             id: this.peer.id,
@@ -83,8 +95,8 @@ export default class NetworkManager {
         // if we're the host, also let the newcomer know about everyone who's already joined
         if (this.isHost) {
             this.game.opponents.forEach(opp => {
-                // skip AI opponents, only network peers
-                if (opp.id && opp.id !== this.peer.id) {
+                // Only send 'hello' about network peers, not AI opponents
+                if (opp.id && opp.id !== this.peer.id && !(opp instanceof AIOpponent)) {
                     c.send({
                         type: 'hello',
                         id: opp.id,
@@ -116,5 +128,12 @@ export default class NetworkManager {
         // clients only have one connection (to the host), so this is a simple alias.
         // hosts will loop through all conns as well since broadcast is the same implementation.
         this.broadcast(data);
+    }
+
+    sendTo(peerId, data) {
+        const conn = this.connections.get(peerId);
+        if (conn && conn.open) {
+            conn.send(data);
+        }
     }
 }
