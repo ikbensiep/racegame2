@@ -37,7 +37,6 @@
       }
     }
   }
-  outline: 1px solid
 }
 
 .vehicle-lights {
@@ -46,16 +45,13 @@
   width: var(--size);
   height: var(--size);
   position: absolute;
-  left: calc(var(--player-x) * 1px - calc(var(--size) / 2 - 132px));
-  top: calc(var(--player-y) * 1px - calc(var(--size) / 2 - 130px));
+  left: calc(var(--player-x) * 1px - calc(var(--size) / 2));
+  top: calc(var(--player-y) * 1px - calc(var(--size) / 2));
   translate: calc(var(--player-x) * -1px + (calc(var(--player-x) - var(--cam-x)) * 1px ) ) calc(var(--player-y) * -1px + (calc(var(--player-y) - var(--cam-y)) * 1px ));
   background: url(/assets/cars/car-lights-2.png) 50% 50% no-repeat;
   rotate: calc(var(--player-angle) * 1rad);
   background-size: 50%;
-  outline: 2px dashed yellow;
-  
-  
-  
+
 &::after {
     content: '';
     width: 5px;
