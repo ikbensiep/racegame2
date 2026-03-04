@@ -49,7 +49,7 @@ export default class Player extends Vehicle {
 
   async init () {
     this.tireTrackPool = [];
-    this.maxTireTracks = 20;
+    this.maxTireTracks = 80;
     this.tireTrackInterval = 0;
     this.createTireTracks();
 
@@ -68,6 +68,7 @@ export default class Player extends Vehicle {
 
   getTireTrack () {
     for(let i=0; i< this.tireTrackPool.length; i++) {
+      this.tireTrackPool[i].domElement.id=`tiretracc-${i}`
       if (this.tireTrackPool[i].free) {
         this.tireTrackPool[i].domElement.classList.add('fade');
         return this.tireTrackPool[i];
@@ -90,19 +91,21 @@ export default class Player extends Vehicle {
       // Multipliers
       const currentAccel = d.acceleration * s.power;
       const currentFriction = d.friction * s.drag;
-      const currentGrip = (1 - d.driftFactor) * s.grip;
+      const currentDrift = handbrake ? d.handbrakeDrift : d.driftFactor;
+      const currentGrip = (1 - currentDrift) * s.grip;
 
+      this.element.dataset.drift = currentDrift.toFixed(2);
       this.element.dataset.accel = currentAccel.toFixed(2);
       this.element.dataset.friction = currentFriction.toFixed(2);
       this.element.dataset.grip = currentGrip.toFixed(2);
 
       // 1. Versnelling & Remmen
       if (gas > 0) this.speed += (gas * currentAccel) * dt;
-      if (brake > 0) this.speed -= (brake * currentFriction) * dt;
+      if (brake > 0) this.speed -= (brake * currentFriction) * (dt / 2);
 
       // Snelheidslimiet
       if (this.speed > d.maxSpeed) this.speed = d.maxSpeed;
-      if (this.speed < -d.maxSpeed / 2) this.speed = -d.maxSpeed ;
+      if (this.speed < -d.maxSpeed) this.speed = -d.maxSpeed;
 
       // 2. Wrijving
       this.speed *= (1 - (1 - d.friction) * dt);
@@ -125,8 +128,7 @@ export default class Player extends Vehicle {
       }
 
       // 4. Grip & Drift 
-      const currentDrift = handbrake ? d.handbrakeDrift : d.driftFactor;
-      this.element.dataset.drift = currentDrift.toFixed(2);
+      
       const targetVX = Math.cos(this.angle) * this.speed;
       const targetVY = Math.sin(this.angle) * this.speed;
 
@@ -148,10 +150,11 @@ export default class Player extends Vehicle {
         ) {
         let tiretrack = this.getTireTrack();
         if(tiretrack) {
+          console.warn(this.activeSurface)
           let offset = sidesFromHypotenhuse(this.width * .25, this.angle)
-          !this.isOnRoad ? tiretrack.domElement.classList.add('dirt') : tiretrack.domElement.classList.remove('dirt');
           tiretrack.domElement.dataset.velocity = Math.floor(this.speed);
           tiretrack.domElement.style.setProperty('--speed', Math.floor(this.speed * 2));
+          tiretrack.domElement.classList.add(this.activeSurface);
           tiretrack.start(this.x - offset.width, this.y - offset.height, this.angle );
         }
         this.tireTrackInterval = 0;
@@ -313,6 +316,7 @@ export default class Player extends Vehicle {
       if(this.activeSurface !== surface) {
         this.activeSurface = surface;
         this.element.dataset.state = surface;
+
         /* Maybe later? */
         // this.game.effects.trigger(this, surface, 500);
   
@@ -323,28 +327,37 @@ export default class Player extends Vehicle {
           strongMagnitude: 0
         }
         
-        
         switch(this.activeSurface) {
           case 'sand':
           case 'gravel': 
             haptics.strongMagnitude = this.speed / 20;
             playHaptics = true;
             break;
-          case 'racetrack':
+          case 'asphalt':
             haptics.weakMagnitude = this.speed / 100;
             haptics.strongMagnitude = .1;
             playHaptics = true;
             break;
           default:
-            playHaptics = false;
+            // playHaptics = false;
             break;
         }
       }
       
       playHaptics ?? this.playHapticFeedBack (haptics)
 
-      this.engineSound && this.engineSound.update((Math.abs(Math.floor(this.speed)) * .025));
+      // Update our own engine sound (pitch only - listener is self so pan stays centered)
       
+      if (this.engineSound) {
+        this.engineSound.update(
+          (Math.abs(Math.floor(this.speed)) * .025),
+          { source: this, screenSpace: !!this.game.settings.audioPanScreenSpace, maxDistance: 8192 }
+        );
+        let targetValue = .2 + (Math.abs(this.speed) / this.dynamics.maxSpeed);
+        
+        this.engineSound.gainNode.gain.setTargetAtTime(targetValue, this.engineSound.source.context.currentTime + 1, 2.5);
+      }
+
       // if(this.speed == 0) {
       //   this.engineShutDownTimer += dt;
 
@@ -409,8 +422,19 @@ export default class Player extends Vehicle {
       this.isColliding = false;
     }
 
-    // Update opponents
+    // Update opponents (pitch + spatial sound) and check collisions
     this.game.opponents.forEach(opp => {
+      // make sure the engine sound follows opponent's speed and position
+      if (opp.engineSound) {
+        const pitch = (Math.abs(Math.floor(opp.speed)) * .025);
+        opp.engineSound.update(pitch, { 
+          source: opp, 
+          listener: this,
+          screenSpace: !!this.game.settings.audioPanScreenSpace,
+          maxDistance: 8192
+        });
+      }
+
       const dx = this.x - opp.x;
       const dy = this.y - opp.y;
       const distanceSq = dx * dx + dy * dy;
@@ -441,9 +465,9 @@ export default class Player extends Vehicle {
 
     super.draw();
 
-    this.game.world.element.style.setProperty('--player-x', this.x);
-    this.game.world.element.style.setProperty('--player-y', this.y);
-    this.game.world.element.style.setProperty('--player-angle', this.angle);
+    this.game.world.element.style.setProperty('--player-x', this.x.toFixed(3));
+    this.game.world.element.style.setProperty('--player-y', this.y.toFixed(3));
+    this.game.world.element.style.setProperty('--player-angle', this.angle.toFixed(3));
 
     if (this.isLocal) {
       //TODO: update to use CameraManager class
