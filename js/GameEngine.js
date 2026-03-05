@@ -12,6 +12,8 @@ import { SoundManager } from './Sound.js';
 export default class GameEngine {
     constructor(settings) {
 
+      this.debug = false;
+
       this.settings = settings;
       this.settings.audioPanScreenSpace = true;
       this.lastTime = 0;
@@ -317,14 +319,33 @@ export default class GameEngine {
 
     start() {
 
-        console.log(`starting game loop`, this)
+        console.log(`starting game loop`, this);
+        
+        // Guard against multiple start() calls
+        if (this.loopRunning) {
+            console.warn('Game loop already running, ignoring duplicate start() call');
+            return;
+        }
+        this.loopRunning = true;
+        
+        let frameCount = 0;
+        
         const loop = () => {
+          frameCount++;
           const currentTime = performance.now(); 
           let frameTime = (currentTime - this.lastTime) / 16.66;
 
-          if (frameTime > 4) frameTime = 4;
-
           this.lastTime = currentTime;
+          
+          // Log frame updates for debugging
+          if (this.debug && frameCount % 60 === 0) {
+              const playerUpdates = window.__playerUpdateCount || 0;
+              const getInputsCalls = window.__getInputsCount || 0;
+              console.log(`Frame ${frameCount}: update called ${playerUpdates} times, getInputs called ${getInputsCalls} times`);
+              window.__playerUpdateCount = 0;
+              window.__getInputsCount = 0;
+          }
+          
           this.update(frameTime);
           this.draw();
 

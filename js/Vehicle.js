@@ -51,7 +51,7 @@ export default class Vehicle {
 
     if (body) {
       carElement.style.setProperty('--radius', this.radius)
-      body.dataset.drivername = this.name;
+      carElement.dataset.drivername = this.name;
       body.dataset.drivernum = this.driverNumber;
       let rect = body.getBoundingClientRect();
       this.width = rect.width;
@@ -114,6 +114,6 @@ async _createEngineSound() {
     this.element.style.setProperty('--x', Math.floor(this.x));
     this.element.style.setProperty('--y', Math.floor(this.y));
     this.element.style.setProperty('--angle', parseFloat(this.angle.toFixed(3)));
-
+    this.element.style.setProperty('--speed', this.speed ? Math.floor(this.speed) : 0);
   }
 }

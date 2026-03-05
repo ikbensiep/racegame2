@@ -47,6 +47,8 @@
     font-weight: 600;
     border-radius: 2px;
     place-self: start center;
+    opacity: calc((50 - var(--speed)) * .02);
+    translate: 0 calc(-5rem * (var(--speed) / 35));
   }
 
   /* collider viz circle */

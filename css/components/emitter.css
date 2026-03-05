@@ -91,12 +91,14 @@
       object-fit: fill;
     }
 
-    &.dirt {
-      opacity: .75;
-      --animation-delay: 0s;
-      /* mask-image: url('../assets/environment/fibers.png');
-      mask-position: 40px;
-      filter: drop-shadow(0 -4px white); */
+    &.dirt, &.grass, &.gravel {
+      &:not(.asphalt):not(.paddock):not(.pitlane) {
+        opacity: .75;
+        --animation-delay: 0s;
+        mask-image: url('/assets/environment/fibers.png');
+        mask-position: 40px;
+        filter: drop-shadow(0 -4px #fff9); 
+      }
     }
   }
 

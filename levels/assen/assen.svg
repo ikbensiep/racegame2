@@ -34,8 +34,8 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="0.4187398"
      inkscape:cx="21446.493"
-     inkscape:cy="6463.4411"
-     inkscape:current-layer="layer5"
+     inkscape:cy="6463.441"
+     inkscape:current-layer="garage-0"
      showguides="true"
      inkscape:window-width="2560"
      inkscape:window-height="1374"
@@ -2478,7 +2478,7 @@
        inkscape:groupmode="layer"
        id="layer5"
        inkscape:label="players-paddock"><g
-         id="g127"><rect
+         id="garage-0"><rect
            style="fill:#fdfdc4;stroke:none;stroke-width:128;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:12.8, 511.999;paint-order:fill markers stroke"
            id="rect94"
            width="200"

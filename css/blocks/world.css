@@ -12,8 +12,6 @@
 
 #canvas.world {
   
-  /* 8k: easy to remember, fun to type number (provided u have a numpad) */
-  
   --animation-duration: 1;
   --player-position: calc(var(--player-x) * 1px) calc(var(--player-y) * 1px);
   --player-position-with-offset: calc(var(--cam-x) * -1px ) calc(var(--cam-y) * -1px );
@@ -80,8 +78,6 @@
     left: 0;
     top: 0;
     opacity: abs(var(--pp-time-of-day, 0));
-
-    transition: opacity 1s;
 
   }
 

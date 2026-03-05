@@ -50,7 +50,7 @@ body {
 
 /* TODO: organize */
 
-bodyu > .off-screen {
+.preload.off-screen {
   display: none;
 }
 

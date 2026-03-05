@@ -24,6 +24,7 @@ export default class Player extends Vehicle {
     this.vy = 0;
     this.angle = 0; 
     this.steerInput = 0;
+    this.movementAngle = 0;
 
     this.isBraking = false;
 
@@ -136,6 +137,8 @@ export default class Player extends Vehicle {
       this.vx += (targetVX - this.vx) * lerpFactor;
       this.vy += (targetVY - this.vy) * lerpFactor;
 
+      this.movementAngle = Math.atan2(this.vy, this.vx);
+
       // 5. Beweging
       this.x += this.vx * dt;
       this.y += this.vy * dt;
@@ -155,7 +158,8 @@ export default class Player extends Vehicle {
           tiretrack.domElement.dataset.velocity = Math.floor(this.speed);
           tiretrack.domElement.style.setProperty('--speed', Math.floor(this.speed * 2));
           tiretrack.domElement.classList.add(this.activeSurface);
-          tiretrack.start(this.x - offset.width, this.y - offset.height, this.angle );
+          
+          tiretrack.start(this.x - offset.width, this.y - offset.height, this.movementAngle);  // Use movement direction for sprite rotation
         }
         this.tireTrackInterval = 0;
       } else {
@@ -273,13 +277,19 @@ export default class Player extends Vehicle {
   }
 
   playHapticFeedBack (haptics) {
-    const gamepad = this.inputHandler.gamePad;
+    // Always get a fresh gamepad reference from navigator for vibrationActuator
+    // Using a stale reference can fail, especially in Chrome
+    const gamepad = navigator.getGamepads()[0];
     if(!gamepad || !gamepad.vibrationActuator ) return;
+    
     gamepad.vibrationActuator.playEffect("dual-rumble", {
       startDelay: haptics.startDelay || 0,
       duration: haptics.duration || 20,      // Kort maar krachtig
       weakMagnitude: haptics.weakMagnitude || 0.5, // De lichte trilmotor
       strongMagnitude: haptics.strongMagnitude || 0.2 // De zware trilmotor (voor de klap)
+    }).catch(err => {
+      // Gracefully handle any vibration API errors
+      console.warn('Haptic feedback failed:', err);
     });
   }
 
@@ -298,6 +308,10 @@ export default class Player extends Vehicle {
 
     if (!this.isLocal) return;
     
+    // Debug: track calls per frame
+    if (!window.__playerUpdateCount) window.__playerUpdateCount = 0;
+    window.__playerUpdateCount++;
+    
     const input = this.inputHandler.getInputs();
     const surface = this.game.world.getSurfaceType(this.x, this.y);
 
@@ -306,7 +320,7 @@ export default class Player extends Vehicle {
     } else {
 
       this.intervalUpdateTimer = 0;
-      this.element.dataset.speed = Math.floor(this.speed);
+      this.element.dataset.speed = Math.floor(Math.abs(this.speed));
       this.element.dataset.vx = Math.floor(this.vx);
       this.element.dataset.vy = Math.floor(this.vy);
       this.element.dataset.angle = Math.floor(this.angle);

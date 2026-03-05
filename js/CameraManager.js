@@ -9,7 +9,7 @@ export default class CameraManager {
     this.dayTimeUpdater = 0;
     this.cullingObserverObtions = {
       root: this.element,
-      rootMargin: "256px",
+      rootMargin: "512px",
       threshold: 0.0,
     };
     
@@ -60,21 +60,9 @@ export default class CameraManager {
   }
 
   update(dt) {
-    // day / night cycle
-    if(this.dayTimeUpdater < 10000) {
-      let now = new Date();
-      try {
-        let timeEl = document.querySelector('input[name="time-of-day"]');
-        timeEl.value = Math.sin(now.getTime() / 10000);
-        let event = new Event('input');
-        timeEl.dispatchEvent(event);
-        this.dayTimeUpdater + dt;
-      } catch (e) {
-        console.error(e)
-      }
-    } else {
-      this.dayTimeUpdater = 0
-    }
+    // TODO: fix day / night cycle
+    // this.dayTimeUpdater = 0
+    
 
     if (!this.target || this.freeRoam) return;
 

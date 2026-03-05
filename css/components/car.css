@@ -48,7 +48,7 @@
   place-content: center;
   
   --driver-color: var(--player-color);
-  --driver-id: attr(id);
+  --driver-id: attr(data-drivername);
   --driver-num: attr(data-drivernum);
 
   /* 

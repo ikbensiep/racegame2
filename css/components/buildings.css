@@ -75,8 +75,6 @@
   
   /* FIXME: fake ambient occlusion / contact shadow + ambient light coming from windows */
   box-shadow: 0 0 10px #0006, 0 0 42px 26px rgb(from var(--face-color) r g b / .25);
-
-  transition: .2s linear;
   
   &:not([class]) {
     background-image: url('/assets/uvmap.png');
@@ -254,8 +252,7 @@
     rotateX(90deg); 
   */
   will-change: auto; 
-  transition: opacity .5s linear;
-
+ 
   /* FIXME: build generic/central intr6nObserver 3D-culling fix  */
   &.off-screen { 
     /* opacity: 0; */
