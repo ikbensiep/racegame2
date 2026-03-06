@@ -1,6 +1,6 @@
 import Emitter from './tools/Emitter.js'
 import InputHandler from './InputHandler.js';
-import { sidesFromHypotenhuse } from './tools/MathUtils.js';
+import { getDistance, sidesFromHypotenhuse } from './tools/MathUtils.js';
 import Vehicle from './Vehicle.js';
 import { TweakManager } from './tools/Tweaker.js';
 import * as Presets from './VehicleDynamics.js';
@@ -55,9 +55,9 @@ export default class Player extends Vehicle {
     this.createTireTracks();
 
     this.smokePool = [];
-    this.maxSmoke = 10;
+    this.maxSmoke = 40;
     this.smokeInterval = 0;
-    // this.createSmokePuffs();
+    this.createSmokePuffs();
 
   }
 
@@ -73,6 +73,21 @@ export default class Player extends Vehicle {
       if (this.tireTrackPool[i].free) {
         this.tireTrackPool[i].domElement.classList.add('fade');
         return this.tireTrackPool[i];
+      }
+    }
+  }
+
+  createSmokePuffs () {
+    for(let i=0; i<this.maxSmoke; i++) {
+      this.smokePool.push(new Emitter(this.game, window.smokeSprite, 256, 256, 11, false, this.game.world.element, false));
+    }
+  }
+
+  getSmoke () {
+    for(let i=0; i< this.smokePool.length; i++) {
+      this.smokePool[i].domElement.id=`smoke-${i}`
+      if (this.smokePool[i].free) {
+        return this.smokePool[i];
       }
     }
   }
@@ -151,15 +166,16 @@ export default class Player extends Vehicle {
           
         )
         ) {
+        let smoke = this.getSmoke();  
         let tiretrack = this.getTireTrack();
         if(tiretrack) {
-          console.warn(this.activeSurface)
-          let offset = sidesFromHypotenhuse(this.width * .25, this.angle)
+          let offset = sidesFromHypotenhuse(this.width * .33, this.movementAngle)
           tiretrack.domElement.dataset.velocity = Math.floor(this.speed);
           tiretrack.domElement.style.setProperty('--speed', Math.floor(this.speed * 2));
           tiretrack.domElement.classList.add(this.activeSurface);
-          
-          tiretrack.start(this.x - offset.width, this.y - offset.height, this.movementAngle);  // Use movement direction for sprite rotation
+          tiretrack.start(this.x - offset.width, this.y - offset.height, `${this.movementAngle}rad`); // Use movement direction for sprite rotation
+          smoke?.start(this.x - offset.width, this.y - offset.height, `${(Math.random() * 720) - 360}deg`);
+          smoke?.domElement.classList.add(this.activeSurface);
         }
         this.tireTrackInterval = 0;
       } else {
@@ -313,6 +329,7 @@ export default class Player extends Vehicle {
     window.__playerUpdateCount++;
     
     const input = this.inputHandler.getInputs();
+    
     const surface = this.game.world.getSurfaceType(this.x, this.y);
 
     if(this.intervalUpdateTimer < 10) {
@@ -471,6 +488,41 @@ export default class Player extends Vehicle {
       }
     });
 
+    // dispatch nearby marshals when offroad
+    // TODO: move to function
+    
+    if(surface === 'grass' || surface === 'gravel' || surface === 'out-of-bounds') {
+
+      this.game.world.element.dataset.flag = 'yellow';
+
+      let nearestMarshalPosts = Array.from(this.game.world.marshalPosts).filter (post => {
+        let postLocation = {x: post.cx.baseVal.value,y: post.cy.baseVal.value};
+        let distanceToPlayer = getDistance(postLocation, this);
+        if( distanceToPlayer < this.game.camera.viewPortSize.width) {
+          post.distance = distanceToPlayer;
+          return post;
+        }
+      });
+
+
+      let nearest = nearestMarshalPosts.sort((a, b) => a.distance - b.distance);
+      let lilguys = this.game.world.marshals.filter (dude => dude.base == nearest[0] && dude.status !== 'dead');
+
+      lilguys.forEach(dude => dude.status = 'rescue');
+      console.log(lilguys);
+    } else {
+
+      this.game.world.element.dataset.flag = 'green';
+
+      this.game.world.marshals.map (dude => {
+        if(dude.status !== 'dead') {
+          dude.status = 'idle'
+        }
+      });
+    }
+
+    this.game.world.marshals.forEach(marshal => marshal.update(dt))
+    this.smokePool.forEach(smoke => smoke.update(dt));
 
   }
 
@@ -483,9 +535,5 @@ export default class Player extends Vehicle {
     this.game.world.element.style.setProperty('--player-y', this.y.toFixed(3));
     this.game.world.element.style.setProperty('--player-angle', this.angle.toFixed(3));
 
-    if (this.isLocal) {
-      //TODO: update to use CameraManager class
-      // this.element.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
-    }
   }
 }

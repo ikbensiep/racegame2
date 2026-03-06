@@ -90,8 +90,10 @@ export default class BuildingFactory {
             --column-size: ${props.gap};
             --column-fill-size: ${props.wall};
             --weathering: ${props.strokeOpacity};
-            --roof-type: ${props.roof}
+            --roof-type: ${props.roof};
+            
         `;
+        if (props.strokeLineJoin == 'bevel') structure.dataset.graffiti = 'true';
         return structure;
     }
 

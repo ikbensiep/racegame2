@@ -58,21 +58,21 @@
     scale: 1;
     --to-scale: 3;
 
-    --mask-image: url('../assets/smoke/smoke-sprite-2.png');
+    --mask-image: url('/assets/smoke/smoke-sprite-2.png');
     animation: smoke 1.3s .5s linear forwards 1 !important;
     
-    &.smoke-alt {
+    &:nth-last-of-type(2+n) {
       background-color: skyblue;
       /* --mask-image: url('../assets/smoke/smoke-sprite.png'); */
     }
     
 
-    &.dust {
+    &.gravel {
       opacity: 1;
       background: transparent;
       background-image: url('../assets/noise.png'), radial-gradient(#61572ff5, rgba(255, 255, 0, 0.103));
       background-size: 200%, 100%;
-      --mask-image: url('../assets/smoke/smoke-sprite-2.png');
+      --mask-image: url('/assets/smoke/smoke-sprite-2.png');
       
     } 
 

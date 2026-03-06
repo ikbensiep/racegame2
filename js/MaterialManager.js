@@ -31,7 +31,8 @@ export default class MaterialManager {
             strokeWidth: strokeWidth,
             wall: parseInt(parts[0]) || 10,
             gap: parseInt(parts[1]) || 0,
-            roof: tempEl.style.getPropertyValue('stroke-linecap') === 'square' ? 'overhang' : 'flat'
+            roof: tempEl.style.getPropertyValue('stroke-linecap') === 'square' ? 'overhang' : 'flat',
+            strokeLineJoin: tempEl.style.getPropertyValue('stroke-linejoin')
         };
     }
 }

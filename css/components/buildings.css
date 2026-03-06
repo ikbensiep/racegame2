@@ -63,7 +63,8 @@
   height: var(--h);
   left: 0;
   top: 0;
-
+  contain: layout size style;
+  
   /* Volgorde: Eerst naar X,Y (wereld), dan rotatie om eigen as */
   transform: rotateZ(var(--rz)) translate3d(var(--x), var(--y), 0);
   transform-origin: 0 0;

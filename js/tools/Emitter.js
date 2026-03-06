@@ -1,3 +1,4 @@
+import { getDistance } from "./MathUtils.js";
 export default class Emitter {
   constructor(game, elem, width, height, maxFrame, sticky, targetLayer, loop = false) {
     this.game = game;
@@ -34,7 +35,7 @@ export default class Emitter {
 
     this.domElement.addEventListener('animationend', (event) => {
       if(event.animationName) {
-        console.log(`${this.domElement.className} animation ended, scheduling DOM removal`);
+        this.game.debug && console.log(`${this.domElement.className} animation ended, scheduling DOM removal`);
         this.reset();
       }
     })
@@ -51,13 +52,11 @@ export default class Emitter {
   }
 
   draw () {
-    console.log(`draw sprite ${this.domElement.className}`)
-    
-    console.log(this.domElement.className, this.speed);
-    
+    console.log('draw sprite', this.domElement)
+    this.game.debug && console.log(this.domElement.className, this.speed);
 
-    let distanceToPlayer = this.game.getDistance(this, this.game.localPlayer);
-    if(!this.free && distanceToPlayer < this.game.cameraViewportSize.innerWidth) {
+    let distanceToPlayer = getDistance(this, this.game.localPlayer);
+    if(!this.free && distanceToPlayer < this.game.camera.viewPortSize.width) {
       // sprite animation is handled by changing the CSS `object-position` using a css variable
       // (see `.emitter-object` @ style.css)
       if(this.maxFrame) {
@@ -66,7 +65,7 @@ export default class Emitter {
       }
       this.domElement.style.setProperty('--left',`${parseInt(this.position.x)}px`);
       this.domElement.style.setProperty('--top',`${parseInt(this.position.y)}px`);
-      this.domElement.style.setProperty('--rot',`${this.rotation}rad`);
+      this.domElement.style.setProperty('--rot',`${this.rotation}`);
     }
   }
 
@@ -84,7 +83,7 @@ export default class Emitter {
 
         this.domElement.style.setProperty('--left',`${left}px`);
         this.domElement.style.setProperty('--top',`${top}px`);
-        this.domElement.style.setProperty('--rot',`${rot}rad`);
+        this.domElement.style.setProperty('--rot',`${rot}`);
       }
 
       if(this.animationTimer > this.animationInterval) {
@@ -156,14 +155,14 @@ export default class Emitter {
       
       this.domElement.style.setProperty('--left',`${parseInt(this.position.x)}px`);
       this.domElement.style.setProperty('--top',`${parseInt(this.position.y)}px`);
-      this.domElement.style.setProperty('--rot',`${rot}rad`);
+      this.domElement.style.setProperty('--rot',`${rot}`);
       
       this.sticky && this.domElement.classList.add('sticky');
       
       if (this.targetLayer && this.domElement) {
         this.targetLayer.appendChild(this.domElement);
       }
-      console.log(this.domElement)
+      this.game.debug && console.log(this.domElement)
     }
     
     // FIXME (MAYBE?): instead of appending a sprite when needed,

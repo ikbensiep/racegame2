@@ -3,23 +3,24 @@
 
 .building {
 
-  &::before {
+  /* &::before {
     content: 'building floor level';
     position: absolute;
     inset: 0;
     padding: 1ex;
     color: pink;
-  }
+  } */
 
-  &::after {
+  /* &::after {
     content: 'structure: ' attr(class);
     background-color: #67676706;
     border-radius: 32px;
     position: absolute;
     inset: -72px;
     padding: 3ex 72px;
-    transform: translateZ(-1px); /* sit just behind the building faces */
-  }
+    transform: translateZ(-1px); 
+    
+  } */
 
   .wall-n, 
   .wall-e,
@@ -211,6 +212,9 @@
 
   &.walkway {
     &::after {
+      content: '';
+      position: absolute;
+      inset: 0;;
       mask-image: radial-gradient(black 0px, black 2px, white 2px);
       mask-mode: luminance;
       mask-size: 8px 8px;
@@ -363,8 +367,14 @@
   .wall-s,
   .wall-w  {
     background-image: url(/assets/environment/facade/commercial.jpg);
-    background-size: 592px 412px;
+    background-size: 320px 72px;
+    background-position: bottom;
   }
+  
+  /* TODO: we could make variations using 
+   * filter: hue-rotate() saturation() sepia() etc 
+   * using :nth-of-type(n) or something even more clever 
+   */
 }
 
 .mat-townhouse {
@@ -377,21 +387,33 @@
   }
 }
 
+/* beetje lief voor jezelf zijn zo nu en dan */
+.mat-office,
 .mat-offices {
   .wall-n,
   .wall-e,
   .wall-s,
   .wall-w  {
-    background-image: url(/assets/environment/facade/offices.webp);
-    background-size: 592px 412px;
-    &::after{
-      content: 'graffiti';
-      position: absolute;
-      inset: 0;
-      background-color: black;
-      mask-image: url(/assets/environment/graffiti-mask.webp);
-      mask-type: luminance;
-      mask-position: bottom;
+    /* TODO: cut this texture into two separate textures (glass, concrete) */
+    background-image: url(/assets/environment/facade/photo-1639649151124-cbfe4bf6b475.avif);
+    background-size: 302px 276px;
+  }
+  &[data-graffiti] {
+    .wall-n,
+    .wall-e,
+    .wall-s,
+    .wall-w  {
+      &::after{
+        content: 'graffiti';
+        position: absolute;
+        inset: 0;
+        background-color: black;
+        mask-image: url(/assets/environment/graffiti-mask.webp);
+        mask-mode: luminance;
+        mask-position: bottom;
+        mask-repeat: no-repeat;
+        mask-size: 512px 128px;
+      }
     }
   }
 }

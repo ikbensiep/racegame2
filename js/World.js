@@ -1,4 +1,5 @@
 import BuildingFactory from "./BuildingFactory.js";
+import Marshal from "./NPC-Marshal.js";
 export default class World {
   constructor(game) {
     this.isLoaded = false;
@@ -7,6 +8,7 @@ export default class World {
     this.width = 0;
     this.height = 0;
     this.element = document.querySelector('main#canvas');
+    this.lightLayer = this.element.querySelector('#light-layer')
     this.svgElement = undefined;
 
     this.spawnPoints = [];
@@ -21,15 +23,12 @@ export default class World {
 
     this.trackPath = null; // The racetrack path
     this.trackElement = null;
-    this.trackWidth = 500;
     this.structures = [];
     this.buildingFactory = new BuildingFactory(this.game);
 
-    console.log(this.logicCtx)
+    this.marshals = [];
 
-    this.paths = {
-      
-    }
+    this.paths = {}
 
     this.lapTimer = null;
 
@@ -80,22 +79,14 @@ export default class World {
     
     const timingGroup = this.svgElement.getElementById('timing');
 
-    // Arbitrary check to see if the bare mninimum exists, probably nonsense test by now 
-    if (this.trackElement && timingGroup) {
-      
-      // We halen ook de stroke-width op uit de SVG (belangrijk voor de breedte van de baan!)
-      this.trackWidth = parseFloat(window.getComputedStyle(this.trackElement).strokeWidth) || 520;
-      
-    }
-
-
-    
     // 3. Find building ground plates for 3D box factory
     
     console.time('generate-buildings');
     await this.generateBuildings();
     console.timeEnd('generate-buildings');
-
+    console.time('add-marshals')
+    await this.addMarshals();
+    console.timeEnd('add-marshals')
     this.isLoaded = true;
     this.element.querySelector('#worldmap svg').remove();
     
@@ -277,6 +268,51 @@ export default class World {
     console.log("🏙️ 3D World populated via BuildingFactory");
 }
 
+  async addMarshals () {
+    let svg = this.svgElement
+    let marshalTargetLayer = this.element;
+    let marshalPostTargetLayer = this.element;
+    
+    let lamp = document.createElement('span');
+    lamp.className = 'lamp-post';
+
+    this.marshalPosts = svg.querySelectorAll('#marshal-posts > *') || [];
+    console.groupCollapsed('marshals')
+    this.marshalPosts.forEach( (post, postIndex) => {
+      console.groupCollapsed(`marshal post ${postIndex}`)
+      post.id = 'post-' + (postIndex + 1);
+      let cx = post.getAttribute('cx');
+      let cy = post.getAttribute('cy');
+      
+      // add a light
+      let postlamp = lamp.cloneNode();
+      postlamp.style.left = cx + 'px';
+      postlamp.style.top = cy + 'px';
+      this.lightLayer.appendChild(postlamp);
+
+      // add a bouwkeet 
+      try {
+
+        let keet = new Emitter(this.gameCamera, window.hokjeSprite, 128, 64, 1, true, marshalPostTargetLayer, false);
+        this.marshalKeten.push(keet);
+        keet.start(cx, cy, 0);
+
+      } catch (e) {
+        console.error('geen keet', e)
+      }
+      // add a team of lil guys
+      for(let i=0; i<3; i++) {
+        let marshal = new Marshal(this.game, window.marshalSprite, post, marshalTargetLayer, i, 64, 7);
+        this.marshals.push(marshal);
+        marshal.init();
+        console.log(`marshal ${i}`)
+      }
+
+      console.groupEnd()
+    });
+    console.groupEnd('marshals')
+  }
+
   // Controleer of een punt (x, y) binnen de wereldgrenzen valt
   isOutOfBounds(x, y, size) {
     return (
@@ -287,7 +323,7 @@ export default class World {
     );
   }
 
-  // Geeft de cirkel terug waarmee je in botsting bent gekomen (precise language matters piepol), of null
+  // Geeft de cirkel/het ding terug waarmee je in botsing bent gekomen 
   getCollision(px, py, pr) {
     for (let i = 0; i < this.collidibles.length; i++) {
       const c = this.collidibles[i];
@@ -310,23 +346,9 @@ export default class World {
 
   getSurfaceType(x, y) {
     
-    // Stel de dikte in voor de stroke-check
-    // this.logicCtx.lineWidth = this.trackWidth;
-    // isPointInStroke checkt de wiskundige lijn, ongeacht canvas-grootte
-    // if (this.logicCtx.isPointInStroke(this.trackPath, x, y)) {
-    //     return 'asphalt';
-    // }
-
-    // this.logicCtx.lineWidth = 1;
-    // if (this.logicCtx.isPointInPath(this.paths.worldBG, x, y)) {
-    //   return 'grass';
-    // } else {
-    //   /* etc */
-    //   return 'asphalt';
-    // }
-
- // 1. Definieer de prioriteit (van specifiek naar algemeen)
+  // 1. Definieer de prioriteit (van specifiek naar algemeen)
   // We checken de 'kleine' vlakken eerst.
+  // TODO zet this.paths.pitbox naar rect in {game.localplayer.garage}
   const surfaceRules = [
     { path: this.paths.pitbox,      type: 'pitbox',      method: 'fill'   },
     { path: this.paths.pitlane,     type: 'pitlane',     method: 'stroke', width: 280 }, 
@@ -339,6 +361,7 @@ export default class World {
   ];
 
   // 2. Loop door de regels en return de eerste match
+  // TODO: check logische volgorde van rules hierboven. Tunnel (sfx trigger) lijkt me hoger dan asfalt bijv?
   for (const rule of surfaceRules) {
     if (!rule.path) continue; // Skip als het pad niet bestaat (zoals optionele tunnels)
 

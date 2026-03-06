@@ -32,10 +32,10 @@
      showborder="true"
      inkscape:snap-page="true"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="0.4187398"
-     inkscape:cx="21446.493"
-     inkscape:cy="6463.441"
-     inkscape:current-layer="garage-0"
+     inkscape:zoom="0.8374796"
+     inkscape:cx="19377.785"
+     inkscape:cy="7890.9385"
+     inkscape:current-layer="building-3D-groundplates"
      showguides="true"
      inkscape:window-width="2560"
      inkscape:window-height="1374"
@@ -2949,7 +2949,7 @@
      id="elevated"
      inkscape:label="elevated"
      inkscape:highlight-color="#5a8561"
-     style="display:none;opacity:1;stroke-width:0.971629"
+     style="display:inline;opacity:1;stroke-width:0.971629"
      class="g"><path
        id="path11524"
        style="display:inline;opacity:1;fill:url(#pattern73);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.94326;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -4210,7 +4210,7 @@
      id="building-3D-groundplates"
      inkscape:label="building groundplates"
      inkscape:highlight-color="#000000"
-     style="display:none"><rect
+     style="display:inline"><rect
        style="display:inline;fill:#c8ab37;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers fill stroke"
        id="rect13"
        width="1093.168"
@@ -4260,7 +4260,7 @@
        x="18223.512"
        y="-10601.785"
        transform="rotate(52.152528)"
-       class="paddock racecontrol" /><rect
+       class="commercial racecontrol" /><rect
        style="opacity:1;fill:#79fbfb;fill-opacity:0.566475;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-dasharray:16, 112;stroke-dashoffset:2;stroke-opacity:0.683281;paint-order:fill markers stroke"
        id="rect29"
        width="528.34021"
@@ -4310,7 +4310,7 @@
        x="10252.992"
        y="17853.445"
        transform="rotate(-37.847472)"
-       class="paddock racecontrol"><desc
+       class="offices racecontrol"><desc
          id="desc134">This is the race control tower</desc><title
          id="title133">MY DADDY WORKS HERE U KNOW</title></rect><rect
        style="opacity:1;fill:#00a650;fill-opacity:0.383348;stroke:#005327;stroke-width:1;stroke-linecap:butt;stroke-dasharray:2, 126;stroke-dashoffset:1;stroke-opacity:1;paint-order:fill markers stroke"

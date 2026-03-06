@@ -213,18 +213,18 @@ form {
       input[type="checkbox"] {
         opacity: 0.01;
         height: 0px;
-        ~ * {
+        + * {
           opacity: .5;
           transition: all .2s cubic-bezier(0.075, 0.82, 0.165, 1);
         }
-        ~ img {
+        + img {
           width: 15rem;
           margin: 0 auto;
           
         }
 
         &:checked {
-          ~ * {
+          + * {
             color: white;
             opacity: 1;
             filter: grayscale(0);
@@ -240,7 +240,7 @@ form {
 
       &:hover, &:focus {
         input:not(:checked):not([disabled]) {
-          ~ span, img {
+          + span, img {
             opacity: .75;
           }
         }
@@ -251,7 +251,7 @@ form {
       label {
         position: relative;
         input {
-          ~ img {
+          + img {
             opacity: 1;
             object-position: -100px 0;
             transition: all 1.5s cubic-bezier(0.075, 0.82, 0.165, 1);
@@ -259,7 +259,7 @@ form {
             rotate: 90deg;
             filter: drop-shadow( 5px -5px 5px black) blur(5px);
           }
-          &:checked ~ img {
+          &:checked + img {
             object-position: -10px 0 !important;
             transition-duration: 1s;
             mask: linear-gradient(to right, transparent 3%, white 90%);
@@ -268,7 +268,7 @@ form {
           }
         }
         &:focus, &:hover {
-          input ~ img {
+          input + img {
             object-position: -50px 0;
             filter: drop-shadow( 5px -5px 5px black) blur(2px);
             
