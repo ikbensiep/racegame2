@@ -1,7 +1,6 @@
 
 export default class MaterialManager {
 
-
     static getProperties(rect) {
         const className = rect.getAttribute('class') || rect.getAttributeNS('http://www.inkscape.org/namespaces/inkscape', 'label') || 'default';
         const title = rect.querySelector('title')?.textContent || '';

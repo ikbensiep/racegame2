@@ -2,12 +2,13 @@ import Vehicle from './Vehicle.js';
 export default class AIOpponent extends Vehicle {
     constructor(id, color, game) {
       
-      super(id, `🤖-${id}`, 88, color, game);
+      super(game, id, `🤖-${id}`, 88, color, 'ai', 'default', false);
       this.trackPath = game.world.trackElement;
       this.pathLength = this.trackPath.getTotalLength();
       this.progress = 0; 
       this.speed = 30;
       this.frameTime = 0;
+      this.element.classList.remove('player');
     }
 
     update() {

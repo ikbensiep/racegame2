@@ -69,11 +69,13 @@ export default class NetworkManager {
         // ignore our own echoed messages
         if (data.id === this.peer.id) return;
 
+        // console.debug(`[network] data from ${c.peer}:`, data);
         // notify game logic
         this.onOpponentUpdate(data);
 
         // if we're the host, forward the message to everyone else
         if (this.isHost) {
+        //   console.debug(`[network] host forwarding data from ${c.peer}`);
           this.broadcast(data, c.peer);
         }
       });
@@ -81,29 +83,47 @@ export default class NetworkManager {
       c.on('open', () => {
         console.log("🤝 Handshakey! 🔌 Connected to:", c.peer);
         
-        // send our own identity immediately
-        // Note: Don't include garageIndex yet - wait for host to tell us what's available
-        const pakketje = { 
+        // send our own identity once the local player object is available
+        // Don't include garageIndex yet - wait for host to tell us what's available
+        const sendIdentity = () => {
+          if (!this.game || !this.game.localPlayer) {
+            // try again shortly
+            setTimeout(sendIdentity, 50);
+            return;
+          }
+
+          const lp = this.game.localPlayer;
+          const pakketje = { 
             type: 'hello',
             id: this.peer.id,
-            name: this.game.localPlayer.name || 'Anonymous Racer', // Zorg dat dit ergens staat
-            driverNumber: this.game.localPlayer.driverNumber,
-            color: this.game.localPlayer.color || 'blue'
+            name: lp?.name || 'Anonymous Racer', // Zorg dat dit ergens staat
+            driverNumber: lp?.driverNumber ?? 0,
+            color: lp?.color || 'blue',
+            team: lp?.team || 'porsche',
+            livery: lp?.livery || 'default'
+          };
+          console.debug('[network] sending identity paketje:', pakketje);
+          try { c.send(pakketje); } catch (e) { console.warn('Failed to send identity paketje, will retry', e); setTimeout(sendIdentity, 200); }
         };
-        c.send(pakketje);
+
+        sendIdentity();
 
         // if we're the host, also let the newcomer know about everyone who's already joined
         if (this.isHost) {
             this.game.opponents.forEach(opp => {
                 // Only send 'hello' about network peers, not AI opponents
                 if (opp.id && opp.id !== this.peer.id && !(opp instanceof AIOpponent)) {
-                    c.send({
-                        type: 'hello',
-                        id: opp.id,
-                        name: opp.name,
-                        driverNumber: opp.driverNumber,
-                        color: opp.color
-                    });
+              const hello = {
+                type: 'hello',
+                id: opp.id,
+                name: opp.name,
+                driverNumber: opp.driverNumber,
+                color: opp.color,
+                team: opp.team,
+                livery: opp.livery
+              };
+              console.debug('[network] host -> sending existing opponent to newcomer:', hello);
+              c.send(hello);
                 }
             });
         }

@@ -11,7 +11,7 @@ export default class CameraTweaker {
 
   _setupUI() {
     this.container.innerHTML = `
-      <summary class="tweak-group__summary">Craphics & Gamera</summary>
+      <summary class="tweak-group__summary">📹 Graphics</summary>
       <fieldset>
       <legend>Camera target</legend>
       <label class="tweak-field">
@@ -22,7 +22,17 @@ export default class CameraTweaker {
       </fieldset>
       <fieldset class="time">
         <legend>Time of Day</legend>
-        time <label for="time-of-day"><input type="range" name="time-of-day" id="time-of-day" value="0" min="-1" max="1" step=".0725" /><output for="time-of-day"></output></label>
+        ⌚<label for="time-of-day">
+            <input type="range" name="time-of-day" id="time-of-day" value="0.0625" min="0" max="1" step=".0125" list="hours" />
+            <datalist id="hours">
+              <option value="0">12 am</option>
+              <option value=".25">6 am</option>
+              <option value=".5">12 pm</option>
+              <option value=".75">6 pm</option>
+              <option value="1">12 am</option>
+            </datalist>
+            <output for="time-of-day"></output>
+        </label>
       </fieldset>
       <fieldset class="post-processing">
         <legend>compositing</legend>
@@ -67,12 +77,18 @@ export default class CameraTweaker {
     postProcessOptions.forEach ( option => {
       option.addEventListener('input', (e) => {
         if (e.target.type == 'radio') {
-          
           this.game.camera.element.dataset[e.target.name] = e.target.value;
         }
-        if(e.target.type == 'range') { 
+        if(e.target.type == 'range') {
           this.game.camera.element.style.setProperty(`--pp-${e.target.name}`, e.target.value)
           e.target.parentNode.querySelector('output').textContent = Number(e.target.value).toFixed(2)
+          if(e.target.name == 'time-of-day') {
+            const timeOfDay = Number(e.target.value).toFixed(2);
+            this.game.camera.updateSunPosition(timeOfDay);
+            if (this.game.network?.isHost) {
+              this.game.network.send({ type: 'daytime', value: timeOfDay });
+            }
+          }
         }
 
       });
@@ -82,6 +98,19 @@ export default class CameraTweaker {
 
     document.getElementById('debug').appendChild(this.container);
     this.refresh();
+  }
+
+  setTimeOfDay (value) {
+    const range = this.container.querySelector('#time-of-day');
+    const output = this.container.querySelector('output[for="time-of-day"]');
+    if (range) {
+      range.value = value;
+    }
+    if (output) {
+      output.textContent = Number(value).toFixed(2);
+    }
+    this.game.camera.element.style.setProperty(`--pp-time-of-day`, value);
+    this.game.camera.updateSunPosition(Number(value).toFixed(2));
   }
 
   // js/CameraTweaker.js

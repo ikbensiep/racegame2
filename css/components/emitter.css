@@ -4,6 +4,12 @@
   initial-value: 0;
 }
 
+@property --animation-iteration {
+  syntax: "*";
+  inherits: true;
+  initial-value: 1;
+}
+
 .emitter-object {
   position: absolute;
   display: block;
@@ -17,17 +23,21 @@
 
   --step: 0;
   --row: 0;
-  --spriteSize: 128px;
+  
   --pos-y: calc(var(--row, 0) * var(--spriteHeight, 128px ) * -1px);
   --pos-x: calc(var(--step, 0) * var(--spriteWidth, 128px ) * -1px);
   object-fit: cover;
   object-position: var(--pos-x,0) var(--pos-y,0);
 
-  img {
+  & img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: var(--pos-x,0) var(--pos-y,0);
+  }
+
+  &.loop {
+    --animation-iteration: infinite;
   }
 
   &.fade {
@@ -38,46 +48,74 @@
     width: 64px !important;
     border-radius: 100%;
     &.dead {
-      background-image: url('../assets/people/splat.png'); 
+      background-image: url('/assets/people/splat.png'); 
       background-position: center;
       background-repeat: no-repeat;
-      background-size: 90%;
+      background-size: cover;
     }
   }
 
+  
   &.smoke {
-
-    background: white;
     
-    mask-image: var(--mask-image);
-    mask-size: cover;
-    mask-repeat: no-repeat;
-    mask-position: var(--pos-x) var(--pos-y);
-    mask-type: alpha;
+    --mask-image: url('/assets/smoke/smoke-sprite-2.png');
     
     scale: 1;
-    --to-scale: 3;
+    --to-scale: 2;
 
-    --mask-image: url('/assets/smoke/smoke-sprite-2.png');
-    animation: smoke 1.3s .5s linear forwards 1 !important;
+    animation: 
+      smokeRotateScale 3s 0s linear forwards var(--animation-iteration), 
+      blur 2s 0s cubic-bezier(.6,.04,.98,.34) forwards var(--animation-iteration),
+      fadeSprite 1s 2s linear forwards var(--animation-iteration) !important;
     
-    &:nth-last-of-type(2+n) {
-      background-color: skyblue;
-      /* --mask-image: url('../assets/smoke/smoke-sprite.png'); */
+    & img {
+      background-color: white;
+      mask-image: var(--mask-image);
+      mask-size: cover;
+      mask-repeat: no-repeat;
+      mask-position: var(--pos-x) var(--pos-y);
+      mask-type: alpha;
     }
     
+    
+    &.fire {
+      scale: .5;
+      --to-scale: 2;
+      --mask-image: url('/assets/smoke/smoke-sprite.png');
+      
+      & img {
+        mix-blend-mode: hard-light;
+        filter: brightness(2);
+        animation: 
+          fire .5s linear forwards;
+        background-image: radial-gradient(yellow, orange, orangered, rgba(255, 0, 0, 0.39));
+      }
+    }
 
     &.gravel {
+      --mask-image: url('/assets/smoke/smoke-sprite-3.png') ;
       opacity: 1;
       background: transparent;
-      background-image: url('../assets/noise.png'), radial-gradient(#61572ff5, rgba(255, 255, 0, 0.103));
-      background-size: 200%, 100%;
-      --mask-image: url('/assets/smoke/smoke-sprite-2.png');
-      
+
+      --animation-iteration: infinite;
+      animation: 
+        blur 2s 0s cubic-bezier(.6,.04,.98,.34) forwards var(--animation-iteration),
+        smokeRotateScale 2s 0s linear forwards var(--animation-iteration),
+        fadeSprite 1s 1s linear forwards var(--animation-iteration)  !important;
+
+      & img {
+        background: #b19b6abb;
+      }
     } 
 
-    img {
-      opacity: 0;
+    &.grass {
+      --mask-image: url('/assets/smoke/smoke-sprite-4.png');
+      & img {
+        background: 
+          radial-gradient(circle, hsl(67, 37%, 22%), rgb(48, 64, 18), rgba(53, 71, 18, 0.259));
+          mask-mode: luminance;
+          mask-composite: intersect;
+      }
     }
   }
 
@@ -86,7 +124,7 @@
     --from-opacity: calc((100 - var(--speed) / 100 ));
     scale: calc(1.5 + var(--speed) / 200) .9;
     transform-origin: center;
-    --animation-delay: 10s;
+    --animation-delay: 30s;
     img {
       object-fit: fill;
     }
@@ -94,18 +132,44 @@
     &.dirt, &.grass, &.gravel {
       &:not(.asphalt):not(.paddock):not(.pitlane) {
         opacity: .75;
-        --animation-delay: 0s;
+        --animation-delay: 5s;
         mask-image: url('/assets/environment/fibers.png');
         mask-position: 40px;
-        filter: drop-shadow(0 -4px #fff9); 
+        filter: drop-shadow(0 -4px #fff6); 
       }
     }
   }
 
 }
 
+@keyframes blur {
+  from, 50% {
+    filter: blur(0);
+  }
+  to {
+    filter: blur(8px);
+  }
+}
+
 @keyframes fadeSprite {
   to {
-    opacity: 0.5;
+    opacity: 0;
+  }
+}
+
+@keyframes smokeRotateScale {
+  to {
+    rotate: 0deg;
+    scale: var(--to-scale, 2);
+  }
+}
+
+@keyframes fire {
+  0%, 10% {
+    filter: brightness(1);
+  }
+  to {
+    filter: brightness(.1);
+    
   }
 }

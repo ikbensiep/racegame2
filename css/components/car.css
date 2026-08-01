@@ -1,14 +1,20 @@
 @import url(vehicle.css);
 
+@property --player-color {
+  syntax: "<color>";
+  initial-value: #BADA55;
+  inherits: true;
+}
+
 @property --driver-color {
   syntax: "<color>";
-  initial-value: "#BADA55";
+  initial-value: #BADA55;
   inherits: true;
 }
 
 @property --driver-num {
   syntax: "<string>";
-  initial-value: "0";
+  initial-value: "99";
   inherits: true;
 }
 
@@ -35,6 +41,36 @@
   inherits: true;
 }
 
+@property --fuel {
+  syntax: "<string>";
+  initial-value: "";
+  inherits: true;
+}
+
+@property --health {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
+@property --message {
+  syntax: "<string>";
+  initial-value: "";
+  inherits: true;
+}
+
+@property --fuel-message {
+  syntax: "<string>";
+  initial-value: "";
+  inherits: true;
+}
+
+@property --size {
+  syntax: "<number>";
+  initial-value: 256;
+  inherits: true;
+}
+
 /* this is the generic car container. Inside is a div.car-body with more dirrrtay markup */
 .car {
   --size: 256;
@@ -47,9 +83,11 @@
   display: grid;
   place-content: center;
   
-  --driver-color: var(--player-color);
+  --driver-color: var(--player-color, white);
   --driver-id: attr(data-drivername);
   --driver-num: attr(data-drivernum);
+  
+  transition: --driver-color 1s linear;
 
   /* 
   So in order to limit the paint rectangle size for every player 
@@ -69,14 +107,25 @@
     calc((var(--x) - var(--size) * .5) * 1px) 
     calc((var(--y) - var(--size) * .5)  * 1px);
 
-  .filter-wrap {
+  & > .filter-wrap {
     filter: 
-      drop-shadow(0px -12px 16px #0009)
-      drop-shadow(0px -5px 3px #0006)
+      drop-shadow(0px 0 16px #0009)
+      drop-shadow(var(--dynamic-shadow))
       url(#specularLight);
   }
 
-  .car-body {
+  &:not([data-team]), [data-team=""] {
+    & .car-body .bodywork {
+      opacity: 0;
+    }
+  }
+
+  &[data-team="ferrari"]      { --team-mask: url(/assets/cars/ferrari/ferrari-body-mask.png); }
+  &[data-team="ford"]         { --team-mask: url(/assets/cars/ford/ford-body-mask.png); }
+  &[data-team="lamborghini"]  { --team-mask: url(/assets/cars/lamborghini/lamborghini-body-mask.png); }
+  &[data-team="porsche"]      { --team-mask: url(/assets/cars/porsche/porsche-body-mask.png); }
+
+  & .car-body {
 
     width: 172px;
     height: 96px;
@@ -103,16 +152,21 @@
     
     /* animation: car-centrifuge-demo 10s linear forwards infinite; */
 
-    transition: transform cubic-bezier(0.68, -0.55, 0.265, 1.55) .25s;
+    transition: opacity, transform;
+    transition-duration: .5s, .25s;
+    transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-    &::after {
+    &[data-drivernum]::after {
        content: attr(data-drivernum);
        position: absolute;
-       right: 1.3ex;
+       right: 1.7ex;
        top: 50%;
        rotate: 90deg;
        translate: 0 -50%;
        z-index: 1;
+       padding: 0.15ex 0.25ex;
+       text-align: center;
+       font-size: small;
 
       /* TODO: design different badge shapes */
        --badge-bg: white; /* or gradient(s)... */
@@ -124,9 +178,7 @@
        --badge-league-text-color: white;
        background-color: var(--badge-bg);
        color: var(--badge-drivernum-color);
-       padding: 0.15ex 0.25ex;
-       text-align: center;
-       outline: 1px solid var(--badge-outline-color, black);
+       outline: 1.5px solid var(--badge-outline-color, black);
 
       /* font shorthand order: */
        /* 
@@ -138,25 +190,28 @@
       */
        font-family: initial normal 10px/10px
         var(--player-font, "Impact"), fantasy, sans-serif; /* FIXME: --player-font *must* be one of preset selection for de-hassling (and/or legal) reasons I think? */
+       min-width: 1.2em;
+       font-variant-numeric: tabular-nums;
        border-radius: 1px;
-       border-top: 4px solid orange;
+       border-top: 4px solid var(--badge-league-bg-color, orange);
      }
 
-    i {
+    & i {
       background-size: contain;
       background-position: center;
-      mask-size: contain;
-      mask-position: center;
       font-style: normal !important;
+      mask-position: center;
+      mask-size: contain;
+      mask-repeat: no-repeat;
     } 
 
-    /* TODO: currently using <i> elements for economic reasons, research <b>, <q>, <u> * friends*/ 
-    * {
+    /* TODO: currently using <i> elements for economic reasons, research <b>, <q>, <u> & friends */ 
+    & * {
       position: absolute;
       inset: 0;
     }
 
-    .chassis {
+    & .chassis {
       background-image: url('/assets/cars/default/interior-scaled.png');
       
       
@@ -165,38 +220,36 @@
       }
     }
     
-    .bodywork {
-      translate: 0 0 0px; /* lift the body a little from the chassis for pseudo 3d effect */
-      
-      /* a default racing stripe */
-      --pattern: linear-gradient(transparent, transparent 35%, white 35%, white 48%, transparent 48%, transparent 52%, white 52%, white 65%, transparent 65%);
-      
-      
-
-      &:not(:has(.custom-livery)) {
-        --livery-bg: var(--pattern);
-      }
+    & .bodywork {
+      /*
+      /* in a previous version, we'd raise the body a little
+       * from the chassis for pseudo 3d effect but then you also have to 
+       * translate descendant (pseudo) elements which, let's jsut not ok
+       */
+      --driver-color: var(--player-color, white);
+      transition: --driver-color .5s linear;
+      translate: 0 0;
 
       /* Masking */ 
-      mask-image: url('/assets/cars/porsche/porsche-livery.png');
+      mask-image: var(--team-mask);
       
+      /*
+       * bodywork paint + livery + coating + weathering stack: 
+       * 1. weathering  
+       * 2. "no livery havin plain ahh body color livery" w slight color gradient enhancement layer
+       * 3. the actual livery (currently, a default double racing stripe) 
+       */
       
-      /* bodywork paint + livery + coating + weathering stack: */
-      /* 1. weathering  */
-      /* 2. the actual livery, a default racing stripe */
-      /* 3. "no livery havin plain ahh body color livery" w slight color gradient enhancement layer*/ 
-      
+
 
       background-image: 
         
         var(--weathering-bg, linear-gradient(transparent, transparent)),
 
-        var(--livery-bg, linear-gradient(transparent, transparent)),
-
         linear-gradient(
           to right,
-          oklab(from var(--player-color) calc(l - 0.25) a b),
-          var(--player-color)
+          oklab(from var(--driver-color) calc(l - 0.25) a b),
+          var(--driver-color)
         );
 
 
@@ -209,17 +262,172 @@
      
     }
 
+    & .base-color {
+      /* metallic */
+      background: url('/assets/noise.png');
+      position: absolute;
+      inset: 0;
+      mix-blend-mode: overlay;
+      opacity: 0.75;
+    }
     /* custom livery layer */
-   .livery {
-     position: absolute;
-     inset: 0;
-     justify-content: center;
-     
+    & .livery {
+      position: absolute;
+      inset: 0;
+      justify-content: center;
+      background-image: var(--livery-bg, linear-gradient(transparent, transparent));
 
-   }
+      /* default car bodywork mask image (alpha) is a grayscale image of the car with countour lines etc. */
+      /* here we're repurposing the bodywork image to add some actual details to the car body by overlaying the (grayscaled) image */
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: var(--team-mask);
+        background-position: center;
+        background-size: contain;
+        mix-blend-mode: overlay;
+      }
 
-    .mods {
+      &.classic-stripes {
+        /* a default racing stripe */  
+        --pattern: linear-gradient(transparent, transparent 35%, #ffffff91 35.5%, #ffffff6b 48%, transparent 48.5%, transparent 52%, #ffffff75 52.5%, #ffffff7d 65%, transparent 65.5%);
+        --livery-bg: var(--pattern);
+      }
+
+      &.polkadot {  
+        background-color: hsla(from var(--driver-color) h s 100% / .95);
+        mask-image: radial-gradient(circle, rgb(255, 255, 255) 2px, transparent 2px),
+            radial-gradient(circle, rgb(255, 255, 255) 2px, transparent 2px);
+        mask-size: 12px 12px, 12px 12px !important;
+        mask-position: 0 0, 6px 6px !important;
+        mask-repeat: repeat, repeat;
+      }
+
+      &.polkadot-fade {
+        background-color: var(--driver-color);
+        mask-image: 
+            linear-gradient(to left, white 5%, transparent), radial-gradient(circle, rgb(255, 255, 255) 4px, transparent 4px),
+            radial-gradient(circle, rgb(255, 255, 255) 4px, transparent 4px);
+        mask-size: 100% 100%, 16px 16px, 16px 16px !important;
+        mask-position: 0 0, 8px 8px !important;
+        mask-repeat: repeat, repeat;
+      }
+    }
+
+    & .mods {
       /* empty container for now */
     }
+  }
+  
+  &[data-team="ferrari"] .livery.special {
+    --livery-bg: url('/assets/cars/ferrari/ferrari-livery-special.png');
+  }
+  &[data-team="ford"] .livery.special {
+    --livery-bg: url('/assets/cars/ford/ford-livery-special.png');
+  }
+  &[data-team="lamborghini"] .livery.special {
+    --livery-bg: url('/assets/cars/lamborghini/lamborghini-livery-special.png');
+  }
+  &[data-team="porsche"] .livery.special {
+    --livery-bg: url('/assets/cars/porsche/porsche-livery-special.png');
+  }
+
+  & .car-lights {
+    position: absolute;
+    inset: 0;
+    transform-origin: 128px 128px;
+    rotate: calc(var(--angle) * 1rad);
+
+    &::after {
+      content: '(lampje)';
+      left: calc( ((var(--size) / 2) + (172 / 2)) * 1px);
+      top: calc( ((var(--size) / 2) - (96 / 2)) * 1px);
+      height: 96px;
+      width: 172px;
+      position: absolute;
+      background: yellow;
+    }
+  }
+
+  & .player-tag {
+    background: rgba(255,255,255,.1);
+    padding: .33ex .6ex .33ex .33ex;
+    color: white;
+    position: absolute;
+    inset: 0% auto auto 50%;
+    translate: -50% 0;
+    border-radius: .4ex;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    opacity: 1;
+    transition: opacity .5s 2s ease-out;
+
+    & b {
+      color: contrast-color(var(--driver-color));
+      background-color: var(--driver-color);
+      display: inline-flex;
+      aspect-ratio: 1;
+      vertical-align: initial;
+      text-align: center;
+      flex-direction: column;
+      place-content: center;
+      letter-spacing: -1px;
+      padding: .2ex .4ex;
+      border-radius: .2ex;
+    }
+    & i {
+      font-style: normal;
+      padding-inline: .3ex;
+    }
+  }
+  
+  &.player .player-tag {
+    opacity: 0;
+  }
+
+  &[data-fuel-left] { --message: var(--fuel-message)}
+  &[data-state="garage"] { --message: 'in garage'}
+  &[data-state="pitbox"] { --message: var(--fuel-message) }
+  &[data-state="lowfuel"] {--message: 'low fuel'}
+  
+  &[data-fuel-left],
+  &[data-state="garage"],
+  &[data-state="pitbox"], 
+  &[data-state="lowfuel"] {
+    & .player-tag {
+      transition-delay: 0s;
+      opacity: 1;
+      & i::after {
+        content: ' (' var(--message) ')';
+        font-size: small;
+        padding-inline: .6ex 0;
+        opacity: .5;
+        vertical-align: center;
+      }
+    }
+  }
+
+  &[data-state="pitbox"][data-speed^="0"]::after {
+    mask-image: url('/assets/environment/pits/porsche.png');
+    mask-size: 168%;
+    mask-repeat: no-repeat;
+    content: '';
+    position: absolute;
+    inset: 0;
+    rotate: calc(var(--player-angle) * 1rad);
+    z-index: 1000;
+    mask-position: 53% 48%;
+    
+    scale: 1.1;
+    background: var(--player-color) url('/assets/environment/pits/porsche.png');
+    mask-mode: luminance;
+    mask-type: luminance;
+    background-blend-mode: color-burn;
+    mask-composite: revert-rule;
+    background-size: 168%;
+    background-repeat: no-repeat;
+    background-position: 53% 48%;
+    
   }
 }

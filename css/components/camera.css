@@ -10,9 +10,39 @@
   inherits: true;
 }
 
+@property --dynamic-shadow {
+    syntax: "*";
+    inherits: true;
+    initial-value: 0px 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+@property --camera-zoom {
+  syntax: "<number>";
+  initial-value: 1;
+  inherits: true;
+}
+
 #camera-viewport {
+  
   width: 100vw;
   height: 100vh;
   overflow: hidden;
   position: relative;
+
+  & #canvas.world {
+    transform-origin: var(--player-position);
+    scale: var(--camera-zoom);
+  }
+
+}
+
+body[data-screen="lobby-menu"] {
+    --test: "hoi";
+
+  & #canvas.world {
+    opacity: 0;
+    & > #light-layer {
+        background-color: transparent !important;
+    }
+  }
 }

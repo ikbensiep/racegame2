@@ -1,5 +1,7 @@
 import BuildingFactory from "./BuildingFactory.js";
 import Marshal from "./NPC-Marshal.js";
+import Sundial from "./Sundial.js";
+import Emitter from "./tools/Emitter.js";
 export default class World {
   constructor(game) {
     this.isLoaded = false;
@@ -59,7 +61,7 @@ export default class World {
   }
 
   async load () {
-    let artworkBasePath = `/levels/${this.scene}`
+    let artworkBasePath = `/levels/${this.scene}`;
     let svgFilePath = `${artworkBasePath}/${this.scene}.svg`
     const response = await fetch(svgFilePath);
 
@@ -88,10 +90,14 @@ export default class World {
     await this.addMarshals();
     console.timeEnd('add-marshals')
     this.isLoaded = true;
-    this.element.querySelector('#worldmap svg').remove();
+    
+    // Keep the SVG attached a bit longer so other measurement routines
+    // (findSurfaces, findSpawnPoints, findWalls, findTrees) can read geometry
+    // data like bounding boxes. The SVG will be detached later by the
+    // GameEngine once all measurements are complete.
+    // this.element.querySelector('#worldmap svg').remove();
     
     try {
-
       let rows = 2;
       let cols = 2;
       let mapElement = this.element.querySelector('#worldmap');
@@ -100,6 +106,7 @@ export default class World {
           let tileImg =  new Image()
           tileImg.src = `${artworkBasePath}/tiles/${this.scene}_track_${j}-${i}.png`;
           tileImg.alt = `${this.scene}_track-${j}-${i}.png`;
+          tileImg.setAttribute('decoding','async');
           mapElement.appendChild(tileImg);
           this.game.camera.cullingObserver.observe(tileImg);
         }
@@ -117,13 +124,13 @@ export default class World {
     console.log('🧭 finding surfaces...')
     const timingGroup = this.svgElement.getElementById('timing');
 
-      this.paths.worldBG =     new Path2D(this.svgElement.querySelector('#world-bg').getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
+      this.paths.worldBG =     new Path2D(this.svgElement.querySelector('#world-bg').getAttribute('d')) // fill, car dynamics
       this.paths.fuelStation = new Path2D(this.svgElement.querySelector('#fuel-station')?.getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
       this.paths.grandstands = new Path2D(this.svgElement.querySelector('#sfx-triggers path#grandstands')?.getAttribute('d') || "")  // fill, sfx (crowd noise) detection
       this.paths.gravel =      new Path2D(this.svgElement.querySelector('#gravel')?.getAttribute('d')) // fill, vehicle dynamics / sfx
       this.paths.gridslot =    new Path2D(this.svgElement.querySelector('#gridslot')?.getAttribute('d') || "") // fill, race start position (spawnpoint)
       this.paths.paddock =     new Path2D(this.svgElement.querySelector('#paddock').getAttribute('d')) // fill, in this area player is allowed to enter 'RPG mode' (ie, exit car)
-      this.paths.pitbox =      new Path2D(this.svgElement.querySelector('#pitbox')?.getAttribute('d') || "") // fill, vehicle dynamics (tune car settings) a marked service area directly off the pitlane
+      this.paths.pitbox =      undefined; // fill, (tune car settings) a personal service area directly off the pitlane
       this.paths.pitlane =     new Path2D(this.svgElement.querySelector('#pitlane').getAttribute('d'));  // stroke, vehicle dynamics (speed limiter)
       this.paths.racetrack =   new Path2D(this.svgElement.querySelector('#racetrack').getAttribute('d')); // stroke, (AI) vehicle pathinding
       this.paths.sectors =     new Map(); // timing sectors
@@ -133,8 +140,6 @@ export default class World {
       sectors.forEach(path => {
           this.paths.sectors.set(path.id, new Path2D(path.getAttribute('d')));
       });
-
-
   }
 
   async findSpawnPoints (sessionType) {
@@ -151,20 +156,22 @@ export default class World {
         break;
     }
     
+    console.warn({sessionType, spawnFilter});
+
     let spawnContainers = possibleSpawnLocations.filter( group => { 
       return group.getAttributeNS('http://www.inkscape.org/namespaces/inkscape', 'label') == `players-${spawnFilter}`
     });
 
     // Build garages from group elements containing circle/ellipse
-    let garageGroups = spawnContainers[0].querySelectorAll('g');
+    let garageGroups = spawnContainers[0]?.querySelectorAll('g');
     
-    if (!garageGroups.length) {
+    if (!garageGroups || !garageGroups.length) {
       // some random location probably close to the paddock
       this.spawnPoints.push({x:10000, y: 10500});
     } else {
       garageGroups.forEach( garageGroup => {
         const circle = garageGroup.querySelector('circle, ellipse');
-        const rectangle = garageGroup.querySelector('rect');
+        const rectangle = garageGroup.querySelector('rect, path');
         
         if (circle) {
           const circlePos = {
@@ -179,26 +186,99 @@ export default class World {
             id: circle.getAttribute('id')
           });
           
-          // Store in garages for garage assignment
-          this.garages.push({
-            id: circle.getAttribute('id'),
-            garageGroup: garageGroup,
-            circlePos: circlePos,
-            rectangleElement: rectangle,
-            occupant: null
-          });
+        // Compute rectangle center now while the SVG is still attached to the DOM.
+        // This avoids relying on getBBox later when the SVG may be detached.
+        let rectangleCenter = null;
+        if (rectangle) {
+          const tagName = rectangle.tagName?.toLowerCase();
+          if (tagName === 'rect') {
+            const rx = parseFloat(rectangle.getAttribute('x') || 0);
+            const ry = parseFloat(rectangle.getAttribute('y') || 0);
+            const rwidth = parseFloat(rectangle.getAttribute('width') || 0);
+            const rheight = parseFloat(rectangle.getAttribute('height') || 0);
+            rectangleCenter = { x: rx + rwidth / 2, y: ry + rheight / 2 };
+          } else if (tagName === 'path' && typeof rectangle.getBBox === 'function') {
+            try {
+              const bbox = rectangle.getBBox();
+              if (bbox && (bbox.width > 0 || bbox.height > 0)) {
+                rectangleCenter = { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2 };
+              }
+            } catch (e) {
+              // getBBox can throw if SVG not fully available; ignore and fallback to circlePos
+              console.warn('Unable to compute bbox for garage path', rectangle, e);
+            }
+          }
         }
-      });
+          
+        // Store in garages for garage assignment
+        this.garages.push({
+          id: circle.getAttribute('id'),
+          garageGroup: garageGroup,
+          circlePos: circlePos,
+          rectangleElement: rectangle,
+          rectangleCenter: rectangleCenter,
+          rectanglePath: this.createGaragePath(rectangle),
+          occupant: null
+        });
+      }
+    });
     }
+  }
+
+  createGaragePath (rectangle) {
+    if (!rectangle) return null;
+
+    const tagName = rectangle.tagName?.toLowerCase();
+
+    if (tagName === 'path') {
+      return new Path2D(rectangle.getAttribute('d'));
+    }
+
+    if (tagName === 'rect') {
+      const x = parseFloat(rectangle.getAttribute('x') || 0);
+      const y = parseFloat(rectangle.getAttribute('y') || 0);
+      const width = parseFloat(rectangle.getAttribute('width') || 0);
+      const height = parseFloat(rectangle.getAttribute('height') || 0);
+      const rx = parseFloat(rectangle.getAttribute('rx') || 0);
+      const ry = parseFloat(rectangle.getAttribute('ry') || 0);
+      const path = new Path2D();
+
+      if (rx || ry) {
+        path.roundRect(x, y, width, height, [rx || ry, ry || rx]);
+      } else {
+        path.rect(x, y, width, height);
+      }
+
+      return path;
+    }
+
+    return null;
+  }
+
+  getPitboxPath (player) {
+    if (player?.garageIndex !== undefined && this.garages?.[player.garageIndex]?.rectanglePath) {
+      return this.garages[player.garageIndex].rectanglePath;
+    }
+
+    return this.paths.pitbox || null;
+  }
+
+  /**
+   * Detach the in-DOM SVG to reduce DOM clutter once all measurements
+   * that depend on it have been collected. Safe to call multiple times.
+   */
+  detachSvg () {
+    const svg = this.element.querySelector('#worldmap svg');
+    if (svg) svg.remove();
   }
 
   // TODO: maybe update `findWalls ()` below to be a smarter algorythm like this bad boy
   async findTrees () {
     const treeLines = this.svgElement.querySelectorAll('#trees path');
-    
+    console.groupCollapsed('🌳 treelines')
     treeLines.forEach(path => {
       const length = path.getTotalLength();
-      console.groupCollapsed(`🌳 treeline ${path.id}`)
+      console.log(`treeline ${path.id}`)
 
       const {strokeWidth, strokeDasharray, stroke, strokeLinecap} = path.style;
       // const stepSize = strokeDasharray[0] + strokeDasharray[1];
@@ -227,45 +307,43 @@ export default class World {
         sprite.style.top = `${circle.y}px`;
         this.element.appendChild(sprite);
         this.game.camera.cullingObserver.observe(sprite);
-        console.log(path, sprite)
+        // console.log(path, sprite)
       }
-      console.groupEnd()
     })
-    
+    console.groupEnd()
   }
 
   async findWalls () {
-    const wallPaths = this.svgElement.querySelectorAll('#obstacles path');
-    
+    const wallPaths = this.svgElement.querySelectorAll('#obstacles path:not(:is(#trees>path))');
+    console.groupCollapsed('🧱 collidible-walls');
     wallPaths.forEach(path => {
       const length = path.getTotalLength();
       
       
       // TODO: multiply `step` and `r` by stroke-dasharray and stroke-width?
       
-      const stepSize = 64; 
+      const stepSize = 32; 
       
       let wallId = 0;
       for (let i = 0; i < length; i += stepSize) {
         const circle = path.getPointAtLength(i);
-        
-          this.collidibles.push({
-            x: circle.x,
-            y: circle.y,
-            r: 32, // Radius van het "hek-onderdeel"
-            id: `path-${path.id}-wall-${wallId}`
-          });
-          wallId++;
-        }
-        console.log(`collidible-wall (length: ${Math.floor(length)}, segments: ${wallId})`);
+        this.collidibles.push({
+          x: circle.x,
+          y: circle.y,
+          r: 48, // Radius van het "hek-onderdeel"
+          id: `path-${path.id}-wall-${wallId}`
+        });
+        wallId++;
+      }
+      console.log(`collidible-wall (length: ${Math.floor(length)}, segments: ${wallId})`);
     });
+    console.groupEnd()
   }
 
   async generateBuildings() {
-    // #building-3D-groundplates is the ID in your SVG
+    // #building-3D-groundplates or #building-groundplates is the ID in the SVG
     
     this.buildingFactory.generate(this.svgElement, this.element)
-    console.log("🏙️ 3D World populated via BuildingFactory");
 }
 
   async addMarshals () {
@@ -277,9 +355,9 @@ export default class World {
     lamp.className = 'lamp-post';
 
     this.marshalPosts = svg.querySelectorAll('#marshal-posts > *') || [];
-    console.groupCollapsed('marshals')
+    console.groupCollapsed('👲 marshals')
     this.marshalPosts.forEach( (post, postIndex) => {
-      console.groupCollapsed(`marshal post ${postIndex}`)
+      console.log(`marshal post ${postIndex}`)
       post.id = 'post-' + (postIndex + 1);
       let cx = post.getAttribute('cx');
       let cy = post.getAttribute('cy');
@@ -290,25 +368,29 @@ export default class World {
       postlamp.style.top = cy + 'px';
       this.lightLayer.appendChild(postlamp);
 
-      // add a bouwkeet 
+      this.game.camera.cullingObserver.observe(postlamp);
+
+      // TODO: add a bouwkeet 
+      // TODO: geen bouwkeet, we build 3D objects in the world file if need be
+      /*
       try {
 
-        let keet = new Emitter(this.gameCamera, window.hokjeSprite, 128, 64, 1, true, marshalPostTargetLayer, false);
-        this.marshalKeten.push(keet);
+        let keet = new Emitter(this.game.camera, window.hokjeSprite, 128, 64, 1, true, marshalPostTargetLayer, false);
+        // this.marshalKeten.push(keet);
         keet.start(cx, cy, 0);
-
+        console.info(keet)
       } catch (e) {
         console.error('geen keet', e)
       }
+      */
+
       // add a team of lil guys
       for(let i=0; i<3; i++) {
         let marshal = new Marshal(this.game, window.marshalSprite, post, marshalTargetLayer, i, 64, 7);
         this.marshals.push(marshal);
         marshal.init();
-        console.log(`marshal ${i}`)
+        this.game.camera.cullingObserver.observe(marshal.sprite.domElement);
       }
-
-      console.groupEnd()
     });
     console.groupEnd('marshals')
   }
@@ -344,19 +426,19 @@ export default class World {
     return null;
   }
 
-  getSurfaceType(x, y) {
+  getSurfaceType(x, y, player = null) {
     
   // 1. Definieer de prioriteit (van specifiek naar algemeen)
   // We checken de 'kleine' vlakken eerst.
-  // TODO zet this.paths.pitbox naar rect in {game.localplayer.garage}
+  const pitboxPath = this.getPitboxPath(player);
   const surfaceRules = [
-    { path: this.paths.pitbox,      type: 'pitbox',      method: 'fill'   },
-    { path: this.paths.pitlane,     type: 'pitlane',     method: 'stroke', width: 280 }, 
-    { path: this.paths.racetrack,   type: 'asphalt',     method: 'stroke', width: 520 }, 
-    { path: this.paths.gravel,      type: 'gravel',      method: 'fill'   },
+    { path: pitboxPath,            type: 'pitbox',      method: 'fill'   },
     { path: this.paths.fuelStation, type: 'fuel',        method: 'fill'   },
     { path: this.paths.paddock,     type: 'paddock',     method: 'fill'   },
+    { path: this.paths.pitlane,     type: 'pitlane',     method: 'stroke', width: 280 }, 
     { path: this.paths.tunnel,      type: 'tunnel',      method: 'fill'   },
+    { path: this.paths.racetrack,   type: 'asphalt',     method: 'stroke', width: 520 }, 
+    { path: this.paths.gravel,      type: 'gravel',      method: 'fill'   },
     { path: this.paths.worldBG,     type: 'grass',       method: 'fill'   }
   ];
 

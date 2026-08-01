@@ -1,8 +1,10 @@
 import Vehicle from './Vehicle.js';
 
 export default class Opponent extends Vehicle {
-constructor(id, name, driverNumber, color, game) {
-    super(id, name, driverNumber, color, game);
+constructor(game, id, name, driverNumber, color, team = 'ferrari', livery = '') {
+    
+    super(game, id, name, driverNumber, color, team, livery, false);
+    this.element.classList.remove('player');
 }
 
     updateFromNetwork(data) {

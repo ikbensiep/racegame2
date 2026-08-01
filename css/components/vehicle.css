@@ -40,26 +40,26 @@
 }
 
 .vehicle-lights {
-  --size: 1024px;
+  --light-size: 924px;
   display: block;
-  width: var(--size);
-  height: var(--size);
+  width: var(--light-size);
+  height: calc(var(--light-size)/2);
   position: absolute;
-  left: calc(var(--player-x) * 1px - calc(var(--size) / 2));
-  top: calc(var(--player-y) * 1px - calc(var(--size) / 2));
+  left: calc(var(--player-x) * 1px - calc(var(--light-size) / 2));
+  top: calc(var(--player-y) * 1px - calc(var(--light-size) / 4));
   translate: calc(var(--player-x) * -1px + (calc(var(--player-x) - var(--cam-x)) * 1px ) ) calc(var(--player-y) * -1px + (calc(var(--player-y) - var(--cam-y)) * 1px ));
   background: url(/assets/cars/car-lights-2.png) 50% 50% no-repeat;
   rotate: calc(var(--player-angle) * 1rad);
-  background-size: 50%;
-
-&::after {
-    content: '';
-    width: 5px;
-    height: 5px;
-    inset: 50%;
-    z-index: 100;
-    position: absolute;
-    background: green;
-  }
+  background-size: 82%;
 }
+
+.vehicle-lights.opponent {
+  /* just so we can differentiate */
+  opacity: 0.75;
+}
+
+.vehicle-lights.player {
+  opacity: 1;
+}
+
 

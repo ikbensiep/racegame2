@@ -14,12 +14,16 @@
 
 .material-icons {
   transition: all .15s;
+  user-select: none;
 }
 
 form {
+  accent-color: var(--player-color);
+  caret-color: var(--player-color);
+
   clip-path: inset(0 0 0 0 round 10px);
-  
-  .button,
+
+  & .button,
   button {
     border: none;
     background-color: rgb(0 0 0 / .5);
@@ -33,15 +37,17 @@ form {
     text-decoration: none;
     text-transform: uppercase;
     transition: color .2s;
+    
     &:hover,&:focus {
       color: white;
     }
+
     &:active {
       color: rgb(234, 175, 26);
     }
   }
   
-  details:has(fieldset:invalid) {
+  details:has(input:invalid):not(:has(*:focus)) {
     &[open] {
       summary {
         position: relative;
@@ -49,44 +55,50 @@ form {
         &::before {
           content : '!';
           color: black;
-          background-color: var(--gelbe);
+          background-color: orange;
+          width: 3.3ex;
           clip-path: polygon(0 100%, 50% 11%, 100% 100%, 0 100%);
         }
       }
     }
-    ~ details {
-      
-      opacity: .5;
+  }
 
-      summary {
-        pointer-events: none;
-      }
+  details:has(fieldset:invalid) ~ details {
+    
+    opacity: .5;
+    transition-delay: 0s;
+    
+    summary {
+      pointer-events: none;
     }
   }
 
   details {
-    
     margin-bottom: 1px;
+    transition: opacity .5s .25s;
 
     &::details-content {
-      display: flex;
-      gap: 4rem;
-      flex-direction: column;
-      justify-content: center;
-      overflow: hidden auto;
-      scroll-behavior: smooth;
-      scroll-snap-type:x mandatory;
-      padding: 0 5rem; 
-      backdrop-filter: blur(0px);
-      background: #0003;
-      background-image: radial-gradient( #0009 0px, #000000ed 3px);
-      background-size: 4px 4px;
-      animation: movinggrid .5s linear forwards infinite;
-      transition: .25s ease-in-out, backdrop-filter 1s;
+      transition: .25s cubic-bezier(0.22, 0.61, 0.36, 1);
       transition-behavior: allow-discrete;
       interpolate-size: allow-keywords;
-      height: auto;
+      min-height: 0;
       max-height: 0;
+      height: 0;
+      overflow: hidden;
+    }
+
+    article {
+      gap: 4rem;
+      flex-direction: column;
+      justify-content: flex-start;
+      /* overflow: hidden auto; */
+      scroll-behavior: smooth;
+      scroll-snap-type:x mandatory;
+      padding: 0 5rem;
+      background: #000a;
+      height: 50vh;
+      align-items: flex-start;
+      /* min-height: 20rem; */
     }
     
     /* this is a hack to hide the ::details-content on the last menu section (buttons)
@@ -100,15 +112,15 @@ form {
       background: rgba(0, 0, 0, 0.75);
       line-height: 2;
       padding-inline-start: 1ex;
-      color: #fffa;
+      color: var(--player-color, #fff9);
       font-size: 1.2em;
       transition: .2s;
       display: flex;
       align-items: center;
       justify-content: space-between;
 
-      &:hover, &:focus, &:has(+ fieldset:focus-within) {
-        color: white;
+      &:hover, &:focus{
+        color: color-mix(in srgb, var(--player-color), white);
         background: #000d;
       }
       
@@ -140,38 +152,44 @@ form {
       > summary {
         pointer-events: none;
         background: #000f;
+        color: color-mix(in srgb, var(--player-color), white);
         
-        > .material-icons {
+        & .material-icons {
           margin-inline-end: .75rem;
+          color: white;
         }
       }
 
       &::details-content {
-        backdrop-filter: blur(5px);
-        min-height: 30rem;
-        max-height: 100vh;
+        background: #000a;
+        min-height: 0;
+        max-height: unset;
+        height: auto;
       } 
     }
   }
 
   fieldset {
-    display: flex;
-    flex-wrap: wrap;
+    
     padding: 1rem 0;
     margin: 0 3vw 1px;
     border: none;
     justify-content: space-between;
+    gap: 1rem;
+    height: 100%;
 
-    label {
-      display: flex;
-      align-items: center;
+    & label {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 1ex;
-      flex-flow: column-reverse;
+      align-content: center;
+      align-items: center;
       cursor: pointer;
-      
+      padding: 1rem;
+      position: relative;
       
       > span {
-        display: flex;
+        /* display: flex; */
         flex-flow: column;
         align-items: center;
         color: rgb(255 255 255 / .5);
@@ -180,22 +198,32 @@ form {
       .material-icons {
         font-size: 4rem;
         scale: .75;
+        transition: color .5s;
+
+        &:is(input:focus ~ span) {
+          outline: 2px solid currentColor;
+        }
       }
 
-      input {
+      input, select {
         font-family: inherit;
         font-size: 1.1em;
         line-height: 2rem;
 
         background-color: transparent;
+        border-color: transparent;
         border-style: none none dotted;
-        border-color: #fff3;
+        
         color: white;
         opacity: .5;
         outline: none;
 
+        transition: .25s;
+        text-align: end;
+
         &:focus {
           opacity: 1;
+          border-color: #fff3;
           color: var(--gelbe);
         }
 
@@ -209,28 +237,40 @@ form {
         }
       }
       
+      &:has(*:invalid:not(:focus)) {
+        color: var(--warning-color) !important;
+        accent-color: var(--warning-color);
+        & > * {
+          color: inherit;  
+          accent-color: inherit;
+        }
+        &::after {
+          content: '!';
+          position: absolute;
+          width: 1lh;
+          border-radius: 1lh;
+          background-color: var(--warning-color);
+          color: black;
+          text-align: center;
+          font-weight: 900;
+          left: -.75lh;
+        }
+      }
+
+      option {
+        background-color: #000d;
+        text-align: start;
+      }
+
+      & :last-child {
+        justify-self: end;
+      }
+
       input[type="radio"],
       input[type="checkbox"] {
-        opacity: 0.01;
-        height: 0px;
-        + * {
-          opacity: .5;
-          transition: all .2s cubic-bezier(0.075, 0.82, 0.165, 1);
-        }
-        + img {
-          width: 15rem;
-          margin: 0 auto;
-          
-        }
-
-        &:checked {
-          + * {
-            color: white;
-            opacity: 1;
-            filter: grayscale(0);
-          }
-
-        }
+        height: 1.3rem;
+        width: 1.3rem;
+        accent-color: inherit;
       }
 
       input[disabled] ~ * {
@@ -238,62 +278,107 @@ form {
         cursor: default;
       }
 
-      &:hover, &:focus {
+      &:hover, &:focus, &:focus-within {
+
+        background-color: hsl(from var(--player-color) h s 7% / 100%);
+        transition: color, background-color, border-color;
+        transition-duration: .2s;
+
+        & > * {
+          transition: inherit;
+        }
+
         input:not(:checked):not([disabled]) {
           + span, img {
             opacity: .75;
           }
         }
       }
+
+      &:focus-within {
+        color: white;
+        & > * {
+          color: white;
+        }
+      }
+
     }
 
-    &.car {
-      label {
-        position: relative;
-        input {
-          + img {
-            opacity: 1;
-            object-position: -100px 0;
-            transition: all 1.5s cubic-bezier(0.075, 0.82, 0.165, 1);
-            mask: linear-gradient(to right, transparent 15%, white);
-            rotate: 90deg;
-            filter: drop-shadow( 5px -5px 5px black) blur(5px);
-          }
-          &:checked + img {
-            object-position: -10px 0 !important;
-            transition-duration: 1s;
-            mask: linear-gradient(to right, transparent 3%, white 90%);
-            filter: drop-shadow( 5px -5px 5px black) blur(0px) !important;
+    &.garage {
+      perspective: 172px;
 
-          }
-        }
-        &:focus, &:hover {
-          input + img {
-            object-position: -50px 0;
-            filter: drop-shadow( 5px -5px 5px black) blur(2px);
-            
-        }
-        
-        &::after {
+      .vehicle {
+
+        transform: rotateX(15deg);
+
+        &::before {
           content: '';
           position: absolute;
-          pointer-events: none;
-          inset: 0;
+          inset: 0 !important;
+          background: url(/assets/uvmap.png) 512px 0;
+          translate: 0 !important;
+          z-index: 0 !important;
+          mask: radial-gradient(white 0%, #fffc 2%, #fff6 30%, #fff3 50%, transparent 70%, transparent 100%);
         }
 
-      }
-    }
-    }
-    
-    &.track {
-      gap: 5rem;
-      justify-content: center;
-      max-width: 70cqw;
+        &::before,
+        & .car-body {
+          transition: opacity .5s .05s;
+          animation: 
+            rotate 30s linear forwards infinite,
+            fakedrive 5s linear forwards infinite;
+        }
 
-      & label {
-        scroll-snap-align: center;
+        &:not([data-team]) {
+          &::before, 
+          & .car-body {
+            animation-play-state: paused !important;
+          }
+        }
       }
     }
+
+    &.track {
+      label {
+        border-radius: .5ex;
+        padding-inline: 2rem;
+
+        &:hover, &:focus {
+          background-color: hsl(from var(--player-color) h s 12% / 100%);
+          & span { color: var(--player-color);}
+        }
+
+        &:has(input[type=radio]:checked) {
+          & span {
+            color: white;
+          }
+          
+          background-color: var(--player-color);
+        }
+      }
+
+      .track-preview {
+        --preview-size: calc(256px * 1.5);
+        width: var(--preview-size); 
+        height: var(--preview-size); 
+        overflow: clip;
+        margin-inline: auto; 
+        filter: blur(0px) !important;
+        border-radius: 50%;
+        border: 8px solid var(--player-color);
+        perspective: 256px;
+        
+        & img[alt="track preview"] {
+          display: block;
+          height: var(--preview-size);
+          width: var(--preview-size);
+          mask: radial-gradient(white, transparent);
+          place-content: center;
+          text-align: center;
+        }
+      }
+    }  
+
   }
 
   .scroll-strip {
@@ -302,7 +387,7 @@ form {
     inline-size: calc(100cqw - 14rem);
     height: 256px;
     scroll-behavior: smooth;
-    background: red;
+    
     scroll-snap-type: x mandatory;
 
     & > * {
@@ -312,42 +397,6 @@ form {
       
     }
   }
-
-  + .backdrops {
-    position: absolute;
-    margin: -4vw;
-    z-index: -1;
-    mask-image: linear-gradient( transparent 20%, white);
-    mask-size: 100%;
-    mask-type: alpha;
-    inset: 4vw; 
-
-    opacity: 0;
-      > div {      
-      position: fixed;
-      width: 100vw;
-      height: 100vw;
-      aspect-ratio: 1;
-
-      transform: perspective(50vw) translateY(20vh) rotateX(30deg) translateZ(320px) rotateZ(0deg);
-      transition-behavior: allow-discrete;
-      
-      /* mask: linear-gradient(transparent 20%, white 60%); */
-      > img {
-        
-        width: 100vw;
-        translate: 0 -600px;
-        transition: 1.5s;
-        object-fit: cover;
-        animation: orbit 60s linear forwards infinite;
-
-        &.active {
-          opacity: .75;
-          scale: 1;
-        }
-}
-}
-}
 }
 
 .hud {
@@ -553,5 +602,13 @@ form {
     & [data-fps^="2"] { color: var(--gelbe)}
     & [data-fps^="1"] { color: var(--rode)}
 
+  }
+}
+
+body.busy {
+  cursor: wait;
+  
+  & a, button, dialog, label {
+    pointer-events: none;
   }
 }

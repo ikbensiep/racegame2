@@ -81,16 +81,29 @@
     background-image: url('/assets/uvmap.png');
   }
 
+  
+  &.gallery, 
   &.bridge {
-    
     transform: rotateZ(var(--rz)) translate3d(var(--x), var(--y), var(--d));
-    
     &::after {
       inset: 0;
       border-radius: 0;
       transform: translateZ(0);
       background-color: hsl(from var(--column-color) h s 12%);
     }
+  }
+  
+  &.gallery {
+    & > * {
+      display: none;
+
+      &.roof {
+        display: none !important
+      }
+    }
+  }
+
+  &.bridge {
     
     /* stairs*/ 
     &>.wall-e {
@@ -106,9 +119,19 @@
     &>.wall-w {
       transform: rotateY(-15deg) scaleX(3.7) rotateZ(90deg) translateY(0%);
     }
-
+    
   }
   
+  &.walkway {
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;;
+      mask-image: radial-gradient(black 0px, black 2px, white 2px);
+      mask-mode: luminance;
+      mask-size: 8px 8px;
+    }
+  }
 }
 
 /* Basis voor alle muren-containers en hun pseudo-elementen */
@@ -254,8 +277,4 @@
   */
   will-change: auto; 
  
-  /* FIXME: build generic/central intr6nObserver 3D-culling fix  */
-  &.off-screen { 
-    /* opacity: 0; */
-  }
 }

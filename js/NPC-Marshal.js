@@ -46,6 +46,7 @@ export default class Marshal {
   }
 
   update (deltaTime) {
+    if( !this.game.localPlayer) return;
     
     if (this.game.localPlayer == undefined) {
       return;
@@ -56,7 +57,6 @@ export default class Marshal {
     }
 
     if(this.status === 'rescue') {
-      console.log('update: rescue')
       this.rescue();
     } else {
       this.target.x = this.base.cx.baseVal.value - this.position.x;
@@ -65,9 +65,12 @@ export default class Marshal {
     
 
     // colliding with Player
+    
     let [playerCollision, distance, sumOfRadii, distanceX, distanceY] = checkCollision(this, this.game.localPlayer);
 
     if (playerCollision) {
+
+      console.log(`player struck marshal ${this.sprite.domElement.id}`)
 
       this.sprite.img.classList.add('hit');
 
@@ -88,8 +91,18 @@ export default class Marshal {
 
         this.game.localPlayer.hud.sessionTime = 0;
         */
-
+       
       }
+
+      setTimeout( () => {
+        console.warn("STRAF! TERUG NAAR DE PITS!")
+        this.game.localPlayer.speed = 0;
+        let {x, y} = this.game.world.garages[this.game.localPlayer.garageIndex].circlePos;
+        this.game.localPlayer.x = x;
+        this.game.localPlayer.y = y;
+        
+      }, 1000)
+
     } else {
       if(this.sprite.img.className.includes('hit')) {
         this.sprite.img.classList.remove('hit');
@@ -97,6 +110,9 @@ export default class Marshal {
     }
  
     // colliding with other NPC
+    // EDIT: let's skip this, little to gain from it rly
+
+    /*
     this.game.world.marshals.forEach(lilguy => {
       if(lilguy.marshalId == this.marshalId) return;
       
@@ -113,6 +129,7 @@ export default class Marshal {
         this.position.y = lilguy.position.y + (sumOfRadii + 3) * unitY;
       }
     });
+    */
 
     // If walking, animate NPC sprite
     if (Math.abs(this.target.x) > this.radius * 1.5 || Math.abs(this.target.y) > this.radius * 1.5 && !playerCollision) {
