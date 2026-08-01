@@ -7,7 +7,9 @@ export default class LapTimer {
     this.lastSectorTime = 0;
     this.laps = [];
     this.bestLap = Infinity;
+    console.groupCollapsed('timing canvas el')
     console.log(this.world.logicCtx)
+    console.groupEnd()
   }
 
   checkSectors(x, y) {

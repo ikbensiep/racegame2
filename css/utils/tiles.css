@@ -27,7 +27,6 @@
     width: var(--tile-size);
     height: var(--tile-size);
     opacity: 1;
-    transition: opacity .2s;
   }
 
   img:nth-of-type(1n) {background-color: rgba(from black r g b  / .75);}

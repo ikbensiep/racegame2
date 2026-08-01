@@ -35,18 +35,26 @@
 .vehicle {
   --collider-color: transparent;
   /* general purpose vehicle debug canvas @ 256px */
+
   &::after {
+    /*
     white-space: pre-wrap;
-    content: var(--driver-id) " (" attr(data-speed) " kmh)  \a" attr(data-state);
+    content: var(--driver-id) " (" attr(data-state) ")  \a V: " attr(data-speed) " F:" attr(data-fuel) " H: " attr(data-health);
     position: absolute;
     inset: auto;
     color: white;
+    color: contrast-color(var(--driver-color));
     background-color: var(--driver-color);
+
     padding: .65ex;
     font-size: 1.1rem;
     font-weight: 600;
     border-radius: 2px;
     place-self: start center;
+    opacity: calc((50 - var(--speed)) * .02);
+    translate: 0 calc(-5rem * (var(--speed) / 35));
+    transition: all .5s;
+    */
   }
 
   /* collider viz circle */

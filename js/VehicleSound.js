@@ -16,15 +16,21 @@ export default class VehicleSound {
 
   // Start de motor één keer
   start() {
-    console.log(this.soundName, this.source, ' start()');
-    if (this.source) return; // Al bezig
+    if (this.source) return;
 
     const ctx = this.manager.context;
+    const buffer = this.manager.buffers.get(this.soundName);
+
+    if (!buffer) {
+      console.warn(`VehicleSound: buffer not loaded for ${this.soundName}`);
+      return;
+    }
+
     this.source = ctx.createBufferSource();
     this.panner = ctx.createStereoPanner();
     this.gainNode = ctx.createGain();
 
-    this.source.buffer = this.manager.buffers.get(this.soundName);
+    this.source.buffer = buffer;
     this.source.loop = true;
 
     // chain: source -> panner -> gain -> master
@@ -43,7 +49,7 @@ export default class VehicleSound {
   // speed parameter is expected to have been normalised by caller
   // options: { source: vehicleObject, listener: vehicleObject, maxDistance, screenSpace }
   update(speed, options = {}) {
-    if (!this.source) return;
+    if (!this.source || !this.panner || !this.gainNode) return;
 
     // base pitch adjustment (RPM)
     let finalPitch = speed;
@@ -135,8 +141,15 @@ export default class VehicleSound {
 
   stop() {
     if (this.source) {
-      this.source.stop();
-      this.source = null;
+      try {
+        this.source.stop();
+      } catch (e) {
+        // Ignore if already stopped
+      }
     }
+
+    this.source = null;
+    this.panner = null;
+    this.gainNode = null;
   }
 }

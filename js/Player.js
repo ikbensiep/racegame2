@@ -1,20 +1,17 @@
 import Emitter from './tools/Emitter.js'
 import InputHandler from './InputHandler.js';
-import { sidesFromHypotenhuse } from './tools/MathUtils.js';
+import { getDistance, sidesFromHypotenhuse } from './tools/MathUtils.js';
 import Vehicle from './Vehicle.js';
 import { TweakManager } from './tools/Tweaker.js';
 import * as Presets from './VehicleDynamics.js';
 import * as SurfaceModule from './SurfaceDynamics.js';
 
 export default class Player extends Vehicle {
-  constructor(id, name, driverNumber = 0, color = 'red', isLocal = false, game) {
-    super(id, name, driverNumber, color, game);
+  constructor(game, id, name, driverNumber = 0, color = 'red', team = 'porsche', livery = '', isLocal = false) {
+    super(game, id, name, driverNumber, color, team, livery, isLocal);
     this.game = game;
-
-    this.id = id;
-    this.isLocal = isLocal;
-    this.x = 10500;
-    this.y = 10000;
+    this.x = null;
+    this.y = null;
     this.radius = 64;
     
     this.dynamics = {};
@@ -24,14 +21,15 @@ export default class Player extends Vehicle {
     this.vy = 0;
     this.angle = 0; 
     this.steerInput = 0;
+    this.movementAngle = 0;
 
     this.isBraking = false;
 
-    this.vehicleTweaker = new TweakManager(this.dynamics, "🚗 Dynamics tweaker");
+    this.vehicleTweaker = new TweakManager(this.dynamics, "🚗 Dynamics");
     this.vehicleTweaker._addPresetDropdown(Presets);
 
     this.SurfaceData = SurfaceModule.Surfaces;
-    this.surfaceTweaker = new TweakManager(this.SurfaceData.asphalt, "🚛 Surface tweaker");
+    this.surfaceTweaker = new TweakManager(this.SurfaceData.asphalt, "🚛 Surface");
     this.surfaceTweaker._addPresetDropdown(this.SurfaceData);
 
     this.xp = 0;
@@ -44,6 +42,8 @@ export default class Player extends Vehicle {
     this.intervalUpdateTimer = 0;
     this.engineShutDownTimer = 0;
 
+    this.fik = null;
+
     this.init();
   }
 
@@ -54,9 +54,11 @@ export default class Player extends Vehicle {
     this.createTireTracks();
 
     this.smokePool = [];
-    this.maxSmoke = 10;
+    this.maxSmoke = 40;
     this.smokeInterval = 0;
-    // this.createSmokePuffs();
+    this.createSmokePuffs();
+
+    this.fik = this.getSmoke('fire');
 
   }
 
@@ -76,6 +78,22 @@ export default class Player extends Vehicle {
     }
   }
 
+  createSmokePuffs () {
+    for(let i=0; i<this.maxSmoke; i++) {
+      this.smokePool.push(new Emitter(this.game, window.smokeSprite, 256, 256, 11, false, this.game.world.element, false));
+    }
+  }
+
+  getSmoke (type, x, y) {
+    for(let i=0; i< this.smokePool.length; i++) {
+      this.smokePool[i].domElement.id=`smoke-${i}`
+      if (this.smokePool[i].free) {
+        this.smokePool[i].domElement.classList.add(type);
+        return this.smokePool[i];
+      }
+    }
+  }
+
   _applyPhysics(input, dt) {
       const d = this.dynamics;
       const s = this.SurfaceData[this.activeSurface] || this.SurfaceData.asphalt;
@@ -89,8 +107,8 @@ export default class Player extends Vehicle {
       this.isBraking = brake > 0;
 
       // Multipliers
-      const currentAccel = d.acceleration * s.power;
-      const currentFriction = d.friction * s.drag;
+      let currentAccel = d.acceleration * s.power;
+      let currentFriction = d.friction * s.drag;
       const currentDrift = handbrake ? d.handbrakeDrift : d.driftFactor;
       const currentGrip = (1 - currentDrift) * s.grip;
 
@@ -99,9 +117,25 @@ export default class Player extends Vehicle {
       this.element.dataset.friction = currentFriction.toFixed(2);
       this.element.dataset.grip = currentGrip.toFixed(2);
 
+      if (this.fuel <= 0 && Math.abs(this.speed) > 0) {
+        // Define how fast it should coast to a stop when empty
+        const coastingFriction = currentFriction * .2; 
+        const reduction = coastingFriction * dt * .25;
+
+        if (Math.abs(Math.floor(this.speed)) <= reduction) {
+          this.speed = 0;
+        } else {
+          // Math.sign returns 1 for positive, -1 for negative
+          currentAccel = 0;
+          currentFriction = 1;
+          this.speed -= Math.sign(this.speed) * reduction;
+          
+        }
+      }
+
       // 1. Versnelling & Remmen
       if (gas > 0) this.speed += (gas * currentAccel) * dt;
-      if (brake > 0) this.speed -= (brake * currentFriction) * (dt / 2);
+      if (brake > 0 && Math.abs(this.speed) > 0) this.speed -= (brake * currentFriction) * (dt / 2);
 
       // Snelheidslimiet
       if (this.speed > d.maxSpeed) this.speed = d.maxSpeed;
@@ -136,26 +170,34 @@ export default class Player extends Vehicle {
       this.vx += (targetVX - this.vx) * lerpFactor;
       this.vy += (targetVY - this.vy) * lerpFactor;
 
+      this.movementAngle = Math.atan2(this.vy, this.vx);
+
       // 5. Beweging
       this.x += this.vx * dt;
       this.y += this.vy * dt;
 
-
-      if( (this.tireTrackInterval > 3) && 
+      // TODO: move to function
+      if( 
+        (this.tireTrackInterval > 3) 
+        &&
         (
           (brake && this.speed > 10) || 
           (this.speed > 10 && (currentGrip < .2 || currentDrift > .5))
-          
         )
         ) {
+        let smoke = this.getSmoke();
         let tiretrack = this.getTireTrack();
+        let offset = sidesFromHypotenhuse(this.width * .33, this.movementAngle)
         if(tiretrack) {
-          console.warn(this.activeSurface)
-          let offset = sidesFromHypotenhuse(this.width * .25, this.angle)
-          tiretrack.domElement.dataset.velocity = Math.floor(this.speed);
+          tiretrack.domElement.dataset.speed = Math.floor(this.speed);
           tiretrack.domElement.style.setProperty('--speed', Math.floor(this.speed * 2));
-          tiretrack.domElement.classList.add(this.activeSurface);
-          tiretrack.start(this.x - offset.width, this.y - offset.height, this.angle );
+          tiretrack.domElement.className = `emitter-object sprite rubber ${this.activeSurface} fade`;
+          tiretrack.start(this.x - offset.width, this.y - offset.height, `${this.movementAngle}rad`); // Use movement direction for sprite rotation
+          if(smoke) {
+            smoke.domElement.querySelector('img').src = '';
+            smoke.domElement.className = `emitter-object sprite smoke ${this.activeSurface}`;
+            smoke.start(this.x - offset.width, this.y - offset.height, `${((Math.random() * 720) - 360)}deg`);
+          }
         }
         this.tireTrackInterval = 0;
       } else {
@@ -225,10 +267,10 @@ export default class Player extends Vehicle {
       this.vy *= -0.999;
     }
 
-    this.handleCollision();
+    this.handleCollision(speedMag);
   }
 
-  handleCollision () {
+  handleCollision (speedMag) {
 
     // 1. Controller Trillen (Rumble)
     // De meeste moderne gamepads ondersteunen 'dual-rumble'
@@ -249,6 +291,9 @@ export default class Player extends Vehicle {
     //     crashSound.play().catch(e => {}); // Catch om browser-autostart fouten te voorkomen
     // }
 
+    // 3. Reduce car health
+    let pain = speedMag * -.1;
+    this.updateHealth(pain);
 
   }
 
@@ -273,13 +318,19 @@ export default class Player extends Vehicle {
   }
 
   playHapticFeedBack (haptics) {
-    const gamepad = this.inputHandler.gamePad;
+    // Always get a fresh gamepad reference from navigator for vibrationActuator
+    // Using a stale reference can fail, especially in Chrome
+    const gamepad = navigator.getGamepads()[0];
     if(!gamepad || !gamepad.vibrationActuator ) return;
+    
     gamepad.vibrationActuator.playEffect("dual-rumble", {
       startDelay: haptics.startDelay || 0,
       duration: haptics.duration || 20,      // Kort maar krachtig
       weakMagnitude: haptics.weakMagnitude || 0.5, // De lichte trilmotor
       strongMagnitude: haptics.strongMagnitude || 0.2 // De zware trilmotor (voor de klap)
+    }).catch(err => {
+      // Gracefully handle any vibration API errors
+      console.warn('Haptic feedback failed:', err);
     });
   }
 
@@ -298,15 +349,19 @@ export default class Player extends Vehicle {
 
     if (!this.isLocal) return;
     
+    // Debug: track calls per frame
+    if (!window.__playerUpdateCount) window.__playerUpdateCount = 0;
+    window.__playerUpdateCount++;
+    
     const input = this.inputHandler.getInputs();
-    const surface = this.game.world.getSurfaceType(this.x, this.y);
+    
+    const surface = this.game.world.getSurfaceType(this.x, this.y, this);
 
     if(this.intervalUpdateTimer < 10) {
       this.intervalUpdateTimer += dt;
     } else {
 
       this.intervalUpdateTimer = 0;
-      this.element.dataset.speed = Math.floor(this.speed);
       this.element.dataset.vx = Math.floor(this.vx);
       this.element.dataset.vy = Math.floor(this.vy);
       this.element.dataset.angle = Math.floor(this.angle);
@@ -316,34 +371,41 @@ export default class Player extends Vehicle {
       if(this.activeSurface !== surface) {
         this.activeSurface = surface;
         this.element.dataset.state = surface;
-
         /* Maybe later? */
         // this.game.effects.trigger(this, surface, 500);
-  
-        let haptics = {
-          startDelay: 0,
-          duration: 1000,
-          weakMagnitude: 1, // De lichte trilmotor
-          strongMagnitude: 0
-        }
-        
-        switch(this.activeSurface) {
-          case 'sand':
-          case 'gravel': 
-            haptics.strongMagnitude = this.speed / 20;
-            playHaptics = true;
-            break;
-          case 'asphalt':
-            haptics.weakMagnitude = this.speed / 100;
-            haptics.strongMagnitude = .1;
-            playHaptics = true;
-            break;
-          default:
-            // playHaptics = false;
-            break;
-        }
       }
-      
+  
+      let haptics = {
+        startDelay: 0,
+        duration: 1000,
+        weakMagnitude: 1, 
+        strongMagnitude: 0
+      }
+
+      switch(this.activeSurface) {
+        case 'sand':
+        case 'gravel': 
+          this.health -= 0.001;
+          haptics.strongMagnitude = this.speed / 20;
+          playHaptics = true;
+          break;
+        case 'asphalt':
+          haptics.weakMagnitude = this.speed / 100;
+          haptics.strongMagnitude = .1;
+          playHaptics = true;
+          break;
+        case 'pitbox':
+          if(Math.abs(this.speed) < 1) this.speed = 0;
+          if((this.fuel < this.maxFuel) && Math.floor(this.speed) == 0) {
+            this.fuel += .25;
+            console.log(this.fuel);
+          }
+          break;
+        default:
+          // playHaptics = false;
+          break;
+      }
+
       playHaptics ?? this.playHapticFeedBack (haptics)
 
       // Update our own engine sound (pitch only - listener is self so pan stays centered)
@@ -351,31 +413,22 @@ export default class Player extends Vehicle {
       if (this.engineSound) {
         this.engineSound.update(
           (Math.abs(Math.floor(this.speed)) * .025),
-          { source: this, screenSpace: !!this.game.settings.audioPanScreenSpace, maxDistance: 8192 }
+          {
+            source: this,
+            listener: this,
+            screenSpace: !!this.game.settings.audioPanScreenSpace,
+            maxDistance: 8192
+          }
         );
         let targetValue = .2 + (Math.abs(this.speed) / this.dynamics.maxSpeed);
-        
-        this.engineSound.gainNode.gain.setTargetAtTime(targetValue, this.engineSound.source.context.currentTime + 1, 2.5);
+        try {
+          this.engineSound.gainNode.gain.setTargetAtTime(targetValue, this.engineSound.source.context.currentTime + 1, 2.5);
+        } catch (e) {
+          console.error('[targetValue]', targetValue)
+          console.error(e)
+        }
       }
 
-      // if(this.speed == 0) {
-      //   this.engineShutDownTimer += dt;
-
-      //   if (this.engineShutDownTimer > 10) {
-      //     this.engineSound && this.engineSound.stop();
-      //     this.engineShutDownTimer = 0;
-      //   }
-
-      // }
-
-      // if(this.speed == 0 && this.engineShutDownTimer > 10) {
-        
-      // } else if ((Math.abs(this.speed) > 1) && this.engineShutDownTimer == 0) {
-      //   console.log('starting engine?')
-      //   this.engineSound.start();
-      // } else {
-      //   this.engineShutDownTimer += dt;
-      // }
     }
 
     const sectorId = this.game.world.lapTimer.checkSectors(this.x, this.y);
@@ -442,7 +495,7 @@ export default class Player extends Vehicle {
 
       if (distanceSq < minDistance * minDistance && !this.isColliding) {
         // We hebben een botsing met een andere speler!
-        console.log('🚑 HIT VEHICLE', opp)
+        // console.log('🚑 HIT VEHICLE', opp)
         this._resolveCollision(opp);
         this.game.network.send({
           type: 'bang',
@@ -450,6 +503,7 @@ export default class Player extends Vehicle {
           x: this.x,
           y: this.y,
           angle: this.angle,
+          health: this.health,
           impact: true // Een vlaggetje zodat zij ook sfx kunnen afspelen
         });
       } else {
@@ -457,6 +511,41 @@ export default class Player extends Vehicle {
       }
     });
 
+    // dispatch nearby marshals when offroad
+    // TODO: move to function
+    
+    if(surface === 'grass' || surface === 'gravel' || surface === 'out-of-bounds') {
+
+      this.game.world.element.dataset.flag = 'yellow';
+
+      let nearestMarshalPosts = Array.from(this.game.world.marshalPosts).filter (post => {
+        let postLocation = {x: post.cx.baseVal.value,y: post.cy.baseVal.value};
+        let distanceToPlayer = getDistance(postLocation, this);
+        if( distanceToPlayer < this.game.camera.viewPortSize.width) {
+          post.distance = distanceToPlayer;
+          return post;
+        }
+      });
+
+
+      let nearest = nearestMarshalPosts.sort((a, b) => a.distance - b.distance);
+      let lilguys = this.game.world.marshals.filter (dude => dude.base == nearest[0] && dude.status !== 'dead');
+
+      lilguys.forEach(dude => dude.status = 'rescue');
+      
+    } else {
+
+      this.game.world.element.dataset.flag = 'green';
+
+      this.game.world.marshals.map (dude => {
+        if(dude.status !== 'dead') {
+          dude.status = 'idle'
+        }
+      });
+    }
+
+    this.game.world.marshals.forEach(marshal => marshal.update(dt))
+    this.smokePool.forEach(smoke => smoke.update(dt));
 
   }
 
@@ -469,9 +558,12 @@ export default class Player extends Vehicle {
     this.game.world.element.style.setProperty('--player-y', this.y.toFixed(3));
     this.game.world.element.style.setProperty('--player-angle', this.angle.toFixed(3));
 
-    if (this.isLocal) {
-      //TODO: update to use CameraManager class
-      // this.element.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
+    this.element.style.setProperty('--fuel-message', `"⛽  ${this.fuel.toFixed(2)}"`);
+    if(this.fuel < 15) {
+      this.element.dataset.fuelLeft =  `${this.fuel.toFixed(2)}`;
+    } else {
+      this.element.removeAttribute('data-fuel-left')
+      // this.element.style.setProperty('--fuel-message', ``);
     }
   }
 }

@@ -89,7 +89,7 @@ export class TweakManager {
             const val = this.target[key];
             if (val !== undefined) {
                 input.value = val;
-                const display = input.parentElement.querySelector('.tweak-field__value');
+                const display = input.parentElement.querySelector('code');
                 if (display) display.textContent = val;
             }
         });

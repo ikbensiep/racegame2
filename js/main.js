@@ -17,20 +17,36 @@ console.info(savedata, settingsForm)
 const lobbyDialog = document.getElementById('lobby-menu');
 const playerForm = document.getElementById('player-settings');
 
+function applySavedDataToForm() {
+  for (const setting in savedata) {
+    if (!settingsForm.elements[setting]) continue;
+
+    try {
+      const element = settingsForm.elements[setting];
+
+      if (element instanceof RadioNodeList || element.length > 1) {
+        const radioToSelect = [...element].find(el => el.value === savedata[setting]);
+        if (radioToSelect) radioToSelect.checked = true;
+      } else if (element.type === 'checkbox') {
+        element.checked = savedata[setting] === true || savedata[setting] === 'true' || savedata[setting] === 'on' || savedata[setting] === 1 || savedata[setting] === '1';
+      } else {
+        element.value = savedata[setting];
+      }
+    } catch (e) {
+      console.error(`[${setting}]`, e);
+    }
+
+    const matchedElement = settingsForm.querySelector(`[name="${setting}"]`);
+    if (matchedElement) {
+      const initEvent = new Event('input');
+      matchedElement.dispatchEvent(initEvent);
+    }
+  }
+}
+
 // Toon de dialoog zodra de pagina geladen is
 window.addEventListener('load', () => {
-  for (const setting in savedata) {
-    if (settingsForm.elements[setting]) {
-      
-      try {
-        let radioElement = [...settingsForm.elements[setting]].filter ( element => element.value == savedata[setting]);
-        radioElement.checked = true;
-      } catch (e) {
-      }
-      settingsForm.elements[setting].value = savedata[setting];
-    }
-    console.log(`${setting}: ${savedata[setting]}`)
-  }
+  applySavedDataToForm();
   lobbyDialog.showModal();
 });
 
@@ -43,8 +59,20 @@ settingsForm.addEventListener('change', (e) => {
   }
 
   if(e.target.name == "track" ) {
-      // let imgElem = document.querySelector('.backdrops img');
-      // imgElem.src = `/assets/track/${e.target.value}/${e.target.value}_track.png`;
+      document.body.classList.add('busy')
+      let track = e.target.value;
+      let trackPreview = document.querySelector('.track-preview img');
+      trackPreview.style.filter = 'blur(16px)'
+      let img = new Image()
+      img.src = `/levels/${track}/${track}.svg`;
+      img.onload = () => {
+        trackPreview.src = img.src;
+        setTimeout(()=>{
+          trackPreview.style.filter = 'blur(0px)'
+          document.body.classList.remove('busy')
+        }, 1000);
+      }
+      
   }
 
   let formData = new FormData(e.target.form)
@@ -52,6 +80,12 @@ settingsForm.addEventListener('change', (e) => {
 
   for (const [key, value] of formData) {
     newsavedata[key] = value;
+  }
+
+  for (const checkbox of settingsForm.querySelectorAll('input[type="checkbox"]')) {
+    if (checkbox.name) {
+      newsavedata[checkbox.name] = checkbox.checked;
+    }
   }
 
   // save to storage, update current values
@@ -69,7 +103,9 @@ settingsForm.addEventListener('change', (e) => {
 })
 
 settingsForm.addEventListener('submit', (e) => {
+  e.preventDefault();
   
+  document.body.classList.add('busy');
   let formData = new FormData(e.target)
   let newsavedata = {}
 
@@ -77,36 +113,31 @@ settingsForm.addEventListener('submit', (e) => {
     newsavedata[key] = value;
   }
 
-  localStorage.setItem('savedata', JSON.stringify(newsavedata));
-  
-  if (!window.game) {
-    // startGame();
-  } else {
-    document.querySelector('body').classList.remove('menu');
+  for (const checkbox of settingsForm.querySelectorAll('input[type="checkbox"]')) {
+    if (checkbox.name) {
+      newsavedata[checkbox.name] = checkbox.checked;
+    }
   }
+
+  localStorage.setItem('savedata', JSON.stringify(newsavedata));
+  savedata = {...newsavedata};
+
+  initGame(savedata);
   return false;
 });
 
 
 // Luister naar het sluiten van de dialoog
 lobbyDialog.addEventListener('close', () => {
-  console.log('en hie zoujiu de gtame moeten starten')
-  // Haal de data op
-  // const settings = {
-  //   name: document.getElementById('player-name').value,
-  //   color: document.getElementById('player-color').value,
-  //   driverNumber: parseInt(document.getElementById('player-number').value),
-  //   track: document.querySelector('input[name=track]:checked').value,
-  //   audioPanScreenSpace: document.getElementById('audio-pan-screen').checked
-  // };
-
-  // Initialiseer de game met deze settings
-  
-  initGame(savedata);
+  console.warn('en hie zoujiu de gtame moeten starten')
+  document.body.dataset['screen'] = 'game';
 });
 
 function initGame(playerSettings) {
-  console.log("Starting game with:", playerSettings);
+  console.groupCollapsed('Starting game with settings:')
+  console.log(playerSettings);
+  console.groupEnd()
   
   window.game = new GameEngine(playerSettings);
+  
 }

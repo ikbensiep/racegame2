@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="shortcut icon" href="favicon.svg" type="image/svg" />
+  <title>Document</title>
+  <style>
+
+    details img {
+      width: 256px;
+    }
+
+    .flex {
+      display: flex;
+      gap: 1ex;
+      &.row {
+        flex-direction: row;
+      }
+    }
+
+    .normal-mapped {
+      --diffuse-url: url('assets/resources/Tileable Grass Textures - Set 1/Grass_01.png');
+      --normal-url: url('assets/resources/Tileable Grass Textures - Set 1/Grass_01_Nrm.png');
+      width: 256px;
+      height: 256px;
+      background: var(--diffuse-url);
+      background-size: 256px 265px;
+      position: relative;
+      filter: url(#normalMap);
+    }
+    
+    .normal-mapped::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      /* background: var(--normal-url); */
+      background-size: 256px 256px;
+      
+      
+      /* The normal map is used in the SVG filter, not directly here */
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <form action="#">
+        <fieldset>
+          <button id="toggle-normals" type="button">normals</button>
+        </fieldset>
+        <fieldset class="sun-controls">
+          <legend>sun</legend>
+          <input type="range" name="azimuth" id="" min="0" max="360" />
+          <input type="range" name="elevation" id="" min="0" max="100" />
+        </fieldset>
+      </form>
+    </header>
+    <details name="hoi" open>
+      <summary>Step 0: a diffuse (texture) image and its normal map equivalent </summary>
+      <div class="flex row">
+        <svg style="width: 0; height: 0">
+          <filter id="normalMap">
+            <!-- The ID "targetMap" lets us find this with JS -->
+            <feImage id="targetMap" href="" result="normalMap" />
+            <feDiffuseLighting in="normalMap" surfaceScale="2">
+              <feDistantLight azimuth="5" elevation="5" />
+            </feDiffuseLighting>
+            <feComposite in2="SourceGraphic" operator="arithmetic" k1="1" />
+          </filter>
+        </svg>
+        <div class="normal-mapped" data-normal="assets/resources/Tileable Grass Textures - Set 1/Grass_01_Nrm.png"></div>
+
+
+      </div>
+    </details>
+    <details open>
+      
+      <summary>Step 1: apply normal map to diffuse lighting filter</summary>
+      <svg style="width: 0; height: 0;">
+        <filter id="dynamicNormalMap">
+          <feImage id="targetMap" href="" result="normalMap" />
+          <feDiffuseLighting in="normalMap" surfaceScale="25">
+            <feDistantLight azimuth="45" elevation="60" />
+          </feDiffuseLighting>
+          <feComposite in2="SourceGraphic" operator="arithmetic" k1="1" />
+        </filter>
+      </svg>
+      
+      <code></code>
+      <div class="demo">
+        <img 
+          src="assets/resources/Tileable Grass Textures - Set 1/Grass_03.png" 
+          data-normal="assets/resources/Tileable Grass Textures - Set 1/Grass_03_Nrm.png"
+          class="apply-3d normal">
+      </div>
+
+    </details>
+    <details>
+      <summary>Step 3: animate feDistantLight azimuth (sun rotation)</summary>
+    </details>
+  </main>
+    <script>
+
+      let distantLights = document.querySelectorAll('feDistantLight');
+      let normalMapsEnabled = false;
+
+
+      const toggleNormalMaps = () => {
+        normalMapsEnabled = !normalMapsEnabled;
+        console.log(`toggleNormals: ${normalMapsEnabled}`)
+        
+        let normalMapImgs = document.querySelectorAll('.apply-3d.normal');
+        
+        normalMapImgs.forEach( img => {
+          let map = img.dataset.normal;
+          document.querySelector('#targetMap').setAttribute('href', map);
+          if( normalMapsEnabled) {
+            img.style.filter = 'url(#normalMap)';
+          } else {
+            img.style.filter = '';
+          }
+          
+        });
+        return false;
+      }
+
+      const updateSun = (e) => {
+        distantLights.forEach( sun => {
+          sun.setAttribute(e.target.name, e.target.value);
+        })
+      }
+
+
+      document.getElementById('toggle-normals').addEventListener('click', toggleNormalMaps)
+      document.querySelectorAll('.sun-controls input').forEach ( input => {
+        input.addEventListener('input', updateSun);
+      })
+    </script>
+</body>
+</html>

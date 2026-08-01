@@ -15,6 +15,7 @@
 
 @import url('./utils/colors.css');
 @import url('./utils/debug.css');
+@import url('./utils/flexgrid.css');
 @import url('./utils/gizmo.css');
 
 @import url('./utils/patterns.css');
@@ -42,15 +43,15 @@ body {
   background-color: var(--player-color, aquamarine);
   display: grid;
   overflow: hidden;
-  font-family: sans-serif;
+  font-family: "Barlow Semi Condensed", "Roboto Condensed", sans-serif;
   font-size: 1.33em;
   user-select: none;
-  transition: background-color .75s cubic-bezier(0.165, 0.84, 0.44, 1)
+  transition: background-color .75s .5s cubic-bezier(.65,.05,.36,1);
 }
 
 /* TODO: organize */
 
-bodyu > .off-screen {
+.preload.off-screen {
   display: none;
 }
 

@@ -3,23 +3,24 @@
 
 .building {
 
-  &::before {
+  /* &::before {
     content: 'building floor level';
     position: absolute;
     inset: 0;
     padding: 1ex;
     color: pink;
-  }
+  } */
 
-  &::after {
+  /* &::after {
     content: 'structure: ' attr(class);
     background-color: #67676706;
     border-radius: 32px;
     position: absolute;
     inset: -72px;
     padding: 3ex 72px;
-    transform: translateZ(-1px); /* sit just behind the building faces */
-  }
+    transform: translateZ(-1px); 
+    
+  } */
 
   .wall-n, 
   .wall-e,
@@ -72,7 +73,7 @@
       display: flex;
       flex-direction: column-reverse;
 
-      h3 {
+      h3:not(:empty) {
         background: linear-gradient(to top, var(--column-color), var(--column-color));
         opacity: 1;
         transform-origin: bottom;
@@ -203,22 +204,13 @@
     border-inline: 4px solid var(--column-color);
   }
 
-
   &>.roof {
     background-color: transparent;
     box-shadow: inset 0 0 0 calc(var(--d) / 4 ) #222;
   }
 
-  &.walkway {
-    &::after {
-      mask-image: radial-gradient(black 0px, black 2px, white 2px);
-      mask-mode: luminance;
-      mask-size: 8px 8px;
-    }
-  }
-
   &.honkin {
-    
+
     .wall-n,
     .wall-s {
       background-image: url(/assets/environment/advertising/honkin.svg);
@@ -312,9 +304,8 @@
 }
 
 .mat-fence {
-  --sponsor-url: url(/assets/environment/);
-  background-color: rgba(20, 20, 20, 0.05);
-  
+  --sponsor-url: url();
+  background-color: rgba(20, 20, 20, 0.15);
   
 
   background-image: 
@@ -345,6 +336,107 @@
     --sponsor-url: url(/assets/environment/advertising/ROFLX.svg);
   }
 
+  &.guardrail {
+
+  }
+
+}
+
+.mat-apartments {
+  .wall-n,
+  .wall-e,
+  .wall-s,
+  .wall-w  {
+    background-image: url(/assets/environment/facade/apartments-512.webp);
+    background-size: 592px 412px;
+  }
+}
+
+.mat-commercial {
+  .wall-n,
+  .wall-e,
+  .wall-s,
+  .wall-w  {
+    background-image: url(/assets/environment/facade/commercial.jpg);
+    background-size: 320px 72px;
+    background-position: bottom;
+  }
+  
+  /* TODO: we could make variations using 
+   * filter: hue-rotate() saturation() sepia() etc 
+   * using :nth-of-type(n) or something even more clever 
+   */
+}
+
+.mat-townhouse {
+  .wall-n,
+  .wall-e,
+  .wall-s,
+  .wall-w  {
+    background-image: url(/assets/environment/facade/townhouse.webp);
+    background-size: 256px 128px;
+  }
+}
+
+/* beetje lief voor jezelf zijn zo nu en dan */
+.mat-office,
+.mat-offices {
+  .wall-n,
+  .wall-e,
+  .wall-s,
+  .wall-w  {
+    /* TODO: cut this texture into two separate textures (glass, concrete) */
+    background-image: url(/assets/environment/facade/photo-1639649151124-cbfe4bf6b475-512.avif);
+    background-size: 302px 276px;
+  }
+  &[data-graffiti] {
+    .wall-n,
+    .wall-e,
+    .wall-s,
+    .wall-w  {
+      &::after{
+        content: 'graffiti';
+        position: absolute;
+        inset: 0;
+        background-color: black;
+        mask-image: url(/assets/environment/graffiti-mask.webp);
+        mask-mode: luminance;
+        mask-position: bottom;
+        mask-repeat: no-repeat;
+        mask-size: 512px 128px;
+      }
+    }
+  }
+}
+
+
+.mat-ferris-wheel {
+
+  & .wall-s {
+    background: url('/assets/environment/ferris-wheel-base.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url('/assets/environment/ferris-wheel.png');
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      transform: translateZ(-10px) rotateZ(0deg);
+      animation: ferris 3s linear forwards infinite;
+      mix-blend-mode: multiply;
+    }
+  }
+}
+
+@keyframes ferris {
+  to {
+    transform: translateZ(-10px) rotateZ(calc(360deg / 8))
+  }
 }
 
 /* NATURE */
@@ -440,6 +532,8 @@
     */
   }
 }
+
+/* Water */
 
 @property --tile-color {
   syntax: "<color>";

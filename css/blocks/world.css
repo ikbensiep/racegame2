@@ -12,8 +12,6 @@
 
 #canvas.world {
   
-  /* 8k: easy to remember, fun to type number (provided u have a numpad) */
-  
   --animation-duration: 1;
   --player-position: calc(var(--player-x) * 1px) calc(var(--player-y) * 1px);
   --player-position-with-offset: calc(var(--cam-x) * -1px ) calc(var(--cam-y) * -1px );
@@ -37,16 +35,17 @@
   transform-style: preserve-3d;
   transition: filter 1.5s;
 
-  #worldmap {
+  & #worldmap {
     display: grid;
     grid-template-columns: calc(var(--world-size) / 2) calc(var(--world-size) / 2);
     grid-template-rows: calc(var(--world-size) / 2) calc(var(--world-size) / 2);
-
-    svg {
+    width: 100vw;
+    height: 100vh;
+    & svg {
       grid-template: 1 / 1 / -1 / -1;
     }
 
-    img {
+    & img {
         aspect-ratio: 1;
         width: calc(var(--world-size) / 2);
     }
@@ -68,6 +67,7 @@
     
     background-size: var(--world-size) var(--world-size);
     background-position: calc(var(--cam-x) * -1px) calc(var(--cam-y) * -1px);
+    background-color: var(--world-multiply-color, rgba(16, 16, 78, 0.9));
     mix-blend-mode: multiply;
     pointer-events: none;
     z-index: 100;
@@ -76,13 +76,92 @@
     translate: 
       calc(var(--cam-x) * 1px ) 
       calc(var(--cam-y) * 1px ) 
-      0px; /* Z translate y tho?? */
-    left: 0;
+      256px; /* Z translate y tho?? */
+    scale: .5; /* I'll tell u why: we need to raise the light/darkness layer towards the camera */
+    left: 0;   /* otherwise it's actually right on the floor and the 3D buildings will poke right through */
     top: 0;
-    opacity: abs(var(--pp-time-of-day, 0));
+    --time:  var(--pp-time-of-day, 0);
+    --time-remapped: calc((var(--time) * 2) - 1);
+    opacity: abs(var(--time-remapped, 0));
+  }
+}
 
-    transition: opacity 1s;
+@property --light-color {
+  syntax: "<color>";
+  initial-value: white;
+  inherits: true;
+}
 
+@keyframes scale {
+  to {
+    scale: var(--to-scale, 1);
+  }
+}
+
+/* FIXME: use solid background color, use mask for light shape */
+.lamp-post {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  translate: calc(var(--cam-x) * -1px) calc(var(--cam-y) * -1px);
+  scale: 10;
+  --light-color: green;
+  
+  z-index: 50;
+
+  &::before {
+    content: '';
+    width: 50%;
+    height: 50%;
+    background-color: var(--light-color);
+    mask-image: radial-gradient( white, rgb(from white r g b / .45) 15%, transparent 60% );
+    position: absolute;
+    translate: -50% -50%;
+    left: 50%;
+    top: 50%;
+    border-radius: 50%;
+    transition: background-color .25s .05s;
   }
 
+  &::after {
+    content: '';
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-color: var(--light-color);
+    mask-image: radial-gradient(white, transparent 50%);
+    filter: blur(10px);
+    transition: background-color .5s .25s;
+  }
+}
+
+@keyframes rotate {
+  to {
+    rotate: 360deg;
+  }
+}
+main#canvas[data-flag='green'] {
+  --lamp-color: #26ad2b;
+}
+main#canvas[data-flag='yellow'] {
+  & > #light-layer .lamp-post {
+    opacity: 0.5;
+    --light-color:  #ffca28;
+    animation: 
+      flashing 1s cubic-bezier(.45,.05,.55,.95) forwards infinite, 
+      rotate 2s linear forwards infinite;
+    mask-image: conic-gradient(transparent, white 5%, white 20%, transparent 25%, transparent, transparent 50%, white 55%, white 70%, transparent 75%), radial-gradient(white, white, transparent 50%);
+    mask-composite: intersect;
+    &:nth-of-type(odd) {
+      animation-delay: .6s, 0s;
+    }
+  }
+}
+main#canvas[data-flag*='red'],
+main#canvas[data-flag*='finished'] {
+  & > #light-layer .lamp-post {
+    opacity: 0.25;
+    animation: flashing .5s .75s ease forwards infinite;
+    --light-color: var(--rode, red);
+  }
 }

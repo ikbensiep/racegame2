@@ -14,19 +14,20 @@ export default class BuildingFactory {
      */
     generate(svgElement, worldLayer) {
 
-        
+        console.groupCollapsed('🤺 fences')
         this.generateFences(svgElement, worldLayer);
-
+        console.groupEnd('fences')
         //FIXME: betere selector(s) natuurlijk
         const groundplates = svgElement.querySelectorAll('g#building-3D-groundplates rect, #building-groundplates rect');
         
+        console.groupCollapsed('🏙️ BuildingFactory')
         groundplates.forEach( rect  => {
             const building = this.generateBuilding(rect);
             this.game.world.structures.push(building);
             this.game.camera.cullingObserver.observe(building);
             worldLayer.appendChild(building);
         });
-
+        console.groupEnd('')
 
     }
 
@@ -58,14 +59,16 @@ export default class BuildingFactory {
         const clone = document.importNode(template.content, true);
         const structure = clone.querySelector('.structure');
 
-        // 5. FF bordje op dak/gevel
-        structure.querySelector('.roof').innerHTML = `
-            <div class="sign">
-                <h3>${ props.title ? props.title : 'ROOF &lt;TITLE&gt; SIGN'}</h3>
-                ${ props.description ? '<p>' + props.description + '</p>': ''}
+        if(props.title) {
+            // 5. FF bordje op dak/gevel
+            structure.querySelector('.roof').innerHTML = `
+                <div class="sign">
+                    <h3>${ props.title || ''}</h3>
+                    ${ props.description || ''}
+                </div>
             </div>
-        </div>
-        `;
+            `;
+        }
 
         props.materialClass.split(' ').forEach( materialName => structure.classList.add(materialName))
         
@@ -90,8 +93,10 @@ export default class BuildingFactory {
             --column-size: ${props.gap};
             --column-fill-size: ${props.wall};
             --weathering: ${props.strokeOpacity};
-            --roof-type: ${props.roof}
+            --roof-type: ${props.roof};
+            
         `;
+        if (props.strokeLineJoin == 'bevel') structure.dataset.graffiti = 'true';
         return structure;
     }
 
@@ -103,7 +108,7 @@ export default class BuildingFactory {
     generateFences(svgElement, worldLayer) {
 
     const paths = svgElement.querySelectorAll('g#fencing > path');
-    const segmentWidth = 512; 
+    const segmentWidth = 256; 
 
     paths.forEach( (path, index) => {
         const totalLength = path.getTotalLength();

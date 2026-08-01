@@ -1,3 +1,4 @@
+import { getDistance, sidesFromHypotenhuse } from "./MathUtils.js";
 export default class Emitter {
   constructor(game, elem, width, height, maxFrame, sticky, targetLayer, loop = false) {
     this.game = game;
@@ -18,7 +19,7 @@ export default class Emitter {
     this.maxFrame = maxFrame || 64;
     this.loop = loop;
     this.animationTimer = 0;
-    this.animationInterval = 1000/60;
+    this.animationInterval = 1000/120;
     
     this.sticky = sticky;
     this.targetLayer = targetLayer ? targetLayer : this.game.mapLayers.track.element;
@@ -28,18 +29,16 @@ export default class Emitter {
       // let path = new URL(e.target.src);
       // let file = path.pathname;
       // console.log(`🖼️ loaded ${file}, w: ${parseInt(this.img.getAttribute('width')) || this.img.width || e.target.width}, framesPerRow: ${this.framesPerRow}`)
-      let spriteImageWidth = parseInt(this.img.getAttribute('width')) || this.img.width || e.target.width;
+      let spriteImageWidth = this.img.naturalWidth || parseInt(this.img.getAttribute('width')) || e.target.width;
       this.framesPerRow = Math.floor(spriteImageWidth / this.width);
     })
 
     this.domElement.addEventListener('animationend', (event) => {
-      if(event.animationName) {
-        console.log(`${this.domElement.className} animation ended, scheduling DOM removal`);
+      if(event.animationName && !this.loop) {
+        console.log(`[${event.animationName}] ${this.domElement.className} animation ended, scheduling DOM removal`);
         this.reset();
       }
     })
-
-    // this.framesPerRow = Math.floor(spriteImageWidth / this.width);
 
     if (this.maxFrame == 1) {
       this.frameX = 0;
@@ -48,32 +47,32 @@ export default class Emitter {
 
     this.domElement.style.setProperty('--spriteHeight', parseInt(this.height));
     this.domElement.style.setProperty('--spriteWidth', parseInt(this.width));
+
   }
 
   draw () {
-    console.log(`draw sprite ${this.domElement.className}`)
+    // console.log(`draw sprite ${this.domElement.id} (${this.frame})`)
     
-    console.log(this.domElement.className, this.speed);
-    
+    this.game.debug && console.log(this.domElement.className, this.speed);
 
-    let distanceToPlayer = this.game.getDistance(this, this.game.localPlayer);
-    if(!this.free && distanceToPlayer < this.game.cameraViewportSize.innerWidth) {
+    let distanceToPlayer = getDistance(this, this.game.localPlayer);
+    if(!this.free && distanceToPlayer < this.game.camera.viewPortSize.width) {
       // sprite animation is handled by changing the CSS `object-position` using a css variable
-      // (see `.emitter-object` @ style.css)
+      // (see emitter.css)
       if(this.maxFrame) {
         this.domElement.style.setProperty('--step', this.frameX);
         this.domElement.style.setProperty('--row', this.frameY);
       }
       this.domElement.style.setProperty('--left',`${parseInt(this.position.x)}px`);
       this.domElement.style.setProperty('--top',`${parseInt(this.position.y)}px`);
-      this.domElement.style.setProperty('--rot',`${this.rotation}rad`);
+      this.domElement.style.setProperty('--rot',`${this.rotation}`);
     }
   }
 
   update (deltaTime) {
     if(!this.free) {
       if(this.sticky) {
-        let offset = this.game.sidesFromHypotenhuse(this.game.localPlayer.width / 2, this.game.localPlayer.angle)
+        let offset = sidesFromHypotenhuse(this.game.localPlayer.width / 2, this.game.localPlayer.angle)
         this.position.x = parseInt(this.game.localPlayer.x - offset.width);
         this.position.y = parseInt(this.game.localPlayer.y - offset.height);
 
@@ -84,7 +83,7 @@ export default class Emitter {
 
         this.domElement.style.setProperty('--left',`${left}px`);
         this.domElement.style.setProperty('--top',`${top}px`);
-        this.domElement.style.setProperty('--rot',`${rot}rad`);
+        this.domElement.style.setProperty('--rot',`${rot}`);
       }
 
       if(this.animationTimer > this.animationInterval) {
@@ -117,7 +116,7 @@ export default class Emitter {
       }  
 
       if(this.speed > 0) {
-        let target = this.game.sidesFromHypotenhuse(this.speed, this.rotation);
+        let target = sidesFromHypotenhuse(this.speed, this.rotation);
         this.position.x += target.width * .99;
         this.position.y += target.height * .99;
         this.speed--;
@@ -128,15 +127,16 @@ export default class Emitter {
   }
 
   reset () {
-    const removeEmittedItem = () => {
-      this.domElement.remove();
-    }
     this.frame = 0;
     this.frameX = 0;
     this.frameY = 0;
     this.free = true;
-    
 
+    // console.log(`[free] remove ${this.domElement.className} DOM node`)
+
+    const removeEmittedItem = () => {
+      this.domElement.remove();
+    }
     requestAnimationFrame(removeEmittedItem);
   }
 
@@ -156,14 +156,16 @@ export default class Emitter {
       
       this.domElement.style.setProperty('--left',`${parseInt(this.position.x)}px`);
       this.domElement.style.setProperty('--top',`${parseInt(this.position.y)}px`);
-      this.domElement.style.setProperty('--rot',`${rot}rad`);
+      this.domElement.style.setProperty('--rot',`${rot}`);
       
       this.sticky && this.domElement.classList.add('sticky');
-      
+      this.loop && this.domElement.classList.add('loop');
+
       if (this.targetLayer && this.domElement) {
         this.targetLayer.appendChild(this.domElement);
       }
-      console.log(this.domElement)
+      
+      this.game.debug && console.log(this.domElement)
     }
     
     // FIXME (MAYBE?): instead of appending a sprite when needed,

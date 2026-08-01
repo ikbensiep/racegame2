@@ -34,14 +34,32 @@ export function getAngle (a, b) {
  */
 export function getDistance(a, b) {
   try {
-    let cx = (a.x ? a.x : a.position.x);
-    let cy = (a.y ? a.y : a.position.y);
-    let dx = (b.x ? b.x : b.position.x) - cx;
-    let dy = (b.y ? b.y : b.position.y) - cy;
+    let cx = a.x ?? a.position.x;
+    let cy = a.y ?? a.position.y;
+    let dx = (b.x ?? b.position.x) - cx;
+    let dy = (b.y ?? b.position.y) - cy;
 
     let mag = Math.sqrt(dx * dx + dy * dy);
     return mag;
   } catch (e) {
-    console.error(e, [a, b]);
+    console.error("Distance calculation failed:", e, { a, b });
   }
 }
+
+/**
+   * @param {object} a
+   * @param {object} b
+   */
+export function checkCollision (a, b) {
+
+    let xPosA = a.position ? a.position.x : a.x;
+    let yPosA = a.position ? a.position.y : a.y;
+    let xPosB = b.position ? b.position.x : b.x;
+    let yPosB = b.position ? b.position.y : b.y;
+
+    const sumOfRadii = a.radius / 2 + b.radius/2;
+    const dx = xPosA - xPosB;
+    const dy = yPosA - yPosB;
+    const distance = Math.hypot(dx, dy);
+    return [(distance < sumOfRadii), distance, sumOfRadii, dx, dy];
+  }

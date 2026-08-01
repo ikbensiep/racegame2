@@ -23,7 +23,7 @@
       <div id="light-layer">
         <b class="vehicle-lights player"></b>
       </div>
-      <div id="worldmap"></div>
+      <div id="worldmap" style="transition: filter 1s linear; background-size: cover; background-position: center;"></div>
     </main>
   </section>
   <label for="debugger" style="position: fixed; z-index: 10000; padding: 1ex; filter:brightness(.25) invert(.5);">
@@ -38,184 +38,195 @@
     <form method="dialog" id="player-settings">
       <details name="game-settings" open>
         <summary>
-          <div><span class="material-icons">sports_motorsports</span> Driver &amp; Car</div>
+          <div><span class="material-icons">badge</span> Driver details</div>
         </summary>
+        <article class="grid" style="grid-template-columns: 1fr 1fr ;">
 
-        <fieldset>
-          <label for="player-name">
-            <span>Name</span>
-            <input type="text" id="player-name" value="Kees" name="player-name" placeholder="Racer" maxlength="20" required autofocus>
-          </label>
-          <label for="player-number">
-            <span>Number</span>
-            <input type="number" id="player-number" name="player-number" value="67" placeholder="99" min="1" max="999" required>
-          </label>
-          <label for="audio-pan-screen">
-            <input type="checkbox" id="audio-pan-screen" checked />
-            <span>Screen-space panning</span>
-          </label>
+          <fieldset class="player grid">
+            <legend>Player ID</legend>
 
-        </fieldset>
-
-        <div class="input-group" style="position: relative; height: 256px; width: 256px">
-          <span id="player-id-wrap">
-            <label for="player-number">Driver number</label>
-            <label for="player-color">Paint job</label>
-            <input type="color" id="player-color" value="hotpink" list="color-palette" name="player-color" />
-          </span>
-        <datalist id="color-palette">
-          
-          <!-- Retro Vibes -->
-          <option title="coating-pack-A-1" value="#ff6e61">#ff6e61</option>
-          <option title="coating-pack-A-2" value="#707eff">#707eff</option>
-          <option title="coating-pack-A-3" value="#f2e03a">#f2e03a</option>
-          <option title="coating-pack-A-4" value="#4ce1d7">#4ce1d7</option>
-          <option title="coating-pack-A-5" value="#ff3d7e">#ff3d7e</option>
-  
-          <!-- Retro Cyber Elegance -->
-          <option title="coating-pack-B-1" value="#4d9dff">#4d9dff</option>
-          <option title="coating-pack-B-2" value="#ff4d8e">#ff4d8e</option>
-          <option title="coating-pack-B-3" value="#ffd54d">#ffd54d</option>
-          <option title="coating-pack-B-4" value="#681b98">#681b98</option>
-          <option title="coating-pack-B-5" value="#00bdad">#00bdad</option>
-
-
-          <!-- Sonic Adventure -->
-          <option title="coating-pack-C-1" value="#1b6a98">#1b6a98</option>
-          <option title="coating-pack-C-2" value="#f1c40e">#f1c40e</option>
-          <option title="coating-pack-C-3" value="#e74d3c">#e74d3c</option>
-          <option title="coating-pack-C-4" value="#2ecc70">#2ecc70</option>
-          <option title="coating-pack-C-5" value="#8d43ad">#8d43ad</option>
-
-          <!-- 90s Anime -->
-          <option title="coating-pack-D-1" value="#ff6e61">#ff6e61</option>
-          <option title="coating-pack-D-2" value="#ffb84d">#ffb84d</option>
-          <option title="coating-pack-D-3" value="#6d9dc5">#6d9dc5</option>
-          <option title="coating-pack-D-4" value="#5e4b8b">#5e4b8b</option>
-          <option title="coating-pack-D-5" value="#da1b61">#da1b61</option>
-
-          <!-- 1994 -->
-          <option title="coating-pack-E-1" value="#d1513d">#d1513d</option>
-          <option title="coating-pack-E-2" value="#f69c3c">#f69c3c</option>
-          <option title="coating-pack-E-3" value="#f8c48b">#f8c48b</option>
-          <option title="coating-pack-E-4" value="#9ed6e0">#9ed6e0</option>
-          <option title="coating-pack-E-5" value="#4c8a9a">#4c8a9a</option>
-
-          <!-- 90s Miami Sunset --/>
-          <option title="coating-pack-F-1" value="#ff6e61">#ff6e61</option>
-          <option title="coating-pack-F-2" value="#ffcb5c">#ffcb5c</option>
-          <option title="coating-pack-F-3" value="#69af4b">#69af4b</option>
-          <option title="coating-pack-F-4" value="#4b91e2">#4b91e2</option>
-          <option title="coating-pack-F-5" value="#ee5d5d">#ee5d5d</option>
-          
-          Y2K Vibe 
-          <option title="coating-pack-G-1" value="#1b1e37">#1b1e37</option>
-          <option title="coating-pack-G-2" value="#4d4a8c">#4d4a8c</option>
-          <option title="coating-pack-G-3" value="#a4a4d6">#a4a4d6</option>
-          <option title="coating-pack-G-4" value="#e1b8ff">#e1b8ff</option>
-          <option title="coating-pack-G-5" value="#ff7142">#ff7142</option>
-          
-          Scenekid 
-          <option title="coating-pack-H-1" value="#ff6e61">#ff6e61</option>
-          <option title="coating-pack-H-2" value="#6c5b80">#6c5b80</option>
-          <option title="coating-pack-H-3" value="#88d8b1">#88d8b1</option>
-          <option title="coating-pack-H-4" value="#f7b5a1">#f7b5a1</option>
-          <option title="coating-pack-H-5" value="#ff9d00">#ff9d00</option>
-          -->
-          
-        </datalist>
-
-        <style id="fixme-sobad">
-          #player-id-wrap {
-            position: absolute;
-            cursor: pointer;
-            background: url(/assets/cars/default/interior-scaled.png);
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            display: grid;
-            grid-template-columns: auto 2rem;
-            height: 256px;
-            width: 256px;
-            will-change: transform;
+            <label for="player-name">
+              <span>Name</span>
+              <input type="text" id="player-name" value="" name="player-name" placeholder="Racer" maxlength="20" minlength="3" required autofocus>
+            </label>
             
-            transition: .5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            <label for="player-number">
+              <span>Number</span>
+              <input type="number" id="player-number" name="player-number" value="" placeholder="67" min="1" max="999" required style="text-align: center;">
+            </label>
 
-            &:has(:focus) {
-                rotate: -90deg;
-            }
+            <label for="player-team">
+              <span>Team</span>
+              <select name="player-team" id="player-team" required>
+                <option value="" disabled selected>select</option>
+                <option value="ferrari">Ferrari</option>
+                <option value="ford">Ford</option>
+                <option value="lamborghini">Lamborghini</option>
+                <option value="porsche">Porsche</option>
+              </select>
+            </label>
 
-            #player-number {
-              grid-area: 1 / 1 / -1 / -1;
-              z-index: 2;
-              width: 3rem;
-              text-align: center;
-              transform: rotate(90deg);
-              height: 2rem;
-              place-self: center end;
-              font-weight: bold;
-              font-size: 18px;
-              padding: 0;
-              border-top-width: 5px;
-              text-indent: 1ex;
-            }
-            #player-color { 
-              grid-area: 1 / 1 / -1 / -1;
-              height: 100%;
-              width: 100%;
-              border: none;
-              padding: 0;
-              mask-image: url('/assets/cars/porsche/porsche-mask.png');
-              mask-size: contain;
-              mask-repeat: no-repeat;
-              mask-position: center;
-            }
-            label {
-              &[for="player-number"] {
-                grid-area: 1 / 1 / -1 / -1;
-                place-self: end;
-              }
-              &[for="player-color"] {
-                grid-area: 1 / 1 / -1 / -1;
-                place-self: start;
-              }
-            }
-          }
+            <label for="player-color">
+              <span>Paint</span>
+              <div>
+                <input type="color" id="player-color" value="" list="color-palette" name="player-color" style="opacity: .01;"/>
+                <datalist id="color-palette">
+                  
+                  <!-- Retro Vibes -->
+                  <option title="coating-pack-A-1" value="#ff6e61">#ff6e61</option>
+                  <option title="coating-pack-A-2" value="#707eff">#707eff</option>
+                  <option title="coating-pack-A-3" value="#f2e03a">#f2e03a</option>
+                  <option title="coating-pack-A-4" value="#4ce1d7">#4ce1d7</option>
+                  <option title="coating-pack-A-5" value="#ff3d7e">#ff3d7e</option>
           
-        </style>
+                  <!-- Retro Cyber Elegance -->
+                  <option title="coating-pack-B-1" value="#4d9dff">#4d9dff</option>
+                  <option title="coating-pack-B-2" value="#ff4d8e">#ff4d8e</option>
+                  <option title="coating-pack-B-3" value="#ffd54d">#ffd54d</option>
+                  <option title="coating-pack-B-4" value="#681b98">#681b98</option>
+                  <option title="coating-pack-B-5" value="#00bdad">#00bdad</option>
+        
+        
+                  <!-- Sonic Adventure -->
+                  <option title="coating-pack-C-1" value="#1b6a98">#1b6a98</option>
+                  <option title="coating-pack-C-2" value="#f1c40e">#f1c40e</option>
+                  <option title="coating-pack-C-3" value="#e74d3c">#e74d3c</option>
+                  <option title="coating-pack-C-4" value="#2ecc70">#2ecc70</option>
+                  <option title="coating-pack-C-5" value="#8d43ad">#8d43ad</option>
+        
+                  <!-- 90s Anime -->
+                  <option title="coating-pack-D-1" value="#ff6e61">#ff6e61</option>
+                  <option title="coating-pack-D-2" value="#ffb84d">#ffb84d</option>
+                  <option title="coating-pack-D-3" value="#6d9dc5">#6d9dc5</option>
+                  <option title="coating-pack-D-4" value="#5e4b8b">#5e4b8b</option>
+                  <option title="coating-pack-D-5" value="#da1b61">#da1b61</option>
+        
+                  <!-- 1994 -->
+                  <option title="coating-pack-E-1" value="#d1513d">#d1513d</option>
+                  <option title="coating-pack-E-2" value="#f69c3c">#f69c3c</option>
+                  <option title="coating-pack-E-3" value="#f8c48b">#f8c48b</option>
+                  <option title="coating-pack-E-4" value="#9ed6e0">#9ed6e0</option>
+                  <option title="coating-pack-E-5" value="#4c8a9a">#4c8a9a</option>
+        
+                  <!-- 90s Miami Sunset --/>
+                  <option title="coating-pack-F-1" value="#ff6e61">#ff6e61</option>
+                  <option title="coating-pack-F-2" value="#ffcb5c">#ffcb5c</option>
+                  <option title="coating-pack-F-3" value="#69af4b">#69af4b</option>
+                  <option title="coating-pack-F-4" value="#4b91e2">#4b91e2</option>
+                  <option title="coating-pack-F-5" value="#ee5d5d">#ee5d5d</option>
+                  
+                  Y2K Vibe 
+                  <option title="coating-pack-G-1" value="#1b1e37">#1b1e37</option>
+                  <option title="coating-pack-G-2" value="#4d4a8c">#4d4a8c</option>
+                  <option title="coating-pack-G-3" value="#a4a4d6">#a4a4d6</option>
+                  <option title="coating-pack-G-4" value="#e1b8ff">#e1b8ff</option>
+                  <option title="coating-pack-G-5" value="#ff7142">#ff7142</option>
+                  
+                  Scenekid 
+                  <option title="coating-pack-H-1" value="#ff6e61">#ff6e61</option>
+                  <option title="coating-pack-H-2" value="#6c5b80">#6c5b80</option>
+                  <option title="coating-pack-H-3" value="#88d8b1">#88d8b1</option>
+                  <option title="coating-pack-H-4" value="#f7b5a1">#f7b5a1</option>
+                  <option title="coating-pack-H-5" value="#ff9d00">#ff9d00</option>
+                  -->
+                  
+                </datalist>
+                <span class="material-icons" style="color: var(--player-color); border-radius: 50%; overflow: clip; background: hsl(from var(--player-color) h s l / 20%)">format_color_fill</span>
+              </div>
+            </label>
+            <label for="player-livery">
+              <span>Livery</span>
+              <select name="player-livery" id="player-livery">
+                <option value="">No livery</option>
+                <option value="classic-stripes">Classic racing</option>
+                <option value="polkadot">Polka dot</option>
+                <option value="polkadot-fade">Polka dot fade</option>
+                <option value="special">Special</option>
+              </select>
+            </label>
+          </fieldset>
 
-        <script>
-          let colorInput = document.querySelector('#player-color');
-          let options = [...document.querySelector('#color-palette').options];
-          let color = options[Math.floor(options.length * Math.random())].value;
-          document.body.style.setProperty('--player-color', color);
-          colorInput.value = color;
-
-          colorInput.addEventListener('input', (e) => {
-            document.body.style.setProperty('--player-color', e.target.value);
-          });
-
-        </script>
-      </div>
-
+          <fieldset class="garage">
+            <div class="vehicle car racecar player" data-state="lobby"  style="position: relative; scale: 1.5; left: 50%; top: 50%; translate: -50% -50%;">
+              <div class="player-tag">
+                <b>67</b>
+                <i>Racer</i>
+              </div>
+              <div class="filter-wrap">
+                <div class="car-body">
+                  <i class="chassis"><i class="interior"></i></i>
+                  <i class="bodywork">
+                    <i class="base-color"></i>
+                    <i class="livery" data-drivernum=""></i>
+                    <i class="mods"></i>
+                  </i>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </article>
       </details>
+
       <details name="game-settings">
         <summary>
           <div><span class="material-icons">sports_motorsports</span> Track &amp; Session</div>
         </summary>
-        <div class="scroll-strip">
-          <span><input type="radio" id="assen" value="assen" name="track"/>TT Circuit, Assen</span>
-          <span><input type="radio" id="monaco" value="monaco" name="track"/>Monte Carlo, Monaco</span>
-          <span><input type="radio" id="sachsenring" value="sachsenring" name="track"/>Sachsenring, DE</span>
-          <span><input type="radio" id="st-petersburg" value="st-petersburg" name="track"/>st. Petersburg GP, FL</span>
-        </div>
+        <article class="grid" style="grid-template-columns: 1fr 1fr ;">
 
-        <fieldset class="track">
-          <label for="assen">assen</label>
-          <label for="monaco">monaco</label>
-          <label for="sachsenring">sachsenring</label>
-          <label for="st-petersburg">st. Petersburg</label>
-        </fieldset>
+          <fieldset class="track grid">
+            <label for="assen"><span>TT Circuit, Assen</span><input required type="radio" id="assen" value="assen" name="track"/></label>
+            <label for="monaco"><span>Monte Carlo, Monaco</span><input required type="radio" id="monaco" value="monaco" name="track"/></label>
+            <label for="sachsenring"><span>Sachsenring, DE</span><input required type="radio" id="sachsenring" value="sachsenring" name="track"/></label>
+            <label for="st-petersburg"><span>st. Petersburg GP, FL</span><input required type="radio" id="st-petersburg" value="st-petersburg" name="track"/></label>
+          </fieldset>
+          <fieldset class="track grid" style="place-content: center">
+            <div class="track-preview">
+              <img alt="track preview">
+            </div>
+            <script>
+              window.addEventListener('DOMContentLoaded', ()=>{
+
+                const preview = document.querySelector('.track-preview');
+                const previewStyle = window.getComputedStyle(preview)
+                
+                const handlePreviewMouseMove = (e) => {
+                  let {offsetX, offsetY} = e;
+                  preview.style.setProperty('--mouse-x-factor', (offsetX /parseInt(previewStyle.width)).toFixed(2));
+                  preview.style.setProperty('--mouse-y-factor', (offsetY / parseInt(previewStyle.height)).toFixed(2));
+
+                }
+                preview.addEventListener('mousemove', handlePreviewMouseMove);
+
+              })
+            </script>
+          </fieldset>
+          <fieldset>
+            <label for="join">
+              <span>Join session</span>
+              <div><input type="text" name="join" id="join" placeholder="0000-0000-0000"/></div>
+            </label>
+          </fieldset>
+        </article>
+      </details>
+      <details name="game-settings">
+        
+        <summary>
+          <div><span class="material-icons">sports_esports</span> Options</div>
+        </summary>
+        <article>
+          <fieldset>
+            <label for="audio-pan-screen">
+              <span class="material-icons">headphones</span>
+              <input type="checkbox" id="audio-pan-screen" checked />
+              <span>Screen-space panning</span>
+            </label>
+            <label for="camera-speed-zoom">
+              <span class="material-icons">zoom_in</span>
+              <input type="checkbox" id="camera-speed-zoom" name="camera-speed-zoom" checked />
+              <span>Speed-based camera zoom</span>
+            </label>
+          </fieldset>
+        </article>
       </details>
       <details>
         <summary style="pointer-events: all !important;">
@@ -225,10 +236,68 @@
       </details>
 
     </form>
+    <script>
+      let savedata = JSON.parse(localStorage.getItem('savedata')) || {};
+      let previewCar = document.querySelector('fieldset.garage .car');
+      let carBody = previewCar.querySelector('fieldset .car-body');
+
+      const handlePlayerInput = (e) => {
+        // console.log(e.target.value);
+        let target = e.target;
+        let value = target.value;
+        previewCar.dataset.state = 'garage';
+
+        switch (target.name) {
+          case 'player-name':
+            previewCar.querySelector('.player-tag i').textContent = value && value || 'Racer';
+            break;
+          case 'player-number':
+            previewCar.querySelector('.player-tag b').textContent = value;
+            carBody.dataset.drivernum = value;
+            break;
+          case 'player-team':
+            previewCar.dataset.team = value;
+            break;
+          case 'player-color':
+            document.body.style.setProperty('--player-color', value);
+            break;
+          case 'player-livery':
+            let liveryEl = previewCar.querySelector('fieldset.garage .car .livery');
+            liveryEl.className = `livery ${e.target.value}`;
+            break;
+        }
+      }
+
+      let playerInputs = document.querySelectorAll('dialog#lobby-menu [name*="player-"]');
+
+      for (const input of playerInputs ) {
+        input.addEventListener('change', handlePlayerInput);
+        input.addEventListener('input', handlePlayerInput);
+      }
+
+      let colorInput = document.querySelector('input#player-color');
+      let options = [...document.querySelector('#color-palette').options];
+      let color = savedata['player-color'] ? savedata['player-color'] : options[Math.floor(options.length * Math.random())].value;
+
+      colorInput.value = color;
+      document.body.style.setProperty('--player-color', color);
+
+      let lastTrack = savedata.track ? savedata.track : '';
+
+      let trackInput = document.querySelector(`input[name="track"][value=${lastTrack}]`);
+      trackInput.checked = true;
+      let checkEvent = new Event('change')
+      trackInput.dispatchEvent(checkEvent)
+
+    </script>
   </dialog>
 
   <template id="racecar">
     <div class="vehicle car racecar">
+      <div class="player-tag">
+        <b></b>
+        <i></i>
+      </div>
       <div class="filter-wrap">
        <div class="car-body">
           <i class="chassis"><i class="interior"></i></i>
@@ -268,9 +337,9 @@
     </b>
   </template>
 
-  <section class="sprites off-screen">
+  <section class="sprites preload off-screen">
     <span id="rubberTrackSprite" class="sprite rubber"><img src="assets/cars/tire-rubber-128.png" alt="" /></span>
-    <span id="smokeSprite" class="sprite smoke"><img src="assets/smoke/smoke-sprite.png" alt="" class="smoke" loading="eager"/></span>
+    <span id="smokeSprite" class="sprite smoke"><img src="assets/smoke/smoke-sprite.png" alt="" class="" loading="eager"/></span>
     <span id="exhaustPopSprite" class="sprite exhaust"><img src="assets/car/exhaust-pop.png" alt="" class="pop"/></span>
     <span id="explosionsSprite" class="sprite explosion"><img src="assets/boom3.png" alt="" id="" class="explosion"/></span>
     <span id="ahornTreeSprite" class="sprite tree ahorn"></span>
@@ -289,7 +358,7 @@
     </div>
   </section>
 
-  <section class="audio">
+  <section class="audio preload off-screen">
     <audio src="./assets/sound/porsche-onboard-acc-full.ogg" class="engine" id="engineSound" loop volume="0.0"></audio>
     <audio src="./assets/sound/porsche-onboard-downshift.ogg" class="engine" id="downshiftSound" volume="0.0"></audio>
     <audio src="./assets/sound/porsche-ambient-loop.ogg" id="ambientSfx" loop volume="0.0"></audio>
@@ -300,7 +369,16 @@
     <audio src="./assets/sound/349398__sevenbsb__air-impact-wrench.ogg" class="tuningSfx" id="airWrenchSound" type="audio/ogg" volume="0.15"></audio>
 
   </section>
+
   <svg id="filters">
+    <filter id="vehicleDamage">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
+      </feTurbulence>
+
+      <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G">
+      </feDisplacementMap>
+    </filter>
+
     <filter id="displacementFilter">
       <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
           <animate attributeName="seed" from="0" to="600" begin="0s" dur="100s" repeatCount="indefinite"></animate>
@@ -312,11 +390,7 @@
     
     <filter id="specularLight"
       style="color-interpolation-filters:sRGB;"
-      inkscape:label="Specular Light"
-      x="-0.050315805"
-      y="-0.050315805"
-      width="1.1006316"
-      height="1.1006316">
+      inkscape:label="Specular Light">
     <feGaussianBlur
           in="SourceAlpha"
           stdDeviation="10"
@@ -326,14 +400,14 @@
           in="blur"
           specularExponent="35.0"
           specularConstant="10"
-          surfaceScale="5"
+          surfaceScale="4"
           lighting-color="#fce48d"
           result="specular"
-          id="feSpecularLighting67">
+          id="feSpecularLightingSun">
         <feDistantLight
               azimuth="270"
               elevation="156"
-              id="feDistantLight67" />
+              id="fakeSunLight" />
     </feSpecularLighting>
     <feComposite
           in="specular"
