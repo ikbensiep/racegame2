@@ -409,8 +409,16 @@ export default class Player extends Vehicle {
       playHaptics ?? this.playHapticFeedBack (haptics)
 
       // Update our own engine sound (pitch only - listener is self so pan stays centered)
-      
+       
       if (this.engineSound) {
+        if (this.activeSurface === 'tunnel') {
+          const nextTunnel = Math.min(1, (this.engineSound.tunnelReverbAmount || 0) + 0.15);
+          this.engineSound.setTunnelReverbLevel(nextTunnel);
+        } else {
+          const nextTunnel = Math.max(0, (this.engineSound.tunnelReverbAmount || 0) - 0.05);
+          this.engineSound.setTunnelReverbLevel(nextTunnel);
+        }
+ 
         this.engineSound.update(
           (Math.abs(Math.floor(this.speed)) * .025),
           {
@@ -420,12 +428,39 @@ export default class Player extends Vehicle {
             maxDistance: 8192
           }
         );
-        let targetValue = .2 + (Math.abs(this.speed) / this.dynamics.maxSpeed);
+        // compute target gain safely — guard against divide-by-zero or missing dynamics
+        let base = 0.2;
+        let targetValue = base;
         try {
-          this.engineSound.gainNode.gain.setTargetAtTime(targetValue, this.engineSound.source.context.currentTime + 1, 2.5);
+          if (this.dynamics && this.dynamics.maxSpeed && this.dynamics.maxSpeed > 0) {
+            targetValue = base + (Math.abs(this.speed) / this.dynamics.maxSpeed);
+          }
         } catch (e) {
-          console.error('[targetValue]', targetValue)
-          console.error(e)
+          // fallback to base if anything unexpected happens
+          targetValue = base;
+        }
+
+        // ensure the value is a finite number and clamp to a reasonable range
+        if (!Number.isFinite(targetValue) || isNaN(targetValue)) {
+          console.warn('Player: computed non-finite targetValue, falling back to base', targetValue);
+          targetValue = base;
+        }
+        targetValue = Math.max(0, Math.min(targetValue, 4)); // clamp to [0,4]
+
+        // Apply the gain change using the shared AudioContext time
+        try {
+          const now = (this.engineSound && this.engineSound.manager && this.engineSound.manager.context)
+            ? this.engineSound.manager.context.currentTime
+            : (this.engineSound && this.engineSound.source && this.engineSound.source.context)
+              ? this.engineSound.source.context.currentTime
+              : 0;
+
+          if (this.engineSound && this.engineSound.gainNode && this.engineSound.gainNode.gain) {
+            this.engineSound.gainNode.gain.setTargetAtTime(targetValue, now + 1, 2.5);
+          }
+        } catch (e) {
+          console.error('[targetValue]', targetValue);
+          console.error(e);
         }
       }
 
@@ -456,6 +491,33 @@ export default class Player extends Vehicle {
     }
 
     this._applyPhysics(input, dt)
+
+    // Validate new position — guard against physics glitches that produce NaN/Infinity or teleport to 0,0
+    if (!Number.isFinite(this.x) || !Number.isFinite(this.y) || isNaN(this.x) || isNaN(this.y)) {
+      console.warn('Player: invalid position detected, reverting to lastValidPos', { x: this.x, y: this.y });
+      if (this.lastValidPos && Number.isFinite(this.lastValidPos.x) && Number.isFinite(this.lastValidPos.y)) {
+        this.x = this.lastValidPos.x;
+        this.y = this.lastValidPos.y;
+      } else {
+        this.x = 0;
+        this.y = 0;
+      }
+      // also sanitize velocities and speed to prevent downstream NaNs
+      this.vx = 0;
+      this.vy = 0;
+      this.speed = 0;
+    } else if (this.x === 0 && this.y === 0 && this.lastValidPos && (this.lastValidPos.x !== 0 || this.lastValidPos.y !== 0)) {
+      // unexpected teleport to origin — likely a physics/collision bug. revert to last known good position.
+      console.warn('Player: unexpectedly at origin, reverting to lastValidPos', this.lastValidPos);
+      this.x = this.lastValidPos.x;
+      this.y = this.lastValidPos.y;
+      this.vx = 0;
+      this.vy = 0;
+      this.speed = 0;
+    } else {
+      // position looks sane — record as last valid
+      this.lastValidPos = { x: this.x, y: this.y };
+    }
 
     // Prevent going out of bounce 🔊🔊🔊
     const oldPos = { x: this.x, y: this.y };
@@ -554,9 +616,22 @@ export default class Player extends Vehicle {
 
     super.draw();
 
-    this.game.world.element.style.setProperty('--player-x', this.x.toFixed(3));
-    this.game.world.element.style.setProperty('--player-y', this.y.toFixed(3));
-    this.game.world.element.style.setProperty('--player-angle', this.angle.toFixed(3));
+    // Use lastValidPos as fallback when x/y are not finite to avoid toFixed throwing
+    const px = Number.isFinite(this.x) ? this.x : (this.lastValidPos ? this.lastValidPos.x : 0);
+    const py = Number.isFinite(this.y) ? this.y : (this.lastValidPos ? this.lastValidPos.y : 0);
+    const pa = Number.isFinite(this.angle) ? this.angle : 0;
+    this.game.world.element.style.setProperty('--player-x', px.toFixed(3));
+    this.game.world.element.style.setProperty('--player-y', py.toFixed(3));
+    this.game.world.element.style.setProperty('--player-angle', pa.toFixed(3));
+
+    // Update ambient audio triggers (crowd, etc.)
+    if (this.game.audioManager) {
+      try {
+        this.game.audioManager.updatePlayerPosition(this.x, this.y);
+      } catch (e) {
+        console.warn('Player: audioManager update failed', e);
+      }
+    }
 
     this.element.style.setProperty('--fuel-message', `"⛽  ${this.fuel.toFixed(2)}"`);
     if(this.fuel < 15) {

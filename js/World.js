@@ -435,8 +435,8 @@ export default class World {
     { path: pitboxPath,            type: 'pitbox',      method: 'fill'   },
     { path: this.paths.fuelStation, type: 'fuel',        method: 'fill'   },
     { path: this.paths.paddock,     type: 'paddock',     method: 'fill'   },
-    { path: this.paths.pitlane,     type: 'pitlane',     method: 'stroke', width: 280 }, 
     { path: this.paths.tunnel,      type: 'tunnel',      method: 'fill'   },
+    { path: this.paths.pitlane,     type: 'pitlane',     method: 'stroke', width: 280 }, 
     { path: this.paths.racetrack,   type: 'asphalt',     method: 'stroke', width: 520 }, 
     { path: this.paths.gravel,      type: 'gravel',      method: 'fill'   },
     { path: this.paths.worldBG,     type: 'grass',       method: 'fill'   }

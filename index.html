@@ -363,6 +363,7 @@
     <audio src="./assets/sound/porsche-onboard-downshift.ogg" class="engine" id="downshiftSound" volume="0.0"></audio>
     <audio src="./assets/sound/porsche-ambient-loop.ogg" id="ambientSfx" loop volume="0.0"></audio>
     <audio src="./assets/sound/ui/click.wav" id="changeSfx"></audio>
+    <audio src="./assets/sound/crowd.ogg" id="crowdSfx"></audio>
     <audio src="./assets/sound/horn-hooter.ogg" controls class="horn" type="audio/ogg"></audio>
     <audio src="./assets/sound/701327__sef7__walkie-talkie-power-on.ogg" type="audio/ogg" id="teamRadio"></audio>
     <audio src="./assets/sound/591528__rudmer-rotteveel__ratchet-wrench-slow-multiple.ogg" class="tuningSfx" id="ratchetSound" type="audio/ogg" volume="0.25"></audio>
@@ -371,6 +372,14 @@
   </section>
 
   <svg id="filters">
+    <filter id="pixelate" x="0" y="0">
+      <feFlood x="4" y="4" height="2" width="2"/>    
+      <feComposite width="4" height="4"/>
+      <feTile result="a"/>
+      <feComposite in="SourceGraphic" in2="a" operator="in"/>
+      <feMorphology operator="dilate" radius="2"/>
+    </filter>
+
     <filter id="vehicleDamage">
       <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
       </feTurbulence>
