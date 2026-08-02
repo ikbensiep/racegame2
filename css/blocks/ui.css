@@ -330,9 +330,11 @@ form {
         }
 
         &:not([data-team]) {
+
           &::before, 
           & .car-body {
-            animation-play-state: paused !important;
+            filter: url(#pixelate);
+            /* animation-play-state: paused !important; */
           }
         }
       }

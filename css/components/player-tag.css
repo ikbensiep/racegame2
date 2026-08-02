@@ -1,0 +1,43 @@
+& .player-tag {
+  background: rgba(255,255,255,.1);
+  padding: .33ex .6ex .33ex .33ex;
+  color: white;
+  position: absolute;
+  inset: 0% auto auto 50%;
+  translate: -50% 0;
+  border-radius: .4ex;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 1;
+  transition-property: opacity, translate;
+  transition: .5s 2s ease-out;
+
+  & b {
+    color: contrast-color(var(--driver-color));
+    background-color: var(--driver-color);
+    display: inline-flex;
+    vertical-align: initial;
+    text-align: center;
+    flex-direction: column;
+    place-content: center;
+    letter-spacing: -1px;
+    padding: .2ex .4ex;
+    border-radius: .2ex;
+    width: 3.3ex;
+    &:empty::after {
+      content: '67';
+      opacity: .5;
+    }
+  }
+  & i {
+    font-style: normal;
+    padding-inline: .3ex;
+  }
+}
+
+.player[data-state=""], 
+.player[data-state="asphalt"] {
+  & .player-tag {
+    opacity: 0;
+  }
+}
