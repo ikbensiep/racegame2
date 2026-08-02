@@ -1,7 +1,10 @@
 // @ts-check
 import GameEngine from './GameEngine.js';
+import Tuna from './lib/tuna.js';
 
-let savedata = JSON.parse(localStorage.getItem('savedata')) || {};
+window.Tuna = window.Tuna || Tuna;
+
+let savedata = JSON.parse(localStorage.getItem('savedata') || '') || {};
 
 const urlParams = new URLSearchParams(window.location.search);
 for (const key of urlParams.keys()) {

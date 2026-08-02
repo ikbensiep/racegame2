@@ -28,6 +28,7 @@ export default class GameEngine {
       this.soundManager = new SoundManager();
       this.camera = {};
       this.cameraTweaker = {};
+      this.audioManager = null;
 
 
       this.init(this);
@@ -44,7 +45,7 @@ export default class GameEngine {
       // 💡 Could be cool to initialize at 0,0 and then pan towards the player when loading's done, ie
       // opacity: 0; blur(32px) -> pan2playr, opacity: 1, blur(0)
       this.camera = new CameraManager(this, document.querySelector('#camera-viewport'))
-      
+       
       const possibleSpawnpoints = await this.world.load();
 
       // 0. Chart the area, note interesting areas/surfaces
@@ -107,6 +108,17 @@ export default class GameEngine {
 
       console.groupEnd()
       
+      // Initialize audio manager (Tuna optional). Keep non-blocking: try to create and load minimal assets.
+      try {
+       const AudioManager = (await import('./AudioManager.js')).default;
+       this.audioManager = new AudioManager(this.soundManager, this.world, this);
+       await this.audioManager.init();
+       // try to load the crowd amb file if present; ignore failures
+       this.audioManager.loadCrowd('/assets/sound/crowd.ogg').catch(() => {});
+      } catch (e) {
+       console.warn('GameEngine: AudioManager not initialized', e);
+      }
+
       // Detach the SVG now that all geometry measurements have been collected.
       // This reduces DOM size and avoids future getBBox surprises on detached nodes.
       if (typeof this.world.detachSvg === 'function') this.world.detachSvg();
