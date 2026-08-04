@@ -1,6 +1,7 @@
 export default class InputHandler {
     constructor() {
         this.keys = {};
+        this.previousKeys = {};
         this.gamepadConnected = false;
         this.lastGamepadState = null;
         
@@ -50,14 +51,32 @@ export default class InputHandler {
         const STICK_DEADZONE = 0.15;
         const TRIGGER_DEADZONE = 0.1;
 
+        const keyPressed = (code) => !!this.keys[code];
+        const justPressed = (code) => !!this.keys[code] && !this.previousKeys[code];
+        const gamepadButtonPressed = (index) => !!gp?.buttons?.[index]?.pressed;
+        const gamepadButtonJustPressed = (index) => {
+            const currentPressed = gamepadButtonPressed(index);
+            const previousPressed = !!this.lastGamepadState?.buttons?.[index]?.pressed;
+            return currentPressed && !previousPressed;
+        };
+
         if (!gp || !gp.buttons) {
             // Return neutral inputs when gamepad is unavailable
-            return {
+            const inputs = {
                 gas: (this.keys['KeyW'] || this.keys['ArrowUp'] ? 1 : 0),
                 brake: (this.keys['KeyS'] || this.keys['ArrowDown'] ? 1 : 0),
                 handbrake: this.keys['Space'],
-                steer: (this.keys['KeyA'] || this.keys['ArrowLeft'] ? -1 : 0) + (this.keys['KeyD'] || this.keys['ArrowRight'] ? 1 : 0)
+                steer: (this.keys['KeyA'] || this.keys['ArrowLeft'] ? -1 : 0) + (this.keys['KeyD'] || this.keys['ArrowRight'] ? 1 : 0),
+
+                honk: keyPressed('CapsLock'),
+                honkPressed: justPressed('CapsLock'),
+                highbeam: keyPressed('Backquote'),
+                highbeamPressed: justPressed('Backquote'),
             };
+
+            this.previousKeys = { ...this.keys };
+            this.lastGamepadState = null;
+            return inputs;
         }
 
         if (game.debug && gp) {
@@ -70,8 +89,12 @@ export default class InputHandler {
         const stickInput = Math.abs(gp?.axes?.[0] || 0) > STICK_DEADZONE ? gp.axes[0] : 0;
         const gasValue = (gp?.buttons?.[7]?.value || 0) > TRIGGER_DEADZONE ? gp.buttons[7].value : 0;
         const brakeValue = (gp?.buttons?.[6]?.value || 0) > TRIGGER_DEADZONE ? gp.buttons[6].value : 0;
+        const honkHeld = gamepadButtonPressed(10) || gamepadButtonPressed(11) || keyPressed('CapsLock');
+        const honkPressed = justPressed('CapsLock') || gamepadButtonJustPressed(10) || gamepadButtonJustPressed(11);
+        const highbeamHeld = gamepadButtonPressed(15) || keyPressed('Backquote');
+        const highbeamPressed = justPressed('Backquote') || gamepadButtonJustPressed(15);
 
-        return {
+        const inputs = {
             // Gas: RT (index 7) or W/Up with dead zone
             gas: Math.max(gasValue, (this.keys['KeyW'] || this.keys['ArrowUp'] ? 1 : 0)),
             
@@ -82,7 +105,24 @@ export default class InputHandler {
             handbrake: gp?.buttons?.[5]?.pressed || this.keys['Space'],
             
             // Steering: Left stick (index 0) or A/D/arrow keys with dead zone
-            steer: stickInput + (this.keys['KeyA'] || this.keys['ArrowLeft'] ? -1 : 0) + (this.keys['KeyD'] || this.keys['ArrowRight'] ? 1 : 0)
+            steer: stickInput + (this.keys['KeyA'] || this.keys['ArrowLeft'] ? -1 : 0) + (this.keys['KeyD'] || this.keys['ArrowRight'] ? 1 : 0),
+
+            // Honking: left/right stick buttons (B10/B11) or keyboard fallback
+            honk: honkHeld,
+
+            // Highbeams toggle: D-pad right (B15) or keyboard fallback
+            highbeam: highbeamHeld,
+            highbeamPressed,
+            honkPressed
         };
+
+        this.previousKeys = { ...this.keys };
+        this.lastGamepadState = {
+            buttons: gp.buttons.map(button => ({
+                pressed: !!button?.pressed,
+                value: button?.value || 0
+            }))
+        };
+        return inputs;
     }
 }

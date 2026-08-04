@@ -33,13 +33,14 @@ export default class Vehicle {
     this.speed = 0;
     this.angle = 0;
     this.steerInput = 0;
-
+    this.isBraking = false;
+    
     this.engineSound = undefined;
 
     this.fuel = 15;
     this.maxFuel = 100;
-
     this.health = 100;
+    this.statusIndicators = {};
 
     // vehicle body rotations voor coolen flips en salto's
     this.rotation = {
@@ -61,7 +62,7 @@ export default class Vehicle {
 
   _syncElementId () {
     if (!this.element) return;
-    this.element.id = `vehicle-${this.id}`;
+    this.element.id = `player-${this.id}`;
     this.element.dataset.vehicleId = String(this.id);
   }
 
@@ -102,6 +103,9 @@ export default class Vehicle {
       
       let livery = carElement.querySelector('.livery');
       livery.className = `livery ${this.livery}`;
+
+      this.statusIndicators.fuel = carElement.querySelector('meter.fuel')
+      this.statusIndicators.health = carElement.querySelector('meter.health')
     } 
 
     try {
@@ -184,7 +188,8 @@ export default class Vehicle {
     return this.fuel;
   }
 
-  // negative value = oof owie, positive value = positive natuurlijk jonge jezus
+  // negative value = oof owie, 
+  // positive value = positive natuurlijk jonge jezus
   updateHealth (value) {
 
     this.health += value;
@@ -198,10 +203,30 @@ export default class Vehicle {
     }
 
     // ⚰️
-    if (this.health <= 0) {
-      this.dynamics ? this.dynamics.maxSpeed = 0 : null;
+    if (this.health <= 1) {
       // add (sticky, looping) smoke emitter but make it fire
+
+      setTimeout( () => {
+        console.log("DED. TERUG NAAR DE PITS!")
+        const player = this.game.localPlayer;
+        if (player) {
+          const garage = this.game.world.garages[player.garageIndex];
+          if (garage && garage.circlePos) {
+            player.speed = 0;
+            player.vx = 0;
+            player.vy = 0;
+            player.angle = 0;
+            player.movementAngle = 0;
+            const { x, y } = garage.circlePos;
+            player.x = x;
+            player.y = y;
+            player.lastValidPos = { x, y };
+          }
+        }
+      }, 1000)
     }
+
+    return this.health
   }
 
   updateStyle () {
@@ -217,7 +242,7 @@ export default class Vehicle {
     let fuelLeft = this.updateFuel();
 
     // Elke auto update zijn eigen element via transforms
-    // this.element.style.transform = `translate(${this.x}px, ${this.y}px) rotate(${this.angle}rad)`;
+    
     this.element.style.setProperty('--x', Math.floor(this.x));
     this.element.style.setProperty('--y', Math.floor(this.y));
     this.element.style.setProperty('--angle', parseFloat(this.angle.toFixed(3)));
@@ -226,10 +251,33 @@ export default class Vehicle {
     this.element.style.setProperty('--fuel', `"${fuelLeft.toFixed(2)}"`);
     this.element.style.setProperty('--health', this.health.toFixed(2) || 0);
 
+    this.statusIndicators.fuel.value = fuelLeft;
+    this.statusIndicators.health.value = this.health;
+
+    /* update vehicle lights */
     if (this.lightsElement) {
+      /* correctly orient to player's orientation */
       this.lightsElement.style.setProperty('--player-x', this.x.toFixed(3));
       this.lightsElement.style.setProperty('--player-y', this.y.toFixed(3));
       this.lightsElement.style.setProperty('--player-angle', this.angle.toFixed(3));
+
+      /* set brake, reverse lights */
+      let lightsState = '';
+      
+      if (this.isBraking && this.speed > 0) {
+        lightsState = 'braking';
+      }
+  
+      if (this.speed < -0.05) {
+        lightsState = 'reversing';
+      }
+  
+      this.lightsElement.dataset.lights = lightsState;
+      this.highbeam 
+        ? this.lightsElement.classList.add('highbeam')
+        : this.lightsElement.classList.remove('highbeam');
     }
+    
+    
   }
 }

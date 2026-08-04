@@ -295,7 +295,9 @@ export default class GameEngine {
             opp.y = data.y;
             opp.angle = data.angle;
             opp.speed = data.speed;
-            
+            opp.health = data.health;
+            opp.isBraking = data.isBraking;
+            opp.highbeam = data.highbeam;
             // Sync garage assignment if included. Use !== undefined so garage 0 is still processed.
             if (data.garageIndex !== undefined && opp.garageIndex !== data.garageIndex) {
               const previousGarageIndex = opp.garageIndex;
@@ -427,7 +429,9 @@ export default class GameEngine {
           angle: this.localPlayer.angle,
           speed: this.localPlayer.speed,
           garageIndex: this.localPlayer.garageIndex,
-          health: this.localPlayer.health
+          health: this.localPlayer.health,
+          braking: this.localPlayer.isBraking,
+          highbeam: this.localPlayer.highbeam
       });
 
       this.camera.update(dt);
