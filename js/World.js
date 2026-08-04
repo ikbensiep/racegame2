@@ -19,8 +19,8 @@ export default class World {
     this.collidibles = [];
 
     this.logicCanvas = document.createElement('canvas', { willReadFrequently: true });
-    this.logicCanvas.width = 1080; 
-    this.logicCanvas.height = 1080;
+    this.logicCanvas.width = 256; 
+    this.logicCanvas.height = 256;
     this.logicCtx = this.logicCanvas.getContext('2d');
 
     this.trackPath = null; // The racetrack path
@@ -126,15 +126,15 @@ export default class World {
 
       this.paths.worldBG =     new Path2D(this.svgElement.querySelector('#world-bg').getAttribute('d')) // fill, car dynamics
       this.paths.fuelStation = new Path2D(this.svgElement.querySelector('#fuel-station')?.getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
-      this.paths.grandstands = new Path2D(this.svgElement.querySelector('#sfx-triggers path#grandstands')?.getAttribute('d') || "")  // fill, sfx (crowd noise) detection
+      this.paths.grandstands = new Path2D(this.svgElement.querySelector('#grandstands')?.getAttribute('d') || "")  // fill, sfx (crowd noise) detection
+      this.paths.gravel =      new Path2D(this.svgElement.querySelector('#sand')?.getAttribute('d')) // fill, vehicle dynamics / sfx
       this.paths.gravel =      new Path2D(this.svgElement.querySelector('#gravel')?.getAttribute('d')) // fill, vehicle dynamics / sfx
-      this.paths.gridslot =    new Path2D(this.svgElement.querySelector('#gridslot')?.getAttribute('d') || "") // fill, race start position (spawnpoint)
       this.paths.paddock =     new Path2D(this.svgElement.querySelector('#paddock').getAttribute('d')) // fill, in this area player is allowed to enter 'RPG mode' (ie, exit car)
-      this.paths.pitbox =      undefined; // fill, (tune car settings) a personal service area directly off the pitlane
-      this.paths.pitlane =     new Path2D(this.svgElement.querySelector('#pitlane').getAttribute('d'));  // stroke, vehicle dynamics (speed limiter)
       this.paths.racetrack =   new Path2D(this.svgElement.querySelector('#racetrack').getAttribute('d')); // stroke, (AI) vehicle pathinding
-      this.paths.sectors =     new Map(); // timing sectors
+      this.paths.pitlane =     new Path2D(this.svgElement.querySelector('#pitlane').getAttribute('d'));  // stroke, vehicle dynamics (speed limiter)
       this.paths.tunnel =      new Path2D(this.svgElement.querySelector('#tunnel')?.getAttribute('d'));  // fill, sfx (ie, reverb) detection
+      this.paths.sectors =     new Map(); // timing sectors
+      this.paths.pitbox =      undefined; // fill, (tune car settings) a personal service area directly off the pitlane
 
       const sectors = timingGroup.querySelectorAll('path');
       sectors.forEach(path => {
