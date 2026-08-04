@@ -23,8 +23,6 @@ export default class Player extends Vehicle {
     this.steerInput = 0;
     this.movementAngle = 0;
 
-    this.isBraking = false;
-
     this.vehicleTweaker = new TweakManager(this.dynamics, "🚗 Dynamics");
     this.vehicleTweaker._addPresetDropdown(Presets);
 
@@ -59,7 +57,7 @@ export default class Player extends Vehicle {
     this.createSmokePuffs();
 
     this.fik = this.getSmoke('fire');
-
+    this.element.style.setProperty('--max-speed', this.dynamics.maxSpeed);
   }
 
   createTireTracks () {
@@ -187,16 +185,22 @@ export default class Player extends Vehicle {
         ) {
         let smoke = this.getSmoke();
         let tiretrack = this.getTireTrack();
-        let offset = sidesFromHypotenhuse(this.width * .33, this.movementAngle)
+        let offset = sidesFromHypotenhuse(this.width, this.movementAngle)
         if(tiretrack) {
           tiretrack.domElement.dataset.speed = Math.floor(this.speed);
           tiretrack.domElement.style.setProperty('--speed', Math.floor(this.speed * 2));
           tiretrack.domElement.className = `emitter-object sprite rubber ${this.activeSurface} fade`;
           tiretrack.start(this.x - offset.width, this.y - offset.height, `${this.movementAngle}rad`); // Use movement direction for sprite rotation
           if(smoke) {
-            smoke.domElement.querySelector('img').src = '';
+            const imgEl = smoke.imgEl?.tagName === 'IMG' ? smoke.imgEl : smoke.domElement.querySelector('img');
+            if (imgEl) {
+              imgEl.src = '';
+            }
             smoke.domElement.className = `emitter-object sprite smoke ${this.activeSurface}`;
-            smoke.start(this.x - offset.width, this.y - offset.height, `${((Math.random() * 720) - 360)}deg`);
+            // TODO: investigate why this *appears* to have 
+            // 0 (zip, zilch, nada) influence on 
+            // where the sprite starts?
+            smoke.start(this.x + offset.width * 2 , this.y + offset.height * 2, `${((Math.random() * 720) - 360)}deg`);
           }
         }
         this.tireTrackInterval = 0;
@@ -334,6 +338,14 @@ export default class Player extends Vehicle {
     });
   }
 
+  honk () {
+    console.log('HONMK')
+  }
+
+  toggleHighbeam () {
+    this.lightsElement.classList.toggle('highbeam');
+  }
+
   onLevelUp() {
     // Voorbeeld: elke 500 XP gaat je topsnelheid omhoog
     const level = Math.floor(this.xp / 500);
@@ -371,8 +383,9 @@ export default class Player extends Vehicle {
       if(this.activeSurface !== surface) {
         this.activeSurface = surface;
         this.element.dataset.state = surface;
-        /* Maybe later? */
-        // this.game.effects.trigger(this, surface, 500);
+        if (!surface || surface == '') {
+          this.element.removeAttribute('data-state')
+        }
       }
   
       let haptics = {
@@ -397,8 +410,10 @@ export default class Player extends Vehicle {
         case 'pitbox':
           if(Math.abs(this.speed) < 1) this.speed = 0;
           if((this.fuel < this.maxFuel) && Math.floor(this.speed) == 0) {
-            this.fuel += .25;
-            console.log(this.fuel);
+            this.fuel += .5;
+          }
+          if((this.health < this.maxFuel) && Math.floor(this.speed) == 0) {
+            this.health += .25;
           }
           break;
         default:
@@ -466,6 +481,7 @@ export default class Player extends Vehicle {
 
     }
 
+    //TODO move to function
     const sectorId = this.game.world.lapTimer.checkSectors(this.x, this.y);
 
     if (sectorId) {
@@ -494,18 +510,23 @@ export default class Player extends Vehicle {
 
     // Validate new position — guard against physics glitches that produce NaN/Infinity or teleport to 0,0
     if (!Number.isFinite(this.x) || !Number.isFinite(this.y) || isNaN(this.x) || isNaN(this.y)) {
-      console.warn('Player: invalid position detected, reverting to lastValidPos', { x: this.x, y: this.y });
+      console.warn('Player: invalid position detected:', { x: this.x, y: this.y });
+      if (this.lastValidPos) console.log('Reverting to ', this.lastValidPos.x, this.lastValidPos.y);
       if (this.lastValidPos && Number.isFinite(this.lastValidPos.x) && Number.isFinite(this.lastValidPos.y)) {
         this.x = this.lastValidPos.x;
         this.y = this.lastValidPos.y;
       } else {
-        this.x = 0;
-        this.y = 0;
+        const safeSurface = ['asphalt', 'pitlane', 'paddock'].includes(this.activeSurface);
+        if (safeSurface) {
+          this.lastValidPos = { x: this.x, y: this.y };
+        }
       }
-      // also sanitize velocities and speed to prevent downstream NaNs
+      // also sanitize velocities, speed, and angles to prevent downstream NaNs
       this.vx = 0;
       this.vy = 0;
       this.speed = 0;
+      this.angle = 0;
+      this.movementAngle = 0;
     } else if (this.x === 0 && this.y === 0 && this.lastValidPos && (this.lastValidPos.x !== 0 || this.lastValidPos.y !== 0)) {
       // unexpected teleport to origin — likely a physics/collision bug. revert to last known good position.
       console.warn('Player: unexpectedly at origin, reverting to lastValidPos', this.lastValidPos);
@@ -532,7 +553,7 @@ export default class Player extends Vehicle {
 
     if (wallHit && !this.isColliding) {
       this._resolveCollision(wallHit)
-      this.game.effects?.trigger(this, 'colliding', 300);
+      this.game.effects?.trigger(this, 'colliding', 3000);
     } else if (!wallHit) {
       this.isColliding = false;
     }
@@ -593,6 +614,7 @@ export default class Player extends Vehicle {
       let nearest = nearestMarshalPosts.sort((a, b) => a.distance - b.distance);
       let lilguys = this.game.world.marshals.filter (dude => dude.base == nearest[0] && dude.status !== 'dead');
 
+      // run towards player vehicle
       lilguys.forEach(dude => dude.status = 'rescue');
       
     } else {
@@ -601,6 +623,7 @@ export default class Player extends Vehicle {
 
       this.game.world.marshals.map (dude => {
         if(dude.status !== 'dead') {
+          // anyone still alive, if you can move yr legs: go home.
           dude.status = 'idle'
         }
       });
@@ -609,6 +632,10 @@ export default class Player extends Vehicle {
     this.game.world.marshals.forEach(marshal => marshal.update(dt))
     this.smokePool.forEach(smoke => smoke.update(dt));
 
+    if (input.highbeamPressed) {
+      this.highbeam = !this.highbeam;
+      this.toggleHighbeam();
+    }
   }
 
   draw() {
@@ -633,12 +660,19 @@ export default class Player extends Vehicle {
       }
     }
 
-    this.element.style.setProperty('--fuel-message', `"⛽  ${this.fuel.toFixed(2)}"`);
-    if(this.fuel < 15) {
-      this.element.dataset.fuelLeft =  `${this.fuel.toFixed(2)}`;
+    // these attributes *may* be used later to display an
+    // add'l (warning) message, next to the <meter> elements
+    // already automatically displaying this inf
+    if(this.fuel < this.statusIndicators.fuel.high) {
+      this.element.dataset.lowFuel = `low fuel`;
     } else {
-      this.element.removeAttribute('data-fuel-left')
-      // this.element.style.setProperty('--fuel-message', ``);
+      this.element.removeAttribute('data-low-fuel')
+    }
+
+    if(this.health < this.statusIndicators.health.high) {
+      this.element.dataset.lowHealth = `low health`;
+    } else {
+      this.element.removeAttribute('data-low-health')
     }
   }
 }

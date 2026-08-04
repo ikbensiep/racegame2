@@ -72,7 +72,7 @@ export default class Marshal {
 
       console.log(`player struck marshal ${this.sprite.domElement.id}`)
 
-      this.sprite.img.classList.add('hit');
+      this.sprite.imgEl.classList.add('hit');
 
       const unitX = distanceX / distance;
       const unitY = distanceY / distance;
@@ -85,7 +85,7 @@ export default class Marshal {
       */
       if(this.game.localPlayer.speed > 20) {
         this.status = 'dead';
-        this.sprite.img.classList.add(this.status);
+        this.sprite.imgEl.classList.add(this.status);
         /*
         this.game.localPlayer.hud.postMessage('session', 'status','red flag');
 
@@ -95,17 +95,19 @@ export default class Marshal {
       }
 
       setTimeout( () => {
+        
         console.warn("STRAF! TERUG NAAR DE PITS!")
+        this.game.localPlayer.domElement.dataset.ellende = 'marshal-hit'
         this.game.localPlayer.speed = 0;
         let {x, y} = this.game.world.garages[this.game.localPlayer.garageIndex].circlePos;
         this.game.localPlayer.x = x;
         this.game.localPlayer.y = y;
-        
-      }, 1000)
+        // TODO: display countdown
+      }, 3000)
 
     } else {
-      if(this.sprite.img.className.includes('hit')) {
-        this.sprite.img.classList.remove('hit');
+      if(this.sprite.imgEl.className.includes('hit')) {
+        this.sprite.imgEl.classList.remove('hit');
       }
     }
  
