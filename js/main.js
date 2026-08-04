@@ -4,7 +4,7 @@ import Tuna from './lib/tuna.js';
 
 window.Tuna = window.Tuna || Tuna;
 
-let savedata = JSON.parse(localStorage.getItem('savedata') || '') || {};
+let savedata = JSON.parse(localStorage.getItem('savedata')) || {};
 
 const urlParams = new URLSearchParams(window.location.search);
 for (const key of urlParams.keys()) {
@@ -69,8 +69,9 @@ settingsForm.addEventListener('change', (e) => {
       let img = new Image()
       img.src = `/levels/${track}/${track}.svg`;
       img.onload = () => {
-        trackPreview.src = img.src;
         setTimeout(()=>{
+          trackPreview.src = img.src;
+          document.querySelector('#worldmap').style.backgroundImage = `url(${img.src})`;
           trackPreview.style.filter = 'blur(0px)'
           document.body.classList.remove('busy')
         }, 1000);

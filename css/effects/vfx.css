@@ -20,12 +20,6 @@
   transition-duration: 0s !important;
 }
 
-.vehicle[data-state="colliding"] {
-    & > div {
-      transition: rotate .5s linear !important;
-    } 
-  }
-
 @property --pp-opacity {
   syntax: "<number>";
   initial-value: 0.5;

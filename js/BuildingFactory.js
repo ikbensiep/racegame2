@@ -64,7 +64,7 @@ export default class BuildingFactory {
             structure.querySelector('.roof').innerHTML = `
                 <div class="sign">
                     <h3>${ props.title || ''}</h3>
-                    ${ props.description || ''}
+                    ${ props.description ? '<p>'+ props.description+'</p>' : null}
                 </div>
             </div>
             `;
