@@ -248,14 +248,9 @@
 
 
       background-image: 
-        
-        var(--weathering-bg, linear-gradient(transparent, transparent)),
-
-        linear-gradient(
-          to right,
-          oklab(from var(--driver-color) calc(l - 0.25) a b),
-          var(--driver-color)
-        );
+        var(--weathering-bg, 
+        linear-gradient(transparent, transparent)), 
+        radial-gradient( circle, var(--driver-color), oklab(from var(--driver-color) calc(l - 0.35) a b) );
 
 
       background-blend-mode: 
@@ -272,8 +267,11 @@
       background: url('/assets/noise.png');
       position: absolute;
       inset: 0;
-      mix-blend-mode: overlay;
-      opacity: 0.75;
+      
+      opacity: 0.2;
+      filter: contrast(2) invert(1);
+      mix-blend-mode: soft-light;
+      mix-blend-mode: color-dodge;
     }
     /* custom livery layer */
     & .livery {
@@ -338,20 +336,19 @@
     --livery-bg: url('/assets/cars/porsche/porsche-livery-special.png');
   }
 
-  &[data-fuel-left] { --message: var(--fuel-message)}
-  &[data-state="garage"] { --message: 'in garage'}
-  &[data-state="pitbox"] { --message: var(--fuel-message) }
-  &[data-state="lowfuel"] {--message: 'low fuel'}
   
-  &[data-fuel-left],
+  &[data-state="garage"] { --message: '(in garage)'}
+  &[data-state="pitbox"] { --message: '(pit box)' }
+  &[data-state="pitlane"] { --message: '(pitlane)' }
+  
   &[data-state="garage"],
-  &[data-state="pitbox"], 
-  &[data-state="lowfuel"] {
+  &[data-state="pitbox"],
+  &[data-state="pitlane"] {
     & .player-tag {
       transition-delay: 0s;
       opacity: 1;
       & i::after {
-        content: ' (' var(--message) ')';
+        content: var(--message);
         font-size: small;
         padding-inline: .6ex 0;
         opacity: .5;
@@ -359,7 +356,8 @@
       }
     }
   }
-
+  
+  /* add pit crew if (near) stationary in pit box */
   &[data-state="pitbox"][data-speed^="0"]::after {
     mask-image: url('/assets/environment/pits/porsche.png');
     mask-size: 168%;

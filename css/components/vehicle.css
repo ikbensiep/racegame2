@@ -1,4 +1,17 @@
 
+@property --speed {
+  syntax: "<number>";
+  initial-value: 0.0;
+  inherits: true;
+}
+
+
+@property --max-speed {
+  syntax: "<number>";
+  initial-value: 0.0;
+  inherits: true;
+}
+
 /* --- [Generic .vehicle placeholder style allowing for some state indication] --- */
 .vehicle {
 
@@ -7,12 +20,12 @@
   perspective: 512px;
   z-index: 20;
 
-  > div {
+  & > div {
     
     transform-style: preserve-3d;
 
     &.player {
-      --collider-color: orange;
+      --collider-color: orange !important;
     }
   
     &.opponent {
@@ -26,20 +39,128 @@
 
 
   &[data-state="colliding"] {
+    --transition-duration: .1s;
     --collider-color: black !important;
     
-    > div {
+  & > div {
+      /* transition: rotate .5s linear !important; */
       animation: impact-shake-rotate calc(var(--animation-duration, 0.2) * 1s) calc(var(--animation-delay, 0) * 1s) infinite;
       
-      &:after {
+      &::after {
         outline-width: 3px !important;
         outline-offset: 2px !important;
       }
     }
   }
+
+  & form {
+    position: absolute;
+    bottom: 0;
+    opacity: 0;
+    transition: opacity .5s 2s;
+    pointer-events: none;
+
+    & fieldset {
+      margin: 0;
+      padding:0;
+
+      & label {
+        color: #fff6;
+        display: flex;
+        padding: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition: .5s 2s ease-out;
+        transition-property: color, opacity;
+        & > * {
+          font-size: 2rem;
+          color: currentColor;
+        }
+      }
+
+      & div {
+        display: flex;
+        gap: 2rem;
+      }
+
+      & meter {
+        --hud-red: #d02e4d;
+        --hud-orange: #fab348;
+        --hud-green: #1c8c55;
+        -webkit-appearance: none;
+        
+        height: 6px;
+        width: 64px;
+        padding: 0;
+        margin: 0;
+        background: #0002;
+        border-radius: 3px;
+
+        /* De achtergrondcontainer van de balk */
+        &::-webkit-meter-bar {
+          background: #0002;
+          padding: 0;
+          margin: 0;
+        }
+
+        &:-moz-meter-bar {
+          background-image: none;
+        }
+
+        &::-webkit-meter-optimum-value { background: var(--hud-green); }
+        &:-moz-meter-optimum::-moz-meter-bar { background: var(--hud-green); }
+
+        &::-webkit-meter-suboptimum-value { background: var(--hud-orange); }
+        &:-moz-meter-sub-optimum::-moz-meter-bar { background: var(--hud-orange); }
+
+        &::-webkit-meter-even-less-good-value { background: var(--hud-red); }
+        &:-moz-meter-sub-sub-optimum::-moz-meter-bar { background: var(--hud-red); }
+      }
+    }
+  }
+
+  &[data-low-fuel], 
+  &[data-low-health],
+  &[data-state="pitbox"],
+  &[data-state="pitlane"],
+  &[data-state="collision"],
+  &[data-state="colliding"] {
+    & form {
+      opacity: 1;
+      transition-delay: 0s;
+
+      & label {
+        transition-delay: .5s;
+        color: white;
+      }
+    }
+  }
+
+  &[data-low-fuel], 
+  &[data-state="pitbox"],
+  &[data-state="pitlane"] {
+    
+    & label.fuel {
+      opacity: 1;
+    }
+  }
+
+  &[data-low-health],
+  &[data-state="pitbox"],
+  &[data-state="pitlane"],
+  &[data-state="collision"],
+  &[data-state="colliding"] {
+    & label.health {
+      opacity: 1;
+    }
+  }
 }
+/* .vehicle-lights sits on a separate lighting layer set to blend-mode: multiply */
+/* every player receives one set of lights on this layer */
 
 .vehicle-lights {
+  --highbeam: linear-gradient(transparent, transparent);
+  --brakelights: linear-gradient(transparent, transparent);;
   --light-size: 924px;
   display: block;
   width: var(--light-size);
@@ -48,9 +169,27 @@
   left: calc(var(--player-x) * 1px - calc(var(--light-size) / 2));
   top: calc(var(--player-y) * 1px - calc(var(--light-size) / 4));
   translate: calc(var(--player-x) * -1px + (calc(var(--player-x) - var(--cam-x)) * 1px ) ) calc(var(--player-y) * -1px + (calc(var(--player-y) - var(--cam-y)) * 1px ));
-  background: url(/assets/cars/car-lights-2.png) 50% 50% no-repeat;
   rotate: calc(var(--player-angle) * 1rad);
-  background-size: 82%;
+
+  background: 
+    url(/assets/cars/car-lights-default.png) 145% 50% no-repeat, 
+    var(--highbeam),
+    var(--brakelights) ;
+  background-size: 79%;
+
+  &.highbeam {
+    --highbeam: url(/assets/cars/car-lights-highbeam.png) right 50% no-repeat;
+    background-size: 79%, 69% 100%;
+
+  }
+  &[data-lights="braking"] {
+    --brakelights: url(/assets/cars/car-lights-braking.png) 145% 50% no-repeat;
+  }
+
+  &[data-lights="reversing"] {
+    --brakelights: url(/assets/cars/car-lights-braking.png) 145% 50% no-repeat;
+    background-blend-mode: normal, normal, difference;
+  }
 }
 
 .vehicle-lights.opponent {
