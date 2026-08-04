@@ -65,7 +65,7 @@
 
     animation: 
       smokeRotateScale 3s 0s linear forwards var(--animation-iteration), 
-      blur 2s 0s cubic-bezier(.6,.04,.98,.34) forwards var(--animation-iteration),
+      /* blur 2s 0s cubic-bezier(.6,.04,.98,.34) forwards var(--animation-iteration), */
       fadeSprite 1s 2s linear forwards var(--animation-iteration) !important;
     
     & img {

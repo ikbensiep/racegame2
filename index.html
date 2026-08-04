@@ -23,7 +23,7 @@
       <div id="light-layer">
         <b class="vehicle-lights player"></b>
       </div>
-      <div id="worldmap" style="transition: filter 1s linear; background-size: cover; background-position: center;"></div>
+      <div id="worldmap" style="transition: filter 1s linear; background-position: center;"></div>
     </main>
   </section>
   <label for="debugger" style="position: fixed; z-index: 10000; padding: 1ex; filter:brightness(.25) invert(.5);">
@@ -58,7 +58,7 @@
             <label for="player-team">
               <span>Team</span>
               <select name="player-team" id="player-team" required>
-                <option value="" disabled selected>select</option>
+                <option value="" disabled>select</option>
                 <option value="ferrari">Ferrari</option>
                 <option value="ford">Ford</option>
                 <option value="lamborghini">Lamborghini</option>
@@ -174,6 +174,8 @@
         <article class="grid" style="grid-template-columns: 1fr 1fr ;">
 
           <fieldset class="track grid">
+            <label for="groningen"><span>Stad, Groningen</span><input required type="radio" id="groningen" value="groningen" name="track"/></label>
+            <label for="austin"><span>COTA &ndash; Austin, TX</span><input required type="radio" id="austin" value="austin" name="track"/></label>
             <label for="assen"><span>TT Circuit, Assen</span><input required type="radio" id="assen" value="assen" name="track"/></label>
             <label for="monaco"><span>Monte Carlo, Monaco</span><input required type="radio" id="monaco" value="monaco" name="track"/></label>
             <label for="sachsenring"><span>Sachsenring, DE</span><input required type="radio" id="sachsenring" value="sachsenring" name="track"/></label>
@@ -317,6 +319,20 @@
           </i>
         </div>
       </div>
+      <form>
+      <fieldset>
+        <div>
+        <label class="fuel">
+          <span class="material-icons">local_gas_station</span>
+          <meter low="10" high="20" optimum="100" min="0" max="100" class="fuel"></meter>
+        </label>
+        <label  class="health">
+          <meter low="25" high="50" optimum="100" min="0" max="100" class="health"></meter>
+          <span class="material-icons">minor_crash</span>
+        </label>
+        </div>
+      </fieldset>
+      </form>
     </div>
   </template>
 
@@ -363,14 +379,22 @@
     <audio src="./assets/sound/porsche-onboard-downshift.ogg" class="engine" id="downshiftSound" volume="0.0"></audio>
     <audio src="./assets/sound/porsche-ambient-loop.ogg" id="ambientSfx" loop volume="0.0"></audio>
     <audio src="./assets/sound/ui/click.wav" id="changeSfx"></audio>
+    <audio src="./assets/sound/crowd.ogg" id="crowdSfx"></audio>
     <audio src="./assets/sound/horn-hooter.ogg" controls class="horn" type="audio/ogg"></audio>
     <audio src="./assets/sound/701327__sef7__walkie-talkie-power-on.ogg" type="audio/ogg" id="teamRadio"></audio>
     <audio src="./assets/sound/591528__rudmer-rotteveel__ratchet-wrench-slow-multiple.ogg" class="tuningSfx" id="ratchetSound" type="audio/ogg" volume="0.25"></audio>
     <audio src="./assets/sound/349398__sevenbsb__air-impact-wrench.ogg" class="tuningSfx" id="airWrenchSound" type="audio/ogg" volume="0.15"></audio>
-
   </section>
 
   <svg id="filters">
+    <filter id="pixelate" x="0" y="0">
+      <feFlood x="4" y="4" height="2" width="2"/>    
+      <feComposite width="4" height="4"/>
+      <feTile result="a"/>
+      <feComposite in="SourceGraphic" in2="a" operator="in"/>
+      <feMorphology operator="dilate" radius="2"/>
+    </filter>
+
     <filter id="vehicleDamage">
       <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
       </feTurbulence>

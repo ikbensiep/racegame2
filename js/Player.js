@@ -23,8 +23,6 @@ export default class Player extends Vehicle {
     this.steerInput = 0;
     this.movementAngle = 0;
 
-    this.isBraking = false;
-
     this.vehicleTweaker = new TweakManager(this.dynamics, "🚗 Dynamics");
     this.vehicleTweaker._addPresetDropdown(Presets);
 
@@ -59,7 +57,7 @@ export default class Player extends Vehicle {
     this.createSmokePuffs();
 
     this.fik = this.getSmoke('fire');
-
+    this.element.style.setProperty('--max-speed', this.dynamics.maxSpeed);
   }
 
   createTireTracks () {
@@ -187,16 +185,22 @@ export default class Player extends Vehicle {
         ) {
         let smoke = this.getSmoke();
         let tiretrack = this.getTireTrack();
-        let offset = sidesFromHypotenhuse(this.width * .33, this.movementAngle)
+        let offset = sidesFromHypotenhuse(this.width, this.movementAngle)
         if(tiretrack) {
           tiretrack.domElement.dataset.speed = Math.floor(this.speed);
           tiretrack.domElement.style.setProperty('--speed', Math.floor(this.speed * 2));
           tiretrack.domElement.className = `emitter-object sprite rubber ${this.activeSurface} fade`;
           tiretrack.start(this.x - offset.width, this.y - offset.height, `${this.movementAngle}rad`); // Use movement direction for sprite rotation
           if(smoke) {
-            smoke.domElement.querySelector('img').src = '';
+            const imgEl = smoke.imgEl?.tagName === 'IMG' ? smoke.imgEl : smoke.domElement.querySelector('img');
+            if (imgEl) {
+              imgEl.src = '';
+            }
             smoke.domElement.className = `emitter-object sprite smoke ${this.activeSurface}`;
-            smoke.start(this.x - offset.width, this.y - offset.height, `${((Math.random() * 720) - 360)}deg`);
+            // TODO: investigate why this *appears* to have 
+            // 0 (zip, zilch, nada) influence on 
+            // where the sprite starts?
+            smoke.start(this.x + offset.width * 2 , this.y + offset.height * 2, `${((Math.random() * 720) - 360)}deg`);
           }
         }
         this.tireTrackInterval = 0;
@@ -334,6 +338,14 @@ export default class Player extends Vehicle {
     });
   }
 
+  honk () {
+    console.log('HONMK')
+  }
+
+  toggleHighbeam () {
+    this.lightsElement.classList.toggle('highbeam');
+  }
+
   onLevelUp() {
     // Voorbeeld: elke 500 XP gaat je topsnelheid omhoog
     const level = Math.floor(this.xp / 500);
@@ -371,8 +383,9 @@ export default class Player extends Vehicle {
       if(this.activeSurface !== surface) {
         this.activeSurface = surface;
         this.element.dataset.state = surface;
-        /* Maybe later? */
-        // this.game.effects.trigger(this, surface, 500);
+        if (!surface || surface == '') {
+          this.element.removeAttribute('data-state')
+        }
       }
   
       let haptics = {
@@ -397,8 +410,10 @@ export default class Player extends Vehicle {
         case 'pitbox':
           if(Math.abs(this.speed) < 1) this.speed = 0;
           if((this.fuel < this.maxFuel) && Math.floor(this.speed) == 0) {
-            this.fuel += .25;
-            console.log(this.fuel);
+            this.fuel += .5;
+          }
+          if((this.health < this.maxFuel) && Math.floor(this.speed) == 0) {
+            this.health += .25;
           }
           break;
         default:
@@ -409,8 +424,16 @@ export default class Player extends Vehicle {
       playHaptics ?? this.playHapticFeedBack (haptics)
 
       // Update our own engine sound (pitch only - listener is self so pan stays centered)
-      
+       
       if (this.engineSound) {
+        if (this.activeSurface === 'tunnel') {
+          const nextTunnel = Math.min(1, (this.engineSound.tunnelReverbAmount || 0) + 0.15);
+          this.engineSound.setTunnelReverbLevel(nextTunnel);
+        } else {
+          const nextTunnel = Math.max(0, (this.engineSound.tunnelReverbAmount || 0) - 0.05);
+          this.engineSound.setTunnelReverbLevel(nextTunnel);
+        }
+ 
         this.engineSound.update(
           (Math.abs(Math.floor(this.speed)) * .025),
           {
@@ -420,17 +443,45 @@ export default class Player extends Vehicle {
             maxDistance: 8192
           }
         );
-        let targetValue = .2 + (Math.abs(this.speed) / this.dynamics.maxSpeed);
+        // compute target gain safely — guard against divide-by-zero or missing dynamics
+        let base = 0.2;
+        let targetValue = base;
         try {
-          this.engineSound.gainNode.gain.setTargetAtTime(targetValue, this.engineSound.source.context.currentTime + 1, 2.5);
+          if (this.dynamics && this.dynamics.maxSpeed && this.dynamics.maxSpeed > 0) {
+            targetValue = base + (Math.abs(this.speed) / this.dynamics.maxSpeed);
+          }
         } catch (e) {
-          console.error('[targetValue]', targetValue)
-          console.error(e)
+          // fallback to base if anything unexpected happens
+          targetValue = base;
+        }
+
+        // ensure the value is a finite number and clamp to a reasonable range
+        if (!Number.isFinite(targetValue) || isNaN(targetValue)) {
+          console.warn('Player: computed non-finite targetValue, falling back to base', targetValue);
+          targetValue = base;
+        }
+        targetValue = Math.max(0, Math.min(targetValue, 4)); // clamp to [0,4]
+
+        // Apply the gain change using the shared AudioContext time
+        try {
+          const now = (this.engineSound && this.engineSound.manager && this.engineSound.manager.context)
+            ? this.engineSound.manager.context.currentTime
+            : (this.engineSound && this.engineSound.source && this.engineSound.source.context)
+              ? this.engineSound.source.context.currentTime
+              : 0;
+
+          if (this.engineSound && this.engineSound.gainNode && this.engineSound.gainNode.gain) {
+            this.engineSound.gainNode.gain.setTargetAtTime(targetValue, now + 1, 2.5);
+          }
+        } catch (e) {
+          console.error('[targetValue]', targetValue);
+          console.error(e);
         }
       }
 
     }
 
+    //TODO move to function
     const sectorId = this.game.world.lapTimer.checkSectors(this.x, this.y);
 
     if (sectorId) {
@@ -457,6 +508,38 @@ export default class Player extends Vehicle {
 
     this._applyPhysics(input, dt)
 
+    // Validate new position — guard against physics glitches that produce NaN/Infinity or teleport to 0,0
+    if (!Number.isFinite(this.x) || !Number.isFinite(this.y) || isNaN(this.x) || isNaN(this.y)) {
+      console.warn('Player: invalid position detected:', { x: this.x, y: this.y });
+      if (this.lastValidPos) console.log('Reverting to ', this.lastValidPos.x, this.lastValidPos.y);
+      if (this.lastValidPos && Number.isFinite(this.lastValidPos.x) && Number.isFinite(this.lastValidPos.y)) {
+        this.x = this.lastValidPos.x;
+        this.y = this.lastValidPos.y;
+      } else {
+        const safeSurface = ['asphalt', 'pitlane', 'paddock'].includes(this.activeSurface);
+        if (safeSurface) {
+          this.lastValidPos = { x: this.x, y: this.y };
+        }
+      }
+      // also sanitize velocities, speed, and angles to prevent downstream NaNs
+      this.vx = 0;
+      this.vy = 0;
+      this.speed = 0;
+      this.angle = 0;
+      this.movementAngle = 0;
+    } else if (this.x === 0 && this.y === 0 && this.lastValidPos && (this.lastValidPos.x !== 0 || this.lastValidPos.y !== 0)) {
+      // unexpected teleport to origin — likely a physics/collision bug. revert to last known good position.
+      console.warn('Player: unexpectedly at origin, reverting to lastValidPos', this.lastValidPos);
+      this.x = this.lastValidPos.x;
+      this.y = this.lastValidPos.y;
+      this.vx = 0;
+      this.vy = 0;
+      this.speed = 0;
+    } else {
+      // position looks sane — record as last valid
+      this.lastValidPos = { x: this.x, y: this.y };
+    }
+
     // Prevent going out of bounce 🔊🔊🔊
     const oldPos = { x: this.x, y: this.y };
 
@@ -470,7 +553,7 @@ export default class Player extends Vehicle {
 
     if (wallHit && !this.isColliding) {
       this._resolveCollision(wallHit)
-      this.game.effects?.trigger(this, 'colliding', 300);
+      this.game.effects?.trigger(this, 'colliding', 3000);
     } else if (!wallHit) {
       this.isColliding = false;
     }
@@ -531,6 +614,7 @@ export default class Player extends Vehicle {
       let nearest = nearestMarshalPosts.sort((a, b) => a.distance - b.distance);
       let lilguys = this.game.world.marshals.filter (dude => dude.base == nearest[0] && dude.status !== 'dead');
 
+      // run towards player vehicle
       lilguys.forEach(dude => dude.status = 'rescue');
       
     } else {
@@ -539,6 +623,7 @@ export default class Player extends Vehicle {
 
       this.game.world.marshals.map (dude => {
         if(dude.status !== 'dead') {
+          // anyone still alive, if you can move yr legs: go home.
           dude.status = 'idle'
         }
       });
@@ -547,6 +632,10 @@ export default class Player extends Vehicle {
     this.game.world.marshals.forEach(marshal => marshal.update(dt))
     this.smokePool.forEach(smoke => smoke.update(dt));
 
+    if (input.highbeamPressed) {
+      this.highbeam = !this.highbeam;
+      this.toggleHighbeam();
+    }
   }
 
   draw() {
@@ -554,16 +643,36 @@ export default class Player extends Vehicle {
 
     super.draw();
 
-    this.game.world.element.style.setProperty('--player-x', this.x.toFixed(3));
-    this.game.world.element.style.setProperty('--player-y', this.y.toFixed(3));
-    this.game.world.element.style.setProperty('--player-angle', this.angle.toFixed(3));
+    // Use lastValidPos as fallback when x/y are not finite to avoid toFixed throwing
+    const px = Number.isFinite(this.x) ? this.x : (this.lastValidPos ? this.lastValidPos.x : 0);
+    const py = Number.isFinite(this.y) ? this.y : (this.lastValidPos ? this.lastValidPos.y : 0);
+    const pa = Number.isFinite(this.angle) ? this.angle : 0;
+    this.game.world.element.style.setProperty('--player-x', px.toFixed(3));
+    this.game.world.element.style.setProperty('--player-y', py.toFixed(3));
+    this.game.world.element.style.setProperty('--player-angle', pa.toFixed(3));
 
-    this.element.style.setProperty('--fuel-message', `"⛽  ${this.fuel.toFixed(2)}"`);
-    if(this.fuel < 15) {
-      this.element.dataset.fuelLeft =  `${this.fuel.toFixed(2)}`;
+    // Update ambient audio triggers (crowd, etc.)
+    if (this.game.audioManager) {
+      try {
+        this.game.audioManager.updatePlayerPosition(this.x, this.y);
+      } catch (e) {
+        console.warn('Player: audioManager update failed', e);
+      }
+    }
+
+    // these attributes *may* be used later to display an
+    // add'l (warning) message, next to the <meter> elements
+    // already automatically displaying this inf
+    if(this.fuel < this.statusIndicators.fuel.high) {
+      this.element.dataset.lowFuel = `low fuel`;
     } else {
-      this.element.removeAttribute('data-fuel-left')
-      // this.element.style.setProperty('--fuel-message', ``);
+      this.element.removeAttribute('data-low-fuel')
+    }
+
+    if(this.health < this.statusIndicators.health.high) {
+      this.element.dataset.lowHealth = `low health`;
+    } else {
+      this.element.removeAttribute('data-low-health')
     }
   }
 }

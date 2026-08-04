@@ -7,6 +7,9 @@ export default class VehicleSound {
     this.source = null;
     this.panner = null;
     this.gainNode = null;
+    this.reverbNode = null;
+    this.reverbGain = null;
+    this.tunnelReverbAmount = 0;
     this.soundName = soundName;
     
     // For doppler effect: track previous position to estimate velocity
@@ -33,10 +36,36 @@ export default class VehicleSound {
     this.source.buffer = buffer;
     this.source.loop = true;
 
-    // chain: source -> panner -> gain -> master
+    // chain: source -> panner -> dryGain -> master
     this.source.connect(this.panner);
     this.panner.connect(this.gainNode);
     this.gainNode.connect(this.manager.masterGain);
+
+    // optional tunnel reverb path
+    if (window.Tuna) {
+      try {
+        const tunaInstance = new window.Tuna(ctx);
+        this.reverbNode = new tunaInstance.Convolver({
+          highCut: 22000,
+          lowCut: 20,
+          dryLevel: 0,
+          wetLevel: 1,
+          level: 1,
+          // Use a project-local impulse response copied from the old repo
+          impulse: '/assets/sound/IMP parking_garage_close.wav'
+        });
+        this.reverbGain = ctx.createGain();
+        this.reverbGain.gain.value = 0;
+
+        this.panner.connect(this.reverbNode);
+        this.reverbNode.connect(this.reverbGain);
+        this.reverbGain.connect(this.manager.masterGain);
+      } catch (e) {
+        console.warn('VehicleSound: failed to create tunnel reverb', e);
+        this.reverbNode = null;
+        this.reverbGain = null;
+      }
+    }
 
     // start with silent volume until we know distance
     this.gainNode.gain.value = 0;
@@ -139,6 +168,28 @@ export default class VehicleSound {
     );
   }
 
+  setTunnelReverbLevel(value) {
+    const amount = Math.max(0, Math.min(1, value));
+    this.tunnelReverbAmount = amount;
+
+    if (this.reverbGain) {
+      this.reverbGain.gain.setTargetAtTime(amount, this.manager.context.currentTime, 0.1);
+    }
+
+    if (this.reverbNode) {
+      try {
+        if (this.reverbNode.wetLevel) {
+          this.reverbNode.wetLevel.setTargetAtTime(amount, this.manager.context.currentTime, 0.1);
+        }
+        if (this.reverbNode.level) {
+          this.reverbNode.level.setTargetAtTime(1 + amount * 0.4, this.manager.context.currentTime, 0.1);
+        }
+      } catch (e) {
+        console.warn('VehicleSound: failed to update tunnel reverb parameters', e);
+      }
+    }
+  }
+
   stop() {
     if (this.source) {
       try {
@@ -146,10 +197,12 @@ export default class VehicleSound {
       } catch (e) {
         // Ignore if already stopped
       }
-    }
+    } 
 
     this.source = null;
     this.panner = null;
     this.gainNode = null;
+    this.reverbNode = null;
+    this.reverbGain = null;
   }
 }

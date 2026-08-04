@@ -330,9 +330,11 @@ form {
         }
 
         &:not([data-team]) {
+
           &::before, 
           & .car-body {
-            animation-play-state: paused !important;
+            filter: url(#pixelate);
+            /* animation-play-state: paused !important; */
           }
         }
       }
@@ -607,8 +609,65 @@ form {
 
 body.busy {
   cursor: wait;
-  
-  & a, button, dialog, label {
-    pointer-events: none;
+  & * {
+    cursor: wait;
   }
+  /* & a, button, dialog, label {
+    pointer-events: none;
+  } */
+}
+
+/* EEM TRACK SELECT MENU TESTJE */
+
+/* 1. Registreer de variabele zodat CSS er vloeiend tussen kan animeren */
+@property --helicam-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@property --helicam-radius {
+  syntax: '<percentage>';
+  initial-value: 0%;
+  inherits: false;
+}
+
+[data-screen="lobby-menu"] {
+  #worldmap {
+      
+      /* Start in the center (50% 50%)          */
+      /* Use sin() for X-axis, cos() for Y-axis */
+      /* Mulitply by circle radius              */
+      background-position: 
+          calc(50% + sin(var(--helicam-angle)) * var(--helicam-radius)) 
+          calc(50% + cos(var(--helicam-angle)) * var(--helicam-radius)) !important;
+
+        background-size: 300%;
+        /* animation: flyCircle 60s linear infinite; */
+        animation: spiralPattern 120s linear forwards infinite;
+  }
+}
+
+@keyframes flyCircle {
+    from {
+        --helicam-angle: 0deg;
+    }
+    to {
+        --helicam-angle: 360deg;
+    }
+}
+
+@keyframes spiralPattern {
+    from {
+        --helicam-angle: 0deg;
+        --helicam-radius: 0%;    /* Start exact in het midden */
+    }
+    50% {
+        --helicam-angle: 720deg;
+        --helicam-radius: 50%;    
+    }
+    to {
+        --helicam-angle: 1440deg; /* 4 rondjes (4 * 360deg) */
+        --helicam-radius: 0%;   /* Eindigt op een grote cirkel, net binnen de randen (50% - 40% = 10%) */
+    }
 }

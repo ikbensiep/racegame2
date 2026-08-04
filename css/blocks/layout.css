@@ -33,6 +33,11 @@ dialog {
 	}
 }
 
+[data-screen="game"] dialog {
+		opacity: 0;
+		display: none;
+}
+
 @starting-style {
 	dialog {
 		opacity: 0;

@@ -23,7 +23,7 @@ export default class CameraTweaker {
       <fieldset class="time">
         <legend>Time of Day</legend>
         ⌚<label for="time-of-day">
-            <input type="range" name="time-of-day" id="time-of-day" value="0.0625" min="0" max="1" step=".0125" list="hours" />
+            <input type="range" name="time-of-day" id="time-of-day" value="0.325" min="0" max="1" step=".0125" list="hours" />
             <datalist id="hours">
               <option value="0">12 am</option>
               <option value=".25">6 am</option>

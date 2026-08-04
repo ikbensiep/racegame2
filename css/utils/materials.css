@@ -54,6 +54,8 @@
     /* */
     border-bottom-width: 0;
 
+    backface-visibility: hidden;
+
   }
 
   & > .roof {
@@ -88,6 +90,17 @@
         font-size: small;
         color: white;
       }
+    }
+  }
+
+  &.no-floor {
+    background: transparent;
+    box-shadow: none;
+  }
+  &.no-roof {
+    .roof {
+      background: transparent;
+      box-shadow: none;
     }
   }
 }
@@ -357,9 +370,11 @@
   .wall-e,
   .wall-s,
   .wall-w  {
-    background-image: url(/assets/environment/facade/commercial.jpg);
+    background-image: url(/assets/environment/facade/commercial-bw.jpg);
     background-size: 320px 72px;
     background-position: bottom;
+    background-color: var(--face-color);
+    background-blend-mode: luminosity;
   }
   
   /* TODO: we could make variations using 

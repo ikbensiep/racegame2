@@ -24,12 +24,12 @@ export default class Emitter {
     this.sticky = sticky;
     this.targetLayer = targetLayer ? targetLayer : this.game.mapLayers.track.element;
     
-    this.img = this.domElement.querySelector('img') ? this.domElement.querySelector('img') : this.domElement;
-    this.img.addEventListener('load', (e) => {
+    this.imgEl = this.domElement.querySelector('img') ? this.domElement.querySelector('img') : this.domElement;
+    this.imgEl.addEventListener('load', (e) => {
       // let path = new URL(e.target.src);
       // let file = path.pathname;
-      // console.log(`🖼️ loaded ${file}, w: ${parseInt(this.img.getAttribute('width')) || this.img.width || e.target.width}, framesPerRow: ${this.framesPerRow}`)
-      let spriteImageWidth = this.img.naturalWidth || parseInt(this.img.getAttribute('width')) || e.target.width;
+      // console.log(`🖼️ loaded ${file}, w: ${parseInt(this.imgEl.getAttribute('width')) || this.imgEl.width || e.target.width}, framesPerRow: ${this.framesPerRow}`)
+      let spriteImageWidth = this.imgEl.naturalWidth || parseInt(this.imgEl.getAttribute('width')) || e.target.width;
       this.framesPerRow = Math.floor(spriteImageWidth / this.width);
     })
 
