@@ -53,18 +53,6 @@
   inherits: true;
 }
 
-@property --message {
-  syntax: "<string>";
-  initial-value: "";
-  inherits: true;
-}
-
-@property --fuel-message {
-  syntax: "<string>";
-  initial-value: "";
-  inherits: true;
-}
-
 @property --size {
   syntax: "<number>";
   initial-value: 256;
@@ -336,27 +324,6 @@
     --livery-bg: url('/assets/cars/porsche/porsche-livery-special.png');
   }
 
-  
-  &[data-state="garage"] { --message: '(in garage)'}
-  &[data-state="pitbox"] { --message: '(pit box)' }
-  &[data-state="pitlane"] { --message: '(pitlane)' }
-  
-  &[data-state="garage"],
-  &[data-state="pitbox"],
-  &[data-state="pitlane"] {
-    & .player-tag {
-      transition-delay: 0s;
-      opacity: 1;
-      & i::after {
-        content: var(--message);
-        font-size: small;
-        padding-inline: .6ex 0;
-        opacity: .5;
-        vertical-align: center;
-      }
-    }
-  }
-  
   /* add pit crew if (near) stationary in pit box */
   &[data-state="pitbox"][data-speed^="0"]::after {
     mask-image: url('/assets/environment/pits/porsche.png');
