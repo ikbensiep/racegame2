@@ -7,6 +7,8 @@ import EffectManager from './EffectManager.js';
 import CameraManager from './CameraManager.js';
 import CameraTweaker from './tools/CameraTweaker.js';
 import LapTimer from "./LapTimer.js";
+import RaceHUD from "./HeadsupDisplay.js";
+
 import { SoundManager } from './Sound.js';
 import { getAngle } from './tools/MathUtils.js'
 export default class GameEngine {
@@ -29,6 +31,9 @@ export default class GameEngine {
       this.camera = {};
       this.cameraTweaker = {};
       this.audioManager = null;
+
+      this.sessionTime = 300000;
+      this.hud = new RaceHUD(this);
 
 
       this.init(this);
@@ -67,7 +72,7 @@ export default class GameEngine {
 
       this.localPlayer = new Player(game, this.network.peer.id, this.settings['player-name'], this.settings['player-number'], this.settings['player-color'], this.settings['player-team'], this.settings['player-livery'], true);
 
-      this.world.lapTimer = new LapTimer(this.world, [...this.world.paths.sectors]);
+      
 
       this.camera.setTarget(this.localPlayer);
       console.groupCollapsed('🗺️ #racetrack')
@@ -80,7 +85,7 @@ export default class GameEngine {
 
       // Wait for peer to be fully ready before assigning local player
       await this.network.waitForPeerReady();
-      console.group('networking')
+      console.groupCollapsed('networking')
       // Ensure local player has the actual network peer id (was null if created before peer open)
       if (!this.localPlayer.id) {
         this.localPlayer.id = this.network.peer.id;
@@ -126,9 +131,11 @@ export default class GameEngine {
       this.start();
       this.cameraTweaker = new CameraTweaker(this)
       this.cameraTweaker.refresh();
+      this.world.lapTimer = new LapTimer(this, [...this.world.paths.sectors]);
+      
       document.body.classList.remove('busy');
+
       let dialog = document.querySelector('dialog#lobby-menu');
-      console.info(dialog);
       dialog.close();
     }
 
@@ -179,7 +186,7 @@ export default class GameEngine {
 
       if (targetPoint && player.x !== null && player.y !== null) {
         player.angle = Math.atan2(targetPoint.y - player.y, targetPoint.x - player.x);
-        console.warn('[target]', targetPoint);
+        
         try {
           // player.angle = getAngle(player, targetPoint)
 
@@ -243,8 +250,10 @@ export default class GameEngine {
 
           // Hier heb je volledige controle over de nieuwe speler
           if (!this.opponents.has(data.id)) {
+
             const newOpp = new Opponent(this, data.id, data.name, data.driverNumber, data.color, data.team, data.livery);
             console.debug(`[network] created Opponent ${data.id} with color=${data.color} livery=${data.livery}`);
+            console.info('[newOpp]',newOpp)
             
             newOpp.name = data.name; // Sla de naam op
             this.opponents.set(data.id, newOpp);
@@ -252,6 +261,9 @@ export default class GameEngine {
             // Always assign a fresh garage slot for new players (don't accept theirs)
             this.assignGarageToPlayer(newOpp);
             
+            this.hud?.addCompetitor(newOpp);
+            
+
             // If we're the host, confirm all garage assignments to the new player
             if (this.network.isHost) {
               // Send local player's garage assignment (use peer ID, not 'me')
@@ -286,6 +298,10 @@ export default class GameEngine {
               console.warn('cameraTweaker not ready yet; skipping refresh on join');
             }
             console.log(`${data.name} joined the race!`);
+            
+            let msg = `${data.name} (car ${data.driverNumber}) joined.`;
+            console.log(this.hud, msg)
+            this.hud?.postMessage('racecontrol', 'notice', msg, true);
           }
           break;
 
@@ -447,6 +463,7 @@ export default class GameEngine {
         console.groupCollapsed(`starting game loop`)
         console.log(this);
         console.groupEnd()
+        console.log(this.inviteLink ? this.inviteLink : '🫩 no PeerJS connection ig 🙄')
         
         // Guard against multiple start() calls
         if (this.loopRunning) {

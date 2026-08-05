@@ -1,10 +1,18 @@
+@property --message {
+  syntax: "*";
+  initial-value: "";
+  inherits: true;
+}
+
 & .player-tag {
-  background: rgba(255,255,255,.1);
   padding: .33ex .6ex .33ex .33ex;
   color: white;
+
+  /* TODO: move to .vehicle .player-tag */
   position: absolute;
   inset: 0% auto auto 50%;
   translate: -50% 0;
+
   border-radius: .4ex;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -24,11 +32,13 @@
     padding: .2ex .4ex;
     border-radius: .2ex;
     width: 3.3ex;
+
     &:empty::after {
       content: '67';
       opacity: .5;
     }
   }
+
   & i {
     font-style: normal;
     padding-inline: .3ex;
@@ -39,5 +49,28 @@
 .player[data-state="asphalt"] {
   & .player-tag {
     opacity: 0;
+  }
+}
+
+
+[data-state="garage"] { --message: ''}
+[data-state="pitbox"] { --message: 'pitbox'}
+[data-state="pitlane"] { --message: 'pit'}
+
+
+[data-state="garage"],
+[data-state="pitbox"],
+[data-state="pitlane"] {
+  
+  & .player-tag {
+    transition-delay: 0s;
+    opacity: 1;
+    & i::after {
+      content: var(--message);
+      font-size: small;
+      padding-inline: .6ex 0;
+      opacity: .5;
+      vertical-align: center;
+    }
   }
 }

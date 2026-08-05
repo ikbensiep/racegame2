@@ -35,7 +35,8 @@ export default class Player extends Vehicle {
     
     this.lastSectorId = null; // Om herhaling te voorkomen terwijl je op het vlak staat
     this.currentSector = 2; // Begin op 2, zodat s0 de eerstvolgende logische stap is
-    this.lapStartTime = performance.now();
+    this.lapStartTime = new Date().getTime();
+
     this.inputHandler = new InputHandler();
     this.intervalUpdateTimer = 0;
     this.engineShutDownTimer = 0;
@@ -58,6 +59,7 @@ export default class Player extends Vehicle {
 
     this.fik = this.getSmoke('fire');
     this.element.style.setProperty('--max-speed', this.dynamics.maxSpeed);
+    this.game.hud.addCompetitor(this)
   }
 
   createTireTracks () {
@@ -302,23 +304,62 @@ export default class Player extends Vehicle {
   }
 
   handleSectorPass(num) {
-    const now = performance.now();
+    const now = new Date().getTime();
+    const previousSector = this.currentSector;
     const splitTime = now - this.game.world.lapTimer.lastSectorTime;
+    const lapTimer = this.game.world.lapTimer;
+
+    if (!lapTimer.currentLap) {
+      lapTimer.currentLap = { sectors: [] };
+    }
+
+    const sectorEntry = {
+      time: splitTime,
+      penalty: false
+    };
+
+    lapTimer.currentLap.sectors.push(sectorEntry);
     
-    if (num === 0) { // Finishlijn gepasseerd (Sector 0)
-      if (this.currentSector === 2) { // Alleen als we s1 en s2 hebben gehad
+    console.log(lapTimer.currentLap)
+
+    // Finishlijn gepasseerd (Sector 0)
+    if (num === 0) { 
+      
+      // Alleen als we s1 en s2 hebben gehad
+      if (previousSector === 2) { 
         const lapTime = now - this.lapStartTime;
-        this.xp += 500; // Bonus voor voltooide ronde
-        console.log(`Ronde voltooid in: ${(lapTime/1000).toFixed(2)}s`);
+        this.xp += 100; // Bonus voor voltooide ronde
+        lapTimer.holdSectorTime = true;
+        console.log(`Ronde voltooid in: ${(lapTime/1000).toFixed(3)}s`);
+        
+        // only after 1 (install) lap?
+        if(this.game.world.lapTimer.currentLap.startTime) {
+          this.game.hud.postMessage('timing','lastlap', this.game.world.lapTimer.formatFullTime(lapTime))
+        }
+        
+        if(lapTimer.currentLap.sectors.length === 3) {
+
+          lapTimer.laps.push({
+            sectors: lapTimer.currentLap.sectors,
+            totalTime: lapTime,
+            startTime: this.lapStartTime
+          });
+        }
         this.lapStartTime = now;
+        lapTimer.currentLap = { sectors: [], startTime: now};
+        console.table(lapTimer.laps)
       }
     } else {
       this.xp += 50; // Kleine XP bonus voor tussen-sector
-      console.log(`Sector ${num} split: ${(splitTime/1000).toFixed(2)}s`);
+      console.log(`Sector ${num} split: ${(splitTime/1000).toFixed(3)}s`);
+      // show sector split times
+      lapTimer.holdSectorTime = true;
+      this.game.hud.postMessage('timing', 'thislap',  (splitTime/1000).toFixed(3));
     }
 
     this.currentSector = num;
-    this.game.world.lapTimer.lastSectorTime = now;
+    lapTimer.currentSector = num;
+    lapTimer.lastSectorTime = now;
   }
 
   playHapticFeedBack (haptics) {
@@ -365,6 +406,9 @@ export default class Player extends Vehicle {
     if (!window.__playerUpdateCount) window.__playerUpdateCount = 0;
     window.__playerUpdateCount++;
     
+    
+    let sessionTime = this.game.hud.update(dt);
+
     const input = this.inputHandler.getInputs();
     
     const surface = this.game.world.getSurfaceType(this.x, this.y, this);
@@ -397,10 +441,11 @@ export default class Player extends Vehicle {
 
       switch(this.activeSurface) {
         case 'sand':
-        case 'gravel': 
+        case 'gravel':
           this.health -= 0.001;
           haptics.strongMagnitude = this.speed / 20;
           playHaptics = true;
+          this.game.hud.postMessage('team','radio', 'Lap invalidated, track limits', true);
           break;
         case 'asphalt':
           haptics.weakMagnitude = this.speed / 100;
@@ -410,7 +455,7 @@ export default class Player extends Vehicle {
         case 'pitbox':
           if(Math.abs(this.speed) < 1) this.speed = 0;
           if((this.fuel < this.maxFuel) && Math.floor(this.speed) == 0) {
-            this.fuel += .5;
+            this.fuel += 2.5;
           }
           if((this.health < this.maxFuel) && Math.floor(this.speed) == 0) {
             this.health += .25;
@@ -493,11 +538,9 @@ export default class Player extends Vehicle {
         const nextSector = (this.currentSector + 1) % 3;
 
         if (sectorNum === nextSector) {
-          console.log("Sector gehaald!", sectorId);
-          this.currentSector = sectorNum;
           this.handleSectorPass(sectorNum);
         }
-        
+
         // Voorkom dat we deze frame nog een keer checken voor ditzelfde vlak
         this.lastSectorId = sectorId;
       }
@@ -556,6 +599,16 @@ export default class Player extends Vehicle {
       this.game.effects?.trigger(this, 'colliding', 3000);
     } else if (!wallHit) {
       this.isColliding = false;
+    }
+
+    // Update laptimer while there's time left in the session
+    if(this.game.hud.sessionTime) {
+      this.game.world.lapTimer.update(dt);
+    } else {
+      // clear current + last lap timing displays, leaving the best laptime up
+      // while the player drives back to their pitbox/garage
+      this.game.hud.postMessage('timing','lastlap','')
+      this.game.hud.postMessage('timing','thislap','')
     }
 
     // Update opponents (pitch + spatial sound) and check collisions

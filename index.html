@@ -18,18 +18,45 @@
 <body data-screen="lobby-menu">
   <section id="camera-viewport" data-post-processing="crt">
     <main id="canvas" class="world">
-      <!-- this is for dev only so we can 'live paint' the svg while developing -->
-      <!-- eventually we'll only dislpay the map as a css background image!-->
       <div id="light-layer">
         <b class="vehicle-lights player"></b>
       </div>
       <div id="worldmap" style="transition: filter 1s linear; background-position: center;"></div>
     </main>
   </section>
+
+  <article id="hud">
+        
+      <span class="session">
+        <span class="status">free practice</span>
+        <span class="time">10:00</span>
+        <ul class="competitors">
+        </ul>
+      </span>
+
+      <span class="racecontrol">
+        <div class="notice"></div>
+        <div class="warning"></div>
+      </span>
+
+      <ul class="timing">
+        <li class="bestlap"></li>
+        <li class="lastlap"></li>
+        <li class="thislap"></li>
+      </ul>
+
+      <span class="team">
+        <span class="radio"></span>
+        <span class="status"></span>
+      </span>
+
+      
+  </article>
+
   <label for="debugger" style="position: fixed; z-index: 10000; padding: 1ex; filter:brightness(.25) invert(.5);">
     🛠️ debugger
   </label>
-    <input type="checkbox" name="debugger" id="debugger" />
+  <input type="checkbox" name="debugger" id="debugger" />
   <aside id="debug">
 
   </aside>
@@ -294,190 +321,192 @@
     </script>
   </dialog>
 
-  <template id="racecar">
-    <div class="vehicle car racecar">
-      <div class="player-tag">
-        <b></b>
-        <i></i>
-      </div>
-      <div class="filter-wrap">
-       <div class="car-body">
-          <i class="chassis"><i class="interior"></i></i>
-
-          <!-- bodywork stack: -->
-          <!-- (all layers below are masked)-->
-          <!-- filter fx (fire emitter, displacement filter)-->
-          <!-- weathering / damage layers: (masked layers, blend: multi) research masking by contents? -->
-          <!-- mods (spoilers) -->
-          <!-- no? / default / custom livery, ::before, ::after (driver badge) -->
-          <!-- .base-color (--player-color) ::before(gloss / metallic shading) radial gradient w/ splash of white, blend:multiply?, metallic: optionally masked by slight noise? (experiment)-->
-
-          <i class="bodywork">
-            <i class="base-color"></i>
-            <i class="livery" data-drivernum></i>
-            <i class="mods"></i>
-          </i>
+  <article id="logic-folder">
+    <template id="racecar">
+      <div class="vehicle car racecar">
+        <div class="player-tag">
+          <b></b>
+          <i></i>
         </div>
-      </div>
-      <form>
-      <fieldset>
-        <div>
-        <label class="fuel">
-          <span class="material-icons">local_gas_station</span>
-          <meter low="10" high="20" optimum="100" min="0" max="100" class="fuel"></meter>
-        </label>
-        <label  class="health">
-          <meter low="25" high="50" optimum="100" min="0" max="100" class="health"></meter>
-          <span class="material-icons">minor_crash</span>
-        </label>
+        <div class="filter-wrap">
+        <div class="car-body">
+            <i class="chassis"><i class="interior"></i></i>
+
+            <!-- bodywork stack: -->
+            <!-- (all layers below are masked)-->
+            <!-- filter fx (fire emitter, displacement filter)-->
+            <!-- weathering / damage layers: (masked layers, blend: multi) research masking by contents? -->
+            <!-- mods (spoilers) -->
+            <!-- no? / default / custom livery, ::before, ::after (driver badge) -->
+            <!-- .base-color (--player-color) ::before(gloss / metallic shading) radial gradient w/ splash of white, blend:multiply?, metallic: optionally masked by slight noise? (experiment)-->
+
+            <i class="bodywork">
+              <i class="base-color"></i>
+              <i class="livery" data-drivernum></i>
+              <i class="mods"></i>
+            </i>
+          </div>
         </div>
-      </fieldset>
-      </form>
-    </div>
-  </template>
+        <form>
+        <fieldset>
+          <div>
+          <label class="fuel">
+            <span class="material-icons">local_gas_station</span>
+            <meter low="10" high="20" optimum="100" min="0" max="100" class="fuel"></meter>
+          </label>
+          <label  class="health">
+            <meter low="25" high="50" optimum="100" min="0" max="100" class="health"></meter>
+            <span class="material-icons">minor_crash</span>
+          </label>
+          </div>
+        </fieldset>
+        </form>
+      </div>
+    </template>
 
-  <template id="structure">
-    <div class="structure building">
-      <div class="wall-n"></div>
-      <div class="wall-e"></div>
-      <div class="wall-s"></div>
-      <div class="wall-w"></div>
-      <div class="roof"></div>
-    </div>
-  </template>
+    <template id="structure">
+      <div class="structure building">
+        <div class="wall-n"></div>
+        <div class="wall-e"></div>
+        <div class="wall-s"></div>
+        <div class="wall-w"></div>
+        <div class="roof"></div>
+      </div>
+    </template>
 
-  <template id="shrubbery">
-    <b>
-      <span class="card"></span>
-      <span class="card"></span5214>
-    </b>
-  </template>
+    <template id="shrubbery">
+      <b>
+        <span class="card"></span>
+        <span class="card"></span5214>
+      </b>
+    </template>
 
-  <section class="sprites preload off-screen">
-    <span id="rubberTrackSprite" class="sprite rubber"><img src="assets/cars/tire-rubber-128.png" alt="" /></span>
-    <span id="smokeSprite" class="sprite smoke"><img src="assets/smoke/smoke-sprite.png" alt="" class="" loading="eager"/></span>
-    <span id="exhaustPopSprite" class="sprite exhaust"><img src="assets/car/exhaust-pop.png" alt="" class="pop"/></span>
-    <span id="explosionsSprite" class="sprite explosion"><img src="assets/boom3.png" alt="" id="" class="explosion"/></span>
-    <span id="ahornTreeSprite" class="sprite tree ahorn"></span>
-    <span id="palmTreeSprite" class="sprite tree palm"></span>
-    <span id="hokjeSprite" class="sprite hokje"></span>
-    <span id="lampPostSprite" class="sprite lamp-post"></span>
-    <img id="marshalSprite" class="sprite marshal" src="assets/people/oldman_walk_sheet_2.png" class="uv" width="512px" height="64px"/>
-    <img id="pylonSprite" class="sprite pylon" src="assets/environment/cone-1.png">
-    <img id="pylonSpriteWorn1" class="sprite pylon" src="assets/environment/cone-2.png">
-    <img id="pylonSpriteWorn2" class="sprite pylon" src="assets/environment/cone-3.png">
-    <span id="truckSprite" class="sprite truck"><img src="assets/environment/truck.png"></span>
-    <div class="helicopter">
-      <img src="assets/environment/helicopter-body.png" alt="" class="helicopter-body" style="scale: -1 1"/>
-      <div class="rotor-blur"></div>
-      <img src="assets/environment/helicopter-rotor.png" alt="" class="helicopter-rotor"/>
-    </div>
-  </section>
+    <section class="sprites preload off-screen">
+      <span id="rubberTrackSprite" class="sprite rubber"><img src="assets/cars/tire-rubber-128.png" alt="" /></span>
+      <span id="smokeSprite" class="sprite smoke"><img src="assets/smoke/smoke-sprite.png" alt="" class="" loading="eager"/></span>
+      <span id="exhaustPopSprite" class="sprite exhaust"><img src="assets/car/exhaust-pop.png" alt="" class="pop"/></span>
+      <span id="explosionsSprite" class="sprite explosion"><img src="assets/boom3.png" alt="" id="" class="explosion"/></span>
+      <span id="ahornTreeSprite" class="sprite tree ahorn"></span>
+      <span id="palmTreeSprite" class="sprite tree palm"></span>
+      <span id="hokjeSprite" class="sprite hokje"></span>
+      <span id="lampPostSprite" class="sprite lamp-post"></span>
+      <img id="marshalSprite" class="sprite marshal" src="assets/people/oldman_walk_sheet_2.png" class="uv" width="512px" height="64px"/>
+      <img id="pylonSprite" class="sprite pylon" src="assets/environment/cone-1.png">
+      <img id="pylonSpriteWorn1" class="sprite pylon" src="assets/environment/cone-2.png">
+      <img id="pylonSpriteWorn2" class="sprite pylon" src="assets/environment/cone-3.png">
+      <span id="truckSprite" class="sprite truck"><img src="assets/environment/truck.png"></span>
+      <div class="helicopter">
+        <img src="assets/environment/helicopter-body.png" alt="" class="helicopter-body" style="scale: -1 1"/>
+        <div class="rotor-blur"></div>
+        <img src="assets/environment/helicopter-rotor.png" alt="" class="helicopter-rotor"/>
+      </div>
+    </section>
 
-  <section class="audio preload off-screen">
-    <audio src="./assets/sound/porsche-onboard-acc-full.ogg" class="engine" id="engineSound" loop volume="0.0"></audio>
-    <audio src="./assets/sound/porsche-onboard-downshift.ogg" class="engine" id="downshiftSound" volume="0.0"></audio>
-    <audio src="./assets/sound/porsche-ambient-loop.ogg" id="ambientSfx" loop volume="0.0"></audio>
-    <audio src="./assets/sound/ui/click.wav" id="changeSfx"></audio>
-    <audio src="./assets/sound/crowd.ogg" id="crowdSfx"></audio>
-    <audio src="./assets/sound/horn-hooter.ogg" controls class="horn" type="audio/ogg"></audio>
-    <audio src="./assets/sound/701327__sef7__walkie-talkie-power-on.ogg" type="audio/ogg" id="teamRadio"></audio>
-    <audio src="./assets/sound/591528__rudmer-rotteveel__ratchet-wrench-slow-multiple.ogg" class="tuningSfx" id="ratchetSound" type="audio/ogg" volume="0.25"></audio>
-    <audio src="./assets/sound/349398__sevenbsb__air-impact-wrench.ogg" class="tuningSfx" id="airWrenchSound" type="audio/ogg" volume="0.15"></audio>
-  </section>
+    <section class="audio preload off-screen">
+      <audio src="./assets/sound/porsche-onboard-acc-full.ogg" class="engine" id="engineSound" loop volume="0.0"></audio>
+      <audio src="./assets/sound/porsche-onboard-downshift.ogg" class="engine" id="downshiftSound" volume="0.0"></audio>
+      <audio src="./assets/sound/porsche-ambient-loop.ogg" id="ambientSfx" loop volume="0.0"></audio>
+      <audio src="./assets/sound/ui/click.wav" id="changeSfx"></audio>
+      <audio src="./assets/sound/crowd.ogg" id="crowdSfx"></audio>
+      <audio src="./assets/sound/horn-hooter.ogg" controls class="horn" type="audio/ogg"></audio>
+      <audio src="./assets/sound/701327__sef7__walkie-talkie-power-on.ogg" type="audio/ogg" id="teamRadio"></audio>
+      <audio src="./assets/sound/591528__rudmer-rotteveel__ratchet-wrench-slow-multiple.ogg" class="tuningSfx" id="ratchetSound" type="audio/ogg" volume="0.25"></audio>
+      <audio src="./assets/sound/349398__sevenbsb__air-impact-wrench.ogg" class="tuningSfx" id="airWrenchSound" type="audio/ogg" volume="0.15"></audio>
+    </section>
 
-  <svg id="filters">
-    <filter id="pixelate" x="0" y="0">
-      <feFlood x="4" y="4" height="2" width="2"/>    
-      <feComposite width="4" height="4"/>
-      <feTile result="a"/>
-      <feComposite in="SourceGraphic" in2="a" operator="in"/>
-      <feMorphology operator="dilate" radius="2"/>
+    <svg id="filters">
+      <filter id="pixelate" x="0" y="0">
+        <feFlood x="4" y="4" height="2" width="2"/>    
+        <feComposite width="4" height="4"/>
+        <feTile result="a"/>
+        <feComposite in="SourceGraphic" in2="a" operator="in"/>
+        <feMorphology operator="dilate" radius="2"/>
+      </filter>
+
+      <filter id="vehicleDamage">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
+        </feTurbulence>
+
+        <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G">
+        </feDisplacementMap>
+      </filter>
+
+      <filter id="displacementFilter">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
+            <animate attributeName="seed" from="0" to="600" begin="0s" dur="100s" repeatCount="indefinite"></animate>
+        </feTurbulence>
+
+        <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G">
+        </feDisplacementMap>
+      </filter>
+      
+      <filter id="specularLight"
+        style="color-interpolation-filters:sRGB;"
+        inkscape:label="Specular Light">
+      <feGaussianBlur
+            in="SourceAlpha"
+            stdDeviation="10"
+            result="blur"
+            id="feGaussianBlur67" />
+      <feSpecularLighting
+            in="blur"
+            specularExponent="35.0"
+            specularConstant="10"
+            surfaceScale="4"
+            lighting-color="#fce48d"
+            result="specular"
+            id="feSpecularLightingSun">
+          <feDistantLight
+                azimuth="270"
+                elevation="156"
+                id="fakeSunLight" />
+      </feSpecularLighting>
+      <feComposite
+            in="specular"
+            in2="SourceGraphic"
+            k3="1"
+            k2="1"
+            operator="arithmetic"
+            result="composite1"
+            id="feComposite67" />
+      <feComposite
+          in="composite1"
+          in2="SourceAlpha"
+          operator="in"
+          result="composite2"
+          id="feComposite68" />
+      </filter>
+      <filter id="water-loop" x="0" y="0" width="100%" height="100%">
+      
+      <!-- 1. Noice -->
+      <feTurbulence 
+        type="fractalNoise" 
+        baseFrequency="0.02 0.04" 
+        numOctaves="2" 
+        stitchTiles="stitch" 
+        result="noise" />
+
+      <!-- 2. Shift colors for perfect loop without jump -->
+      <feColorMatrix in="noise" type="hueRotate" values="0" result="animatedNoise">
+        <animate 
+          attributeName="values" 
+          from="0" to="360" 
+          dur="5s" 
+          repeatCount="indefinite" />
+      </feColorMatrix>
+
+      <!-- 3. Afflpy distortion to input image -->
+      <feDisplacementMap 
+        in="SourceGraphic" 
+        in2="animatedNoise" 
+        scale="15" 
+        xChannelSelector="R" 
+        yChannelSelector="G" />
     </filter>
 
-    <filter id="vehicleDamage">
-      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
-      </feTurbulence>
 
-      <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G">
-      </feDisplacementMap>
-    </filter>
-
-    <filter id="displacementFilter">
-      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
-          <animate attributeName="seed" from="0" to="600" begin="0s" dur="100s" repeatCount="indefinite"></animate>
-      </feTurbulence>
-
-      <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G">
-      </feDisplacementMap>
-    </filter>
-    
-    <filter id="specularLight"
-      style="color-interpolation-filters:sRGB;"
-      inkscape:label="Specular Light">
-    <feGaussianBlur
-          in="SourceAlpha"
-          stdDeviation="10"
-          result="blur"
-          id="feGaussianBlur67" />
-    <feSpecularLighting
-          in="blur"
-          specularExponent="35.0"
-          specularConstant="10"
-          surfaceScale="4"
-          lighting-color="#fce48d"
-          result="specular"
-          id="feSpecularLightingSun">
-        <feDistantLight
-              azimuth="270"
-              elevation="156"
-              id="fakeSunLight" />
-    </feSpecularLighting>
-    <feComposite
-          in="specular"
-          in2="SourceGraphic"
-          k3="1"
-          k2="1"
-          operator="arithmetic"
-          result="composite1"
-          id="feComposite67" />
-    <feComposite
-        in="composite1"
-        in2="SourceAlpha"
-        operator="in"
-        result="composite2"
-        id="feComposite68" />
-    </filter>
-    <filter id="water-loop" x="0" y="0" width="100%" height="100%">
-    
-    <!-- 1. Noice -->
-    <feTurbulence 
-      type="fractalNoise" 
-      baseFrequency="0.02 0.04" 
-      numOctaves="2" 
-      stitchTiles="stitch" 
-      result="noise" />
-
-    <!-- 2. Shift colors for perfect loop without jump -->
-    <feColorMatrix in="noise" type="hueRotate" values="0" result="animatedNoise">
-      <animate 
-        attributeName="values" 
-        from="0" to="360" 
-        dur="5s" 
-        repeatCount="indefinite" />
-    </feColorMatrix>
-
-    <!-- 3. Afflpy distortion to input image -->
-    <feDisplacementMap 
-      in="SourceGraphic" 
-      in2="animatedNoise" 
-      scale="15" 
-      xChannelSelector="R" 
-      yChannelSelector="G" />
-  </filter>
-
-
-  </svg>
+    </svg>
+  </article>
   <script src="js/main.js" type="module"></script>
 </body>
 </html>
