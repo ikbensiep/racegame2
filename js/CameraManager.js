@@ -28,8 +28,8 @@ export default class CameraManager {
     this.camY = 0;
 
     this.speedZoomEnabled = this._isSpeedZoomEnabled(game?.settings);
-    this.speedZoomMin = 1.0;
-    this.speedZoomMax = 1.5;
+    this.speedZoomMin = .9;
+    this.speedZoomMax = 2;
 
     this.updateViewport();
     window.addEventListener('resize', () => this.updateViewport());
