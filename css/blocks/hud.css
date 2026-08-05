@@ -1,0 +1,199 @@
+#hud {
+  position: absolute;
+  inset: 0;
+  line-height: 2;
+  color: #fffc;
+  font-variant-numeric: tabular-nums;
+
+  & ul {
+    list-style: none;
+    display: flex;
+    flex-flow: column;
+    align-items: start;
+    margin: 0;
+    & li {
+      width: 100%;
+    }
+  }
+
+  & > * {    
+    display: flex;
+    flex-flow: column;
+    width: 22ch;
+    position: absolute;
+    display: inline-flex;
+    padding-inline: 0;
+    transition: opacity .25s;
+    overflow: clip;
+
+    /* transition in elements only when they have content to display */
+    &:empty {
+      opacity: 0;
+    }
+
+    /* lekker duidelijke selectors, vriend */
+    & > * {
+      background: rgb(0 0 0 / 0.5);
+      margin-block-end: 1px;
+      padding-inline: 1ex;
+      
+      transition-property: opacity, translate;
+      transition: 
+        .75s cubic-bezier(0.075, 0.82, 0.165, 1), 
+        color .25s .25s linear;
+      
+      /* move HUD elements with no content to display           */
+      /* out of the way so they'll transition in when appropes  */
+      &:empty {
+        translate: calc(100% - 2.7rem) 0;
+        color: transparent;
+        margin-block: 0;
+
+        &:before {
+          opacity: .25!important;
+        }
+      }
+    }
+
+    &.session {
+      top: 1ex;
+      left: 1ex;
+      text-align: center;
+
+      & .status {
+        &[data-status*='yellow flag'] {
+          background-color: goldenrod;
+          color: black;
+          transition-delay: .5s;
+        }
+        &[data-status*='red flag'] {
+          background-color: red;
+          color: black;
+          transition-delay: .5s;
+        }
+      }
+    }
+
+    &.timing {
+      top: 1ex;
+      right: 1ex;
+      text-align: end;
+      
+      li {
+        display: flex;
+        justify-content: space-between;
+      
+        &::before {
+          font-size: 1rem;
+          line-height: 2.6rem;
+          opacity: .75;
+          text-transform: uppercase;
+        }
+
+        &.thislap::before {
+            content: 'lap ' attr(data-lap);
+          }
+
+        &.bestlap { 
+          --content: 'best';
+          &[data-lap] {
+            --content: 'best (L' attr(data-lap)')';
+          }
+
+          &::before {
+            content: var(--content);
+          }
+        }
+
+        &.lastlap::before{ 
+          content: 'last'
+        }
+        &:empty::before {
+          display: none;
+        }
+        &.fastest {
+          background-color: purple;
+        }
+      }
+    }
+
+    &.racecontrol {
+      width: 45ch;
+      inset-inline: 50%;
+      top: 1ex;
+      translate: -50% 0;
+
+      > :empty {
+        translate: 0 calc(-100% - 2rem);
+      }
+      
+      & .notice {
+        display: flex;
+
+        &:before {
+          font-family: 'Material icons';
+          content: '\ef49';
+          vertical-align: text-bottom;
+          margin-inline-end: 1ex;
+          color: white;
+          opacity: 1;
+        }
+
+      }
+    }
+
+    &.team {
+      right: 1ex;
+      top: 50%;
+      translate: 0 -50%;
+      & .radio{ 
+        display: flex;
+
+        &:before {
+          font-family: 'Material icons';
+          content: '\f0e2';
+          vertical-align: text-bottom;
+          margin-inline-end: 1ex;
+          color: white;
+          opacity: 1;
+        }
+      }
+    }
+
+    &.car {
+      right: 1ex;
+      bottom: 1ex;
+    }
+
+    &.help {
+      bottom: 1ex;
+      left: 1ex;
+    }
+
+    & .competitors li {
+      text-align: start;
+      position: relative;
+      
+      --text-color: white;
+
+      & .player-tag {
+        position: relative;
+        translate: none;
+        transition: none;
+        inset: 0;
+
+        & b {
+          line-height: 1.7;
+        }
+      }
+
+      &:after {
+        content: attr(data-shortname);
+        text-transform: uppercase;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+    }
+  }
+}

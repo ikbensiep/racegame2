@@ -42,7 +42,7 @@ export default class NetworkManager {
                 console.info("👑 Je bent de Host. Jij beheert de bots.");
               
               // we can invite other players
-              console.log("📨 Invite link:", `${window.location.origin}${window.location.pathname}?join=${id}&track=${this.game.scene}`);
+              this.game.inviteLink = `📨 Invite link: ${window.location.origin}${window.location.pathname}?join=${id}&track=${this.game.scene}`;
             }
         });
 

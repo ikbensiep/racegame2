@@ -35,7 +35,7 @@ export default class Emitter {
 
     this.domElement.addEventListener('animationend', (event) => {
       if(event.animationName && !this.loop) {
-        console.log(`[${event.animationName}] ${this.domElement.className} animation ended, scheduling DOM removal`);
+        // console.log(`[${event.animationName}] ${this.domElement.className} animation ended, scheduling DOM removal`);
         this.reset();
       }
     })

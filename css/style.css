@@ -1,6 +1,7 @@
 @import url('./blocks/layout.css');
 @import url('./blocks/menu.css');
 @import url('./blocks/ui.css');
+@import url('./blocks/hud.css');
 @import url('./blocks/world.css');
 
 @import url('./components/animations.css');

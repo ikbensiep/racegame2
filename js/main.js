@@ -15,7 +15,7 @@ const joinId = urlParams.get('join');
 localStorage.setItem('savedata', JSON.stringify(savedata));
 
 const settingsForm = document.forms[0];
-console.info(savedata, settingsForm)
+// console.info(savedata, settingsForm)
 
 const lobbyDialog = document.getElementById('lobby-menu');
 const playerForm = document.getElementById('player-settings');

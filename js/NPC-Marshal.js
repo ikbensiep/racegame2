@@ -47,11 +47,7 @@ export default class Marshal {
 
   update (deltaTime) {
     if( !this.game.localPlayer) return;
-    
-    if (this.game.localPlayer == undefined) {
-      return;
-    }
-    
+
     if (this.status === 'dead' || getDistance(this, this.game.localPlayer) > 2048) {
       return;
     }
@@ -62,48 +58,59 @@ export default class Marshal {
       this.target.x = this.base.cx.baseVal.value - this.position.x;
       this.target.y = this.base.cy.baseVal.value - this.position.y;
     }
-    
 
     // colliding with Player
-    
+    // FIXME: might have to move this to the player, since now all them mfs do the collision check 
+    // and if we want to send HUD updates, there might be lots of updates coming from multiple
+    // marshals at the same time. Sucks bc I had this tucked away nicely here. 
+    // Mañana.
+
     let [playerCollision, distance, sumOfRadii, distanceX, distanceY] = checkCollision(this, this.game.localPlayer);
 
     if (playerCollision) {
 
-      console.log(`player struck marshal ${this.sprite.domElement.id}`)
-
-      this.sprite.imgEl.classList.add('hit');
+      console.warn(`player struck marshal ${this.sprite.domElement.id}`)
 
       const unitX = distanceX / distance;
       const unitY = distanceY / distance;
 
       this.position.x = this.game.localPlayer.x + (sumOfRadii + this.game.localPlayer.speed) * unitX;
       this.position.y = this.game.localPlayer.y + (sumOfRadii + this.game.localPlayer.speed) * unitY;
-      /*
-      this.game.localPlayer.hud.postMessage('racecontrol','notice',`Incident involving car ${this.game.localPlayer.carnumber} (${this.game.localPlayer.displayname.slice(0, 3).toUpperCase()}) and marshal ${this.base.id.replace('post-','')}-${(this.marshalId + 1) }`, true);
-      this.game.localPlayer.hud.postMessage('team','radio','DON\'T HIT THE MARSHALS!', true);
-      */
+      
+      this.game.hud.postMessage('session', 'status','yellow flag');
+      this.game.hud.postMessage('racecontrol','notice',`Incident involving car ${this.game.localPlayer.driverNumber} (${this.game.localPlayer.name.slice(0, 3).toUpperCase()}) and marshal ${ this.sprite.domElement.id }`, true);
+      
+      if(!this.sprite.imgEl.className.includes('hit')) {
+        this.game.hud.postMessage('team','radio','DON\'T HIT THE MARSHALS DAWG!! 🤬', 2000);
+        this.game.hud.postMessage('team','status',`Resetting to pitbox...🙄`, true)
+      }
+
       if(this.game.localPlayer.speed > 20) {
         this.status = 'dead';
         this.sprite.imgEl.classList.add(this.status);
-        /*
-        this.game.localPlayer.hud.postMessage('session', 'status','red flag');
+        
+        this.game.hud.postMessage('session', 'status','red flag');
 
-        this.game.localPlayer.hud.sessionTime = 0;
-        */
+        this.game.hud.sessionTime = 0;
+        this.game.hud.postMessage('team','radio','U KILLED THE MARSHAL!');
        
       }
 
       setTimeout( () => {
-        
+
         console.warn("STRAF! TERUG NAAR DE PITS!")
-        this.game.localPlayer.domElement.dataset.ellende = 'marshal-hit'
+        this.game.localPlayer.element.dataset['ellende'] = 'marshal-hit'
         this.game.localPlayer.speed = 0;
+        
         let {x, y} = this.game.world.garages[this.game.localPlayer.garageIndex].circlePos;
         this.game.localPlayer.x = x;
         this.game.localPlayer.y = y;
-        // TODO: display countdown
-      }, 3000)
+
+        this.game.hud.postMessage('session', 'status','free practice');
+      }, 5000);
+
+      // finally, set this to actually '.hit' that we've checked against earlier
+      this.sprite.imgEl.classList.add('hit');
 
     } else {
       if(this.sprite.imgEl.className.includes('hit')) {
@@ -114,7 +121,7 @@ export default class Marshal {
     // colliding with other NPC
     // EDIT: let's skip this, little to gain from it rly
 
-    /*
+    
     this.game.world.marshals.forEach(lilguy => {
       if(lilguy.marshalId == this.marshalId) return;
       
@@ -131,7 +138,7 @@ export default class Marshal {
         this.position.y = lilguy.position.y + (sumOfRadii + 3) * unitY;
       }
     });
-    */
+    
 
     // If walking, animate NPC sprite
     if (Math.abs(this.target.x) > this.radius * 1.5 || Math.abs(this.target.y) > this.radius * 1.5 && !playerCollision) {

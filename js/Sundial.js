@@ -1,7 +1,7 @@
 export default class Sundial {
   constructor(game) {
     this.game = game;
-    console.log('init Sundial');
+    console.log('🌞 init Sundial');
   }
 
   update () {
