@@ -99,7 +99,13 @@ export default class LapTimer {
       this.game.hud.domBestLap.dataset.lap = 1 + bestlapNumber;
 
       this.game.hud.postMessage('team','radio', 'Nice. That\'s your fastest lap so far!')
-      // Do network announce: '${player} (car ${driverNum}) set a new personal best lap time!'
+
+      let announce = `${this.player.name} (car ${this.player.driverNumber}) set a new personal best lap time!`
+      this.game.network.send({
+          type: 'racecontrol',
+          section: 'notice',
+          message: announce
+      });
 
       // Update ook de lap times tabel als er een nieuwe lap is bijgekomen
       // TODO: 2 tabellen, 1 met iedereen's beste tijd, 1 met al mijn lap times

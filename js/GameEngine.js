@@ -262,7 +262,7 @@ export default class GameEngine {
             this.assignGarageToPlayer(newOpp);
             
             this.hud?.addCompetitor(newOpp);
-            
+
 
             // If we're the host, confirm all garage assignments to the new player
             if (this.network.isHost) {
@@ -396,6 +396,10 @@ export default class GameEngine {
           }
           break;
 
+        case 'racecontrol':
+          this.hud.postMessage('racecontrol', data.section, data.message, true)
+          break;
+
         case 'bang' :
           if (data.type === 'bang' && opp) {
             opp.health = data.health;
@@ -405,7 +409,7 @@ export default class GameEngine {
             // Opbokke boeke
             this.effects.trigger(this.localPlayer, 'colliding', 100);
             this.effects.trigger(this.camera, 'colliding', 300);
-        }
+          }
       }
     }
 
@@ -446,7 +450,7 @@ export default class GameEngine {
           speed: this.localPlayer.speed,
           garageIndex: this.localPlayer.garageIndex,
           health: this.localPlayer.health,
-          braking: this.localPlayer.isBraking,
+          isBraking: this.localPlayer.isBraking,
           highbeam: this.localPlayer.highbeam
       });
 
