@@ -171,10 +171,16 @@
   translate: calc(var(--player-x) * -1px + (calc(var(--player-x) - var(--cam-x)) * 1px ) ) calc(var(--player-y) * -1px + (calc(var(--player-y) - var(--cam-y)) * 1px ));
   rotate: calc(var(--player-angle) * 1rad);
 
+  /* the idea: stack the brake lights on top, repurpose for reverse but in that case, 
+     set the bg blend mode to something that makes the red pixels white-ish 
+    UPDATE: Either I am too dumb to correctly blend or maybe it's simply not possible.
+    Keeping it simple with a separate png for reversing lights for meow.
+    */
+
   background: 
-    url(/assets/cars/car-lights-default.png) 145% 50% no-repeat, 
-    var(--highbeam),
-    var(--brakelights) ;
+  var(--brakelights),
+  var(--highbeam),
+    url(/assets/cars/car-lights-default.png) 145% 50% no-repeat;
   background-size: 79%;
 
   &.highbeam {
@@ -187,8 +193,7 @@
   }
 
   &[data-lights="reversing"] {
-    --brakelights: url(/assets/cars/car-lights-braking.png) 145% 50% no-repeat;
-    background-blend-mode: normal, normal, difference;
+    --brakelights: url(/assets/cars/car-lights-reversing.png) 145% 50% no-repeat;
   }
 }
 
