@@ -70,7 +70,14 @@ export default class BuildingFactory {
             `;
         }
 
-        props.materialClass.split(' ').forEach( materialName => structure.classList.add(materialName))
+        props.materialClass.split(' ').forEach( materialName => { 
+            try {
+                structure.classList.add(materialName)
+            }
+            catch (e) {
+                console.log({props})
+            }
+        })
         
         // Use cssText for single-fast-as-all-hell-write to the DOM
         // NOTE: (for now) we're capping the elevation level to 5 floors because we don't
@@ -97,6 +104,16 @@ export default class BuildingFactory {
             
         `;
         if (props.strokeLineJoin == 'bevel') structure.dataset.graffiti = 'true';
+
+        if(props.materialClass.includes('jumbotron')) {
+            let LEDScreen = document.createElement('span');
+            LEDScreen.id = `jumbotron-${rect.id}`;
+            LEDScreen.className = 'jumbotron screen'
+            LEDScreen.dataset.state = 'test-image';
+            LEDScreen.textContent = 'NO SIGNAL'; /* use <desc> for this? (<title> can be rooftop sign as is) */
+            structure.querySelector('.wall-s').appendChild(LEDScreen);
+        }
+
         return structure;
     }
 
@@ -108,7 +125,7 @@ export default class BuildingFactory {
     generateFences(svgElement, worldLayer) {
 
     const paths = svgElement.querySelectorAll('g#fencing > path');
-    const segmentWidth = 256; 
+    const segmentWidth = 512; 
 
     paths.forEach( (path, index) => {
         const totalLength = path.getTotalLength();

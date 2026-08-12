@@ -5,6 +5,13 @@
   initial-value: #888;
   inherits: true;
 }
+
+@property --face-opacity {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
 @property --column-color {
   syntax: "<color>";
   initial-value: #fff;
@@ -71,8 +78,6 @@
   transform-origin: 0 0;
   --d: calc( var(--floor-count, 1) * 64px);
 
-  transform-style: preserve-3d;
-
   z-index: 30;
   
   /* FIXME: fake ambient occlusion / contact shadow + ambient light coming from windows */
@@ -82,7 +87,6 @@
     background-image: url('/assets/uvmap.png');
   }
 
-  
   &.gallery, 
   &.bridge {
     transform: rotateZ(var(--rz)) translate3d(var(--x), var(--y), var(--d));
@@ -150,6 +154,8 @@
   place-content: center;
   /* transition: opacity .5s .25s; */
   box-sizing: border-box;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .off-screen {
@@ -193,7 +199,7 @@
   ;
 }
 
-/* --- ZUID (Purp) --- */
+/* --- ZUID (Purple) --- */
 
 .wall-s {
   /* inset: 0; */
@@ -225,8 +231,155 @@
   position: absolute;
   inset: 0;
   /* background: var(--c); */
-  /* trsnalted to --floor-count * 64px in Z direction */
+  /* translated to --floor-count * 64px in Z direction */
   transform: translateZ(var(--d));
+}
+
+@property --roof-h {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --roof-width {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --roof-angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+.building.mat-gable-roof { /* building with a puntdakje */
+  
+  /* We're trying to always work with multiples of 16 which in theory should help keep out sanity 🙃*/
+  /* One floor level height is defined as 64px, as one square on the UV grid is 64px, making        */
+  /* measuring and texturing just a bit easier: you should be able to always map 64 texture pixels  */
+  /* to 64 pixels in the game world without having to set texture dimensions in css.                */
+  /* Of course, you always _could_ add your own custom dimensions for a material if need be..       */
+
+  /* (hardcoding for meaow) */
+  --roof-h: calc(var(--column-size, 63px) * 1px); /* TODO: figure out where to define this in the svg / inkscape workflow */
+
+  /* FIXME: materials should be defined in materials.css, buildings.css is only for construction! */
+  --roof-texture: url(/assets/environment/roof/swtexture-com-oldroof-tiles-512.jpg);
+
+  &:nth-child(2n), 
+  &:nth-child(3n),
+  &.grey-tiles {
+    --roof-texture: url(/assets/environment/roof/swtexture-com-oldcroof-tiles-256.jpg);
+    --bg-size: 128px;
+  }
+
+  & .wall-n, .wall-s {
+
+    /* Total height of north & South walls is now wall ehight + roof height */
+    height: calc(var(--d) + var(--roof-h)) !important;
+
+    /* Still a rectangle rotated into perspective, but nao we cut off two triangles off the left & right top */
+    clip-path: polygon(     /* memotoself: whew tekenen in x/y coordinaten suuuuuuuucks  */
+      0% var(--roof-h),     /* x: linkerpunt van facade , y: onderkant dak (ie, ~dakgoot bovenop muur) */
+      50% 0%,               /* x: middenpunt van facade,  y: hoogste puntje van het zadeldak */
+      100% var(--roof-h),   /* x: rechterpunt van facade, y: onderkant dak (ie, ~dakgoot bovenop muur, andere kant)*/
+      100% 100%,            /* x: rechterpunt van facade, y: op de grond */
+      0% 100%               /* x: linkerpunt van facade,  y: grond */
+    );
+  }
+
+  & .wall-n {
+    /* BC of Reasons©️®️ (simply rotating the north wall upwards would put possible text upside down) */
+    /* which is a total bummer so we're just doing some more Mathing 🏋️‍♂️ here: */
+    
+    transform: translateZ(calc(var(--d) + var(--roof-h))) rotateX(-90deg) rotateY(-180deg);
+  }
+
+  & .roof {
+    position: absolute;
+    transform: translateZ(var(--d));  /* Roof starts at the top of wall height */
+    inset: 0;
+    background: transparent;          /* Roof itself is invisible, before/after pseudo elements r the actual roof here */
+    transform-style: preserve-3d;
+
+    /* I'm here to do Math and chew bubblegum */
+    /* and I'm all out of bubblegum */
+
+    
+    /* 1. Halveer de breedte met behoud van de px-eenheid (bijv. 128px / 2 = 64px) */
+    --half-w: calc(var(--w) / 2);
+
+
+    --roof-width: hypot(var(--half-w), var(--roof-h));
+    /* --roof-length: calc(sqrt((var(--d) * var(--d)) + (var(--h) * var(--h)))); */
+    
+    /* 3. Atan2 op de lengths levert in beide browsers direct de hoek op */
+    --roof-angle: atan2(var(--roof-h), var(--half-w));
+      
+    & .wall-n {
+      transform: translateZ(calc(var(--d) + var(--roof-h))) rotateX(-90deg) rotateY(-180deg);
+    }
+
+    --roof-color: var(--roof-texture);
+
+    &::before,
+    &::after {
+      content: "before";
+      position: absolute;
+      width: var(--h);
+      height: var(--roof-width);
+
+    }
+
+     /* Linker dakhelft (West)       */
+    /* Wesside 🤟 of gabled dakje   */
+    &::before {
+      top: 0;
+      left: 0;
+      background: var(--roof-color, #555);
+      transform-origin: left top; 
+      
+      /* 1. Draai kwartslag (-90deg) */
+      /* 2. Corrigeer de X-positie */
+      /* 3. rotateY(180deg) flipt de texture horizontaal zodat de pannen goed om liggen */
+      /* 4. rotateX(* -1) trekt hem nu vanaf de andere kant omhoog naar de nok */
+      /* we have a tiny crack(gap) appearing between two halves, let's  */ 
+      /* sneak a little extra (1%) length in here to cover that 🤫      */
+      
+      transform: 
+        rotateZ(-90deg) 
+        rotateY(180deg)
+        rotateX(calc(var(--roof-angle) * -1))
+        rotateZ(180deg)
+        translateY(-100%)
+        scaleY(1.1)
+        rotateY(180deg);
+    }
+
+    /* Rechter dakhelft (Oost) */
+    /* 👉 Eastsiiiiide!       */ 
+    &::after {
+      content: "after";
+      top: 0;
+      right: 0;                  
+      background: var(--roof-color, #444);
+      
+      /* Slightly darker color psuedo-pseudo-3D effect */
+      /* FIXME: look into reopurposing dynamic shadow from vehicle */
+      filter: brightness(0.8);
+
+      transform-origin: right top; 
+      transform: 
+        rotateZ(-90deg) 
+        rotateX(calc(var(--roof-angle) * -1))
+        translateY(-100%)
+        scaleY(1.1)
+        
+        
+      ;
+    }
+  }
 }
 
 /* --- GRANDSTANDS (.grandstands class) --- */
@@ -252,7 +405,7 @@
   bottom: 0;
 
   /* 4. De hoek berekenen we met de boogtangens (atan2) */
-  /* Geen gegokte graden meer, maar pure geometrie */
+  
   transform: 
     translateZ(16px) 
     rotateX(calc(atan2(var(--d), var(--h)) * -1));
@@ -266,7 +419,7 @@
 
 .fence-wall {
   position: absolute;
-  
+  z-index: 30;
   transform-style: flat;
   
   transform-origin: bottom left; 

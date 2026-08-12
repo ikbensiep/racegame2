@@ -56,8 +56,8 @@
         90deg,
         var(--column-color, white) 0,
         var(--column-color, white) calc(var(--column-fill-size) * 1px),
-        rgb(from var(--face-color, #999) r g b / var(--face-opacity, 1)) calc((var(--column-fill-size) * 1px) + 1px),
-        rgb(from var(--face-color, #999) r g b / var(--face-opacity, 1)) calc( (var(--column-size) + var(--column-fill-size)) * 1px)
+        rgba(from var(--face-color, transparent) r g b / calc(var(--face-opacity, 1))) calc((var(--column-fill-size) * 1px) + 1px),
+        rgba(from var(--face-color, transparent) r g b / calc(var(--face-opacity, 1))) calc( (var(--column-size) + var(--column-fill-size)) * 1px)
         )
       ;
     /* one big fat stroke around the thing for good measure */
@@ -66,7 +66,7 @@
     border-bottom-width: 0;
 
     backface-visibility: hidden;
-
+    image-rendering: pixelated;
   }
 
   & > .roof {
@@ -336,24 +336,47 @@
     linear-gradient(to top, #0003, transparent),
     var(--sponsor-url),
     linear-gradient(#ddd, white),
-    repeating-linear-gradient(black 0, transparent 1px, transparent 16px),
-    repeating-linear-gradient(-45deg, #0006 0, transparent 1px, transparent 8px), 
-    repeating-linear-gradient(225deg, #0003 0, transparent 1px, transparent 8px),
-    repeating-linear-gradient(-90deg, black 0, black 4px, transparent 4px, transparent 512px)
+    url(/assets/environment/chainlink.png)
     ;
   background-repeat: repeat-x, repeat-x, repeat-x, repeat, repeat, repeat, repeat;
   background-position: left bottom;
   background-size: 
-    64px 32px, 64px 32px, 64px 32px, 128px 128px, 128px 128px, 128px 128px, 512px 512px;
-  
+    64px 32px, 
+    64px 32px, 
+    64px 32px, 
+    64px 64px
+  ;
+  outline: 2px outset white;
+  transform-style: preserve-3d;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 72%;
+    background: url(/assets/environment/chainlink.png) 0 0;
+    transform: rotateX(115deg);
+    transform-origin: top;
+    background-size: 32px;
+    image-rendering: pixelated;
+    border: inset;
+  }
+
   &.uliq-moly {
     --sponsor-url: url(/assets/environment/advertising/uliq-moly.svg);
-    background-size: 64px 32px, 72px 30px, 64px 32px, 128px 128px, 128px 128px, 128px 128px, 256px 512px;
+    background-size: 
+      64px 32px, 
+      72px 30px, 
+      64px 32px, 
+      32px 32px;
   }
 
   &.honkin {
     --sponsor-url: url(/assets/environment/advertising/honkin.svg);
-    background-size: 64px 32px, 172px 32px, 64px 32px, 128px 128px, 128px 128px, 128px 128px, 256px 512px;
+    background-size: 
+      64px 32px, 
+      172px 32px, 
+      64px 32px, 
+      32px 32px;
   }
 
   &.roflx {
@@ -371,8 +394,8 @@
   .wall-e,
   .wall-s,
   .wall-w  {
-    background-image: url(/assets/environment/facade/apartments-512.webp);
-    background-size: 592px 412px;
+    background-image: url(/assets/environment/facade/apartments-256.webp);
+    
   }
 }
 
@@ -381,7 +404,7 @@
   .wall-e,
   .wall-s,
   .wall-w  {
-    background-image: url(/assets/environment/facade/commercial-bw.jpg);
+    background-image: url(/assets/environment/facade/commercial-256-bw.jpg);
     background-size: 320px 72px;
     background-position: bottom;
     background-color: var(--face-color);
@@ -399,8 +422,8 @@
   .wall-e,
   .wall-s,
   .wall-w  {
-    background-image: url(/assets/environment/facade/townhouse.webp);
-    background-size: 256px 128px;
+    background-image: url(/assets/environment/facade/townhouse-512.webp);
+    
   }
 }
 
@@ -412,8 +435,8 @@
   .wall-s,
   .wall-w  {
     /* TODO: cut this texture into two separate textures (glass, concrete) */
-    background-image: url(/assets/environment/facade/photo-1639649151124-cbfe4bf6b475-512.avif);
-    background-size: 302px 276px;
+    background-image: url(/assets/environment/facade/offices-2-512.avif);
+    
   }
   &[data-graffiti] {
     .wall-n,
@@ -435,6 +458,51 @@
   }
 }
 
+.mat-jumbotron {
+  translate: 0 0 64px;
+  & .wall-s {
+    overflow: clip;
+
+    & .screen {
+      width: calc(var(--w) - 16px);
+      height: calc(var(--d) - 16px);
+      background-image: linear-gradient(to right, #ffffff 0%, #ffffff 14.28%, /* Wit */ #ffff00 14.28%, #ffff00 28.56%, /* Geel */ #00ffff 28.56%, #00ffff 42.84%, /* Cyaan */ #00ff00 42.84%, #00ff00 57.12%, /* Groen */ #ff00ff 57.12%, #ff00ff 71.40%, /* Magenta */ #ff0000 71.40%, #ff0000 85.68%, /* Rood */ #0000ff 85.68%, #0000ff 100% /* Blauw */);
+      background-repeat: repeat;
+      background-size: var(--w) var(--d);
+      animation: tv-test 10s linear forwards infinite;
+      overflow: clip;
+      clip-path: inset(0px round 10px);
+      font-weight: bold;
+      mask: radial-gradient(circle 2px at center, white, #fff3 50%) 0 0 / 2px 2px;
+      
+      
+    }
+  }
+}
+
+@keyframes tv-test {
+  0% {
+    background-position: 0 0;
+    place-content: start;
+  }
+  32% {
+    color: black;
+  }
+  33% {
+    color: white;
+    place-content: center;
+  }
+  66% {
+    color: white;
+    place-content: end;
+  }
+  67% {
+    color: black;
+  }
+  to {
+    background-position: var(--w) 0;
+  }
+}
 
 .mat-ferris-wheel {
 
@@ -474,13 +542,15 @@
   height: 256px;
   
   --tree-img-url: url('/assets/environment/trees/Oak-A1.png');
-
+  --tree-canopy-bg: url('/assets/environment/trees/ahorn-tree-128.png') no-repeat center;
+  --tree-canopy-size: cover;
   color: hsl(from var(--tree-color) h s 8%);
   display: grid;
   
   transform-style: preserve-3d;
   translate: -50% -50%;
 
+  /* trunk position on ground */
   &:before {
     content: '';
     place-self: center;
@@ -488,6 +558,21 @@
     height: 16px;
     border: 1px solid var(--tree-color);
     border-radius: 50%;
+  }
+
+  /* top view (canopy) */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+
+    /* TODO: update canopy texture + individual translateZ for various tree types */
+    background: var(--tree-canopy-bg);
+    background-size: var(--tree-canopy-size, 128px);
+    background-position: center;
+    background-repeat: no-repeat;
+    translate: 0 0 var(--tree-canopy-elevation, 64px);
+    image-rendering: pixelated;
   }
 
   /* debug viz */
@@ -527,6 +612,9 @@
 
   &.palm {
     --tree-img-url: url(/assets/environment/trees/Palm-A1.png);
+    --tree-canopy-bg: url(/assets/environment/trees/Palm-A-top.png);
+    --tree-canopy-elevation: 212px;
+    --tree-canopy-size: 128px;
   }
 
   &.pine {
