@@ -205,9 +205,14 @@ export default class Vehicle {
     // ⚰️
     if (this.health <= 1) {
       // add (sticky, looping) smoke emitter but make it fire
+      this.game.hud.postMessage('team','radio',` ...
 
+        Alright buddy, she's had enough. 
+        
+        We're bringing you back to the pits.`, 7500);
+        
       setTimeout( () => {
-        console.log("DED. TERUG NAAR DE PITS!")
+        
         const player = this.game.localPlayer;
         if (player) {
           const garage = this.game.world.garages[player.garageIndex];
