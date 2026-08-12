@@ -10,15 +10,15 @@ const urlParams = new URLSearchParams(window.location.search);
 for (const key of urlParams.keys()) {
   savedata[key] = urlParams.get(key)
 }
-const joinId = urlParams.get('join');
+
+let now = Temporal.Now.plainDateTimeISO()
+let realTimeInGameTime = Number((now.hour / 24).toFixed(2));
+savedata['time-of-day'] = realTimeInGameTime;
 
 localStorage.setItem('savedata', JSON.stringify(savedata));
 
-const settingsForm = document.forms[0];
-// console.info(savedata, settingsForm)
-
 const lobbyDialog = document.getElementById('lobby-menu');
-const playerForm = document.getElementById('player-settings');
+const settingsForm = lobbyDialog.querySelector('form');
 
 function applySavedDataToForm() {
   for (const setting in savedata) {
@@ -130,11 +130,8 @@ settingsForm.addEventListener('submit', (e) => {
   return false;
 });
 
-
-// Luister naar het sluiten van de dialoog
 lobbyDialog.addEventListener('close', () => {
   console.warn('en hie zoujiu de gtame moeten starten')
-  document.body.dataset['screen'] = 'game';
 });
 
 function initGame(playerSettings) {

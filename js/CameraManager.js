@@ -3,10 +3,10 @@ export default class CameraManager {
   constructor(game, scrollContainer, worldSize = 32768) {
     this.game = game;
     this.element = scrollContainer;
-    this.target = {x: 100, y:100};
+    this.target = {x: worldSize/2, y:worldSize/2}; /* center of the game world */
     this.isTransitioning = false;
     this.worldSize = worldSize;
-    
+
     this.cullingObserverObtions = {
       root: this.element,
       rootMargin: "512px",
@@ -28,11 +28,15 @@ export default class CameraManager {
     this.camY = 0;
 
     this.speedZoomEnabled = this._isSpeedZoomEnabled(game?.settings);
-    this.speedZoomMin = .9;
-    this.speedZoomMax = 2;
+    this.speedZoomMin = .93;
+    this.speedZoomMax = 1.5;
+    this.speedZoomOverride = false;
 
     this.updateViewport();
     window.addEventListener('resize', () => this.updateViewport());
+    
+    let currentDayTime = Number(this.game.settings['time-of-day']);
+    this.updateSunPosition(currentDayTime.toFixed(2));
   }
 
   _isSpeedZoomEnabled(settings = {}) {
@@ -83,11 +87,11 @@ export default class CameraManager {
   }
 
   update(dt) {
-    
+
     if (!this.target || this.freeRoam) return;
 
     // 1. Bereken het ideale doelpunt (DestX/Y)
-    const lookahead = 10;
+    const lookahead = 12;
     const tx = this.target.x + (this.target.vx || 0) * lookahead;
     const ty = this.target.y + (this.target.vy || 0) * lookahead;
 
@@ -131,7 +135,9 @@ export default class CameraManager {
   }
   
   updateSunPosition(timeOfDay) {
-   
+    this.element.style.setProperty('--pp-time-of-day', timeOfDay)
+    console.log(`🌞 currentDayTime: ${timeOfDay}`, this.element);
+    
     const sunLight = document.getElementById('fakeSunLight');
     const specularLighting = document.getElementById('feSpecularLightingSun');
     
