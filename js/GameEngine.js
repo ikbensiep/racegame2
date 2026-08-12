@@ -35,6 +35,7 @@ export default class GameEngine {
       this.sessionTime = 900000;
       this.hud = new RaceHUD(this);
 
+      this.miniMapIcon = document.createElementNS('http://www.w3.org/2000/svg','circle');
 
       this.init(this);
     }
@@ -72,7 +73,6 @@ export default class GameEngine {
 
       this.localPlayer = new Player(game, this.network.peer.id, this.settings['player-name'], this.settings['player-number'], this.settings['player-color'], this.settings['player-team'], this.settings['player-livery'], true);
 
-      
 
       this.camera.setTarget(this.localPlayer);
       console.groupCollapsed('🗺️ #racetrack')
@@ -97,9 +97,11 @@ export default class GameEngine {
       if (this.network.isHost) {
         console.log(`isHost is TRUE, assigning local player...`);
         this.assignGarageToPlayer(this.localPlayer);
-        
+        this.createMiniMapIcon(this.localPlayer);
+
         const playerGarage = this.world.garages[this.localPlayer.garageIndex];
         this.world.paths.pitbox = playerGarage?.rectanglePath || null;
+
       } else {
         // TODO: transfer host when host is gone / fix this else branch to assign 
         // garage when entering an "abandoned" lobby
@@ -129,6 +131,7 @@ export default class GameEngine {
       if (typeof this.world.detachSvg === 'function') this.world.detachSvg();
 
       this.start();
+
       this.cameraTweaker = new CameraTweaker(this)
       this.cameraTweaker.refresh();
       this.world.lapTimer = new LapTimer(this, [...this.world.paths.sectors]);
@@ -247,6 +250,14 @@ export default class GameEngine {
 
     getShortName (player) {
       return player.name.toUpperCase().replace(' ','').substring(0,3);
+    }
+
+    createMiniMapIcon (player) {
+      this.miniMapIcon.setAttribute('cx', player.x);
+      this.miniMapIcon.setAttribute('cy', player.y);
+      this.miniMapIcon.setAttribute('r', 256);
+      this.miniMapIcon.style.fill = 'var(--player-color)';
+      this.world.miniMap.appendChild(this.miniMapIcon);
     }
 
     handleNetworkData(data) {
@@ -562,7 +573,7 @@ export default class GameEngine {
       setTimeout( () => {
         this.hud.postMessage('team', 'radio', 
           `Now then. 
-          Let's go 🏎️💨 <b>racing</b>!
+          Let's go <b>racing</b>! 🏎️💨
         `, 3000)
         
       }, 55000);

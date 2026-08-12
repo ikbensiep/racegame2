@@ -23,8 +23,9 @@ export default class World {
     this.logicCanvas.height = 256;
     this.logicCtx = this.logicCanvas.getContext('2d');
 
-    this.trackPath = null; // The racetrack path
+    this.trackPath = null;
     this.trackElement = null;
+    this.miniMap = document.querySelector('svg#minimap');
     this.structures = [];
     
     this.buildingFactory = new BuildingFactory(this.game);
@@ -40,25 +41,7 @@ export default class World {
   
   _initWorld () {
     
-    /* Basically a tiling system that would get its dimensions from the css variables defined on #canvas
-    /*
-
-    const canvas = document.getElementById('canvas');
-    const canvasStyles = getComputedStyle(canvas);
-
-    let columns = parseInt(canvasStyles.getPropertyValue('--tile-columns'));
-    let columnSize = parseInt(canvasStyles.getPropertyValue('--tile-size'));
-    let worldSize = columns * columnSize;
-
-    for ( let i = 0; i<columns; i++ ) {
-      for( let j = 0; j<columns; j++) {
-        let img = new Image();
-        img.id = `tile-col${i}-row${j}`;
-        img.class = "";
-        canvas.appendChild(img)
-      }
-    }
-    */
+    return;
   }
 
   async load () {
@@ -79,7 +62,9 @@ export default class World {
     
     this.element.style.setProperty('--world-size', `${this.width}px`);
     this.trackElement = this.svgElement.getElementById('racetrack').cloneNode();
-    
+
+    this.createMiniMap();
+
     const timingGroup = this.svgElement.getElementById('timing');
 
     // 3. Find building ground plates for 3D box factory
@@ -261,6 +246,11 @@ export default class World {
     }
 
     return this.paths.pitbox || null;
+  }
+
+  createMiniMap () {
+    this.miniMap.setAttribute('viewBox',`0 0 ${this.width} ${this.height}`);
+    this.miniMap.appendChild(this.trackElement);
   }
 
   /**

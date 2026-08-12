@@ -218,9 +218,44 @@
       bottom: 1ex;
     }
 
-    &.help {
+    &.minimap {
       bottom: 1ex;
       left: 1ex;
+
+      cursor:crosshair;
+
+      --track-color:#fff3;
+      
+      &:hover {
+        --track-color: #fff9;
+        
+        & svg {
+          scale: 1.1;
+        }
+
+        & circle {
+         stroke-width: 1024px;
+         stroke: rgb(from var(--player-color) r g b / .5);
+
+         transition: stroke-width .5s .15s;
+        }
+      }
+
+      & svg {
+        transform-origin: center center;
+        scale: 1;
+        transition: scale .5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        
+        & circle {
+          stroke-width: 0px;
+          transition: stroke-width 1s;
+        }
+
+        & path {
+          stroke: var(--track-color) !important;
+          transition: stroke .5s .15s;
+        }
+      }
     }
 
     &:is(menu) {

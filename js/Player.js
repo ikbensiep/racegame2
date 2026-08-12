@@ -75,7 +75,6 @@ export default class Player extends Vehicle {
     this.garageDialog = document.querySelector('dialog#garage-menu');
     this.garageSettingsForm = this.garageDialog.querySelector('form')
     this.initGarageSettings();
-
   }
 
   initGarageSettings () {
@@ -576,7 +575,6 @@ export default class Player extends Vehicle {
           console.error(e);
         }
       }
-
     }
 
     //TODO move to function
@@ -779,6 +777,9 @@ export default class Player extends Vehicle {
         }
       }
     }
+
+    this.game.miniMapIcon.setAttribute('cx', this.x);
+    this.game.miniMapIcon.setAttribute('cy', this.y);
   }
 
   draw() {
