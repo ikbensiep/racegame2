@@ -14,36 +14,22 @@ export function  sidesFromHypotenhuse (hypot, angle) {
   return { width, height };
 }
 
-/**
- * @param {object} a
- * @param {object} b
- */
 export function getAngle (a, b) {
-  let cx = (a.x ? a.x : a.position.x);
-  let cy = (a.y ? a.y : a.position.y);
-  let dx = (b.x ? b.x : b.position.x) - cx;
-  let dy = (b.y ? b.y : b.position.y) - cy;
+  const cx = a?.x ?? a?.position?.x ?? 0;
+  const cy = a?.y ?? a?.position?.y ?? 0;
+  const dx = (b?.x ?? b?.position?.x ?? 0) - cx;
+  const dy = (b?.y ?? b?.position?.y ?? 0) - cy;
     
-  const angleDegs = Math.atan2(dy, dx) * 180 / Math.PI;
-  return angleDegs;
+  return Math.atan2(dy, dx) * 180 / Math.PI;
 }
 
-/**
- * @param {object} a
- * @param {object} b
- */
 export function getDistance(a, b) {
-  try {
-    let cx = a.x ?? a.position.x;
-    let cy = a.y ?? a.position.y;
-    let dx = (b.x ?? b.position.x) - cx;
-    let dy = (b.y ?? b.position.y) - cy;
+  const cx = a?.x ?? a?.position?.x ?? 0;
+  const cy = a?.y ?? a?.position?.y ?? 0;
+  const dx = (b?.x ?? b?.position?.x ?? 0) - cx;
+  const dy = (b?.y ?? b?.position?.y ?? 0) - cy;
 
-    let mag = Math.sqrt(dx * dx + dy * dy);
-    return mag;
-  } catch (e) {
-    console.error("Distance calculation failed:", e, { a, b });
-  }
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
 /**

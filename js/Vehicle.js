@@ -24,7 +24,7 @@ export default class Vehicle {
 
     this.x = Math.floor(Math.random() * 100);
     this.y = Math.floor(Math.random() * 100);
-    this.radius = 64;
+    this.radius = 48;
     this.height = undefined;
     this.width = undefined;
     // we use radius for collision, width & height pertain mostly to the vehicle/emitter Sprite end of the business.
@@ -92,7 +92,7 @@ export default class Vehicle {
     if (!carBody) {
       console.error('No vehicle body element!');
     } else {
-      carElement.style.setProperty('--radius', this.radius)
+      carElement.style.setProperty('--radius', 48)
       carElement.querySelector('.player-tag i').textContent = this.name;
       carElement.querySelector('.player-tag b').textContent = this.driverNumber;
       carElement.dataset.team = this.team;
@@ -232,6 +232,7 @@ export default class Vehicle {
   updateStyle () {
     const color = this.color || (this.game && this.game.settings && this.game.settings['player-color']) || 'blue';
     this.element.style.setProperty('--player-color', color);
+    document.body.style.setProperty('--player-color', color);
     let livery = this.element.querySelector('.livery');
     const liveryClass = this.livery || (this.game && this.game.settings && this.game.settings['player-livery']) || '';
     if (livery) livery.className = `livery ${liveryClass}`;

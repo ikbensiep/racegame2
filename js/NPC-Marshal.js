@@ -78,7 +78,7 @@ export default class Marshal {
       this.position.y = this.game.localPlayer.y + (sumOfRadii + this.game.localPlayer.speed) * unitY;
       
       this.game.hud.postMessage('session', 'status','yellow flag');
-      this.game.hud.postMessage('racecontrol','notice',`Incident involving car ${this.game.localPlayer.driverNumber} (${this.game.localPlayer.name.slice(0, 3).toUpperCase()}) and marshal ${ this.sprite.domElement.id }`, true);
+      this.game.hud.postMessage('racecontrol','warning',`Incident involving car ${this.game.localPlayer.driverNumber} (${this.game.localPlayer.name.slice(0, 3).toUpperCase()}) and marshal ${ this.sprite.domElement.id }`, true);
       
       if(!this.sprite.imgEl.className.includes('hit')) {
         this.game.hud.postMessage('team','radio','DON\'T HIT THE MARSHALS DAWG!! 🤬', 2000);

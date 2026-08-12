@@ -5,11 +5,17 @@ main {
 }
 
 dialog {
-	width: min(80vw, 1920px);
+	
+	& * {
+		pointer-events: none;
+	}
+
+
 	margin-inline: auto;
 	border: none;
 	background: transparent;
 	color: white;
+	line-height: 2;
 	place-self: center;
 	display: grid;
 	margin: auto;
@@ -23,19 +29,25 @@ dialog {
 		backdrop-filter: blur(0px);
 	}
 
-	&[open] {
+	&[open], &:popover-open {
 		opacity: 1;
-		display: initial;
+		display: block;
 		pointer-events: all;
+		backdrop-filter: blur(8px);
+
+		& * {
+			pointer-events: initial;
+		}
+
+
 		&::backdrop {
-			backdrop-filter: blur(8px);
+			
 		}
 	}
 }
 
 [data-screen="game"] dialog {
-		opacity: 0;
-		display: none;
+		
 }
 
 @starting-style {
@@ -43,14 +55,4 @@ dialog {
 		opacity: 0;
 		display: none;
 	}
-}
-
-.input-group {
-    margin-bottom: 15px;
-}
-
-.input-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
 }

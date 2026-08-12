@@ -28,7 +28,7 @@
 
 @property --pp-blur {
   syntax: "<number>";
-  initial-value: 5px;
+  initial-value: 4;
   inherits: true;
 }
 
@@ -58,6 +58,8 @@
 
 [data-post-processing="on"],
 [data-post-processing="crt"] {
+  clip-path: inset(8px round 48px);
+
   &::before {
     pointer-events: none;
     content: '';
@@ -71,14 +73,15 @@
 
     backdrop-filter: 
       opacity(var(--pp-opacity, 0))
-      blur( calc( var(--pp-blur) * 1px))
       saturate( var(--pp-saturate) )
       brightness( var(--pp-brightness) )
       contrast( var(--pp-contrast) )
       hue-rotate( calc( var(--pp-hue) * 1deg))
+    ;
+    box-shadow: inset 0 0 32px 16px var(--mortar-color);
   }
 
-  /*
+  
   &::after {
     content: '';
     display: block;
@@ -87,13 +90,12 @@
     left: 0;
     bottom: 0;
     right: 0;
-    background: rgba(18, 16, 16, 0.1);
-    opacity: 0;
-    z-index: 2;
+
     pointer-events: none;
-    animation: flicker 1.5s infinite;
+    mask-image: linear-gradient(white, transparent 20%, transparent 80%, white);
+    backdrop-filter: blur( calc( var(--pp-blur) * 1px));
   }
-  */
+  
 }
 [data-post-processing="crt"] {
   &::before {

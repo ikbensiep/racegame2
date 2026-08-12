@@ -8,7 +8,6 @@
 @import url('./components/buildings.css');
 @import url('./components/camera.css');
 @import url('./components/emitter.css');
-@import url('./components/tweaker.css');
 @import url('./components/player-tag.css');
 
 @import url('./effects/vfx.css');
@@ -35,20 +34,37 @@
   inherits: true;
 }
 
+@property --player-color {
+  syntax: "<color>";
+  initial-value: #BADA55;
+  inherits: true;
+}
+
 *, *::after, *::before {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+::selection {
+  background-color: var(--player-color);
+  color: contrast-color(var(--player-color));
+}
+
 body {
-  background-color: var(--player-color, aquamarine);
+  background-color: black;
   display: grid;
   overflow: hidden;
   font-family: "Barlow Semi Condensed", "Roboto Condensed", sans-serif;
   font-size: 1.33em;
-  user-select: none;
+
   transition: background-color .75s .5s cubic-bezier(.65,.05,.36,1);
+
+  /* this may seem like a drastic sweeping measure  but you really don't want people  */
+  /* selecting every item in the world. bit immersion breaking, that                  */
+  /* We'll allow on a case-by case basis for meow.                                    */
+  user-select: none;
+
 }
 
 /* TODO: organize */
