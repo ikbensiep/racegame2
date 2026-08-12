@@ -13,39 +13,49 @@
 }
 
 .material-icons {
-  transition: all .15s;
+  transition: inherit;
+  vertical-align: text-bottom;
+  font-size: inherit;
   user-select: none;
+}
+
+& .button,
+button {
+  border: none;
+  background-color: rgb(0 0 0 / .5) !important;
+  color: inherit;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-size: 1em;
+  line-height: inherit;
+  padding-inline: 2ex;
+  cursor: pointer;
+  color: rgb(255 255 255/ .5);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: .1s;
+  pointer-events: all;
+  user-select: none;
+  border-radius: .33ex;
+
+  &:hover, &:focus {
+    color: white;
+    text-shadow: 0 0 1ex var(--player-color);
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--player-color);
+  }
+  
+  &:active {
+    background-color: var(--player-color) !important;
+    color: contrast-color(var(--player-color)) !important;
+  }
 }
 
 form {
   accent-color: var(--player-color);
   caret-color: var(--player-color);
 
-  clip-path: inset(0 0 0 0 round 10px);
+  clip-path: inset(0 0 0 0 round .66ex);
 
-  & .button,
-  button {
-    border: none;
-    background-color: rgb(0 0 0 / .5);
-    color: inherit;
-    font-family: 'Barlow Semi Condensed', sans-serif;
-    font-size: 1em;
-    line-height: inherit;
-    padding-inline: 2ex;
-    cursor: pointer;
-    color: rgb(255 255 255/ .5);
-    text-decoration: none;
-    text-transform: uppercase;
-    transition: color .2s;
-    
-    &:hover,&:focus {
-      color: white;
-    }
-
-    &:active {
-      color: rgb(234, 175, 26);
-    }
-  }
   
   details:has(input:invalid):not(:has(*:focus)) {
     &[open] {
@@ -84,7 +94,7 @@ form {
       min-height: 0;
       max-height: 0;
       height: 0;
-      overflow: hidden;
+      overflow: auto;
     }
 
     article {
@@ -95,7 +105,7 @@ form {
       scroll-behavior: smooth;
       scroll-snap-type:x mandatory;
       padding: 0 5rem;
-      background: #000a;
+      
       height: 50vh;
       align-items: flex-start;
       /* min-height: 20rem; */
@@ -103,6 +113,7 @@ form {
     
     /* this is a hack to hide the ::details-content on the last menu section (buttons)
     fix the markup for the submit section */
+    /* FIXME: the approach is illegal (using <button> inside an interactive (<summary>) element) */
     &:has(summary:last-child)::details-content {
       min-height: 0;
     }
@@ -118,6 +129,15 @@ form {
       display: flex;
       align-items: center;
       justify-content: space-between;
+
+      &:has(> button:first-child:last-child) {
+        justify-content: center;
+        padding-block: 1rem;
+        pointer-events: none;
+        & button {
+          pointer-events: all;
+        }
+      }
 
       &:hover, &:focus{
         color: color-mix(in srgb, var(--player-color), white);
@@ -151,7 +171,7 @@ form {
       
       > summary {
         pointer-events: none;
-        background: #000f;
+        background: #000c;
         color: color-mix(in srgb, var(--player-color), white);
         
         & .material-icons {
@@ -161,6 +181,9 @@ form {
       }
 
       &::details-content {
+        &:not(:empty) {
+          padding-block: 2rem;
+        }
         background: #000a;
         min-height: 0;
         max-height: unset;
@@ -178,9 +201,10 @@ form {
     gap: 1rem;
     height: 100%;
 
-    & label {
+    /* defaults to 2 columns but may have an extra 3rd colum */
+    & label, div {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr auto; 
       gap: 1ex;
       align-content: center;
       align-items: center;
@@ -231,9 +255,7 @@ form {
           width: 4rem;
         }
         &[type=range] {
-          width: 5rem;
-          height: 5rem;
-          rotate: -90deg;
+          min-width: 5rem;
         }
       }
       
@@ -306,7 +328,8 @@ form {
 
     &.garage {
       perspective: 172px;
-
+      pointer-events: none;
+      
       .vehicle {
 
         transform: rotateX(15deg);
@@ -401,210 +424,48 @@ form {
   }
 }
 
-.hud {
-  position: absolute;
-  inset: 0;
+/* set min-width only on game menu UI fieldset, ie not on player vehicle dashboard */
+dialog form fieldset {
+  min-width: 60ch;
+  max-width: 80vw;
+}
+
+.fastest {
+  --highlight-color: purple;
+}
+
+table {
+  width: 100%;
+  max-width: 120ch;
   line-height: 2;
-  color: #fffc;
-  pointer-events: none;
+  border-collapse: collapse; 
   
-  & ul {
-    list-style: none;
-    display: flex;
-    flex-flow: column;
-    align-items: start;
-    margin: 0;
-    & li {
-      width: 100%;
+  & thead { 
+    display: table-header-group;
+    color: #fffa;
+    text-transform: lowercase;
+    font-size: smaller;
+    line-height: 3;
+    & th, td {
+      display: table-cell;text-align: end;
+    } 
+  }
+
+  & tbody { display: table-row-group; }
+
+  & tr {
+    display: table-row; 
+    
+    &:nth-child(odd) {
+      background-color: #0003;
+    }
+
+    &.fastest {
+      background-color: var(--highlight-color);
     }
   }
 
-  & > * {    
-    display: flex;
-    flex-flow: column;
-    width: 22ch;
-    position: absolute;
-    display: inline-flex;
-    padding-inline: 0;
-    transition: opacity .25s;
-
-    &:empty {opacity: 0;}
-
-    /* lekker duidelijke selectors, vriend */
-    & > * {
-      background: rgb(0 0 0 / 0.5);
-      margin-block-end: 1px;
-      padding-inline: 1ex;
-      transition: all .5s cubic-bezier(0.075, 0.82, 0.165, 1), color .25s .25s linear;
-      
-      &:empty {
-        translate: calc(100% - 2rem) 0;
-        color: transparent;
-        &:before {
-          opacity: .25!important;
-        }
-      }
-    }
-
-    &.session {
-      top: 1ex;
-      left: 1ex;
-      text-align: center;
-
-      .status {
-        &[data-status*='yellow flag'] {
-          background-color: goldenrod;
-          color: black;
-          transition-delay: .5s;
-        }
-        &[data-status*='red flag'] {
-          background-color: var(--rode);
-          color: black;
-          transition-delay: .5s;
-        }
-      }
-    }
-
-    &.timing {
-      top: 1ex;
-      right: 1ex;
-      text-align: end;
-      
-      li {
-        display: flex;
-        justify-content: space-between;
-      
-        &.thislap::before {
-            content: 'lap ' attr(data-lap);
-          }
-
-        &.bestlap::before{ 
-          content: 'best';
-        }
-
-        &.lastlap::before{ 
-          content: 'last'
-        }
-        &:empty::before {
-          display: none;
-        }
-        &.fastest {
-          background-color: purple;
-        }
-      }
-    }
-
-    &.racecontrol {
-      width: 45ch;
-      inset-inline: 50%;
-      top: 1ex;
-      translate: -50% 0;
-
-      > :empty {
-        translate: 0 calc(-100% - 2rem);
-      }
-      
-      & .notice {
-        display: flex;
-
-        &:before {
-          font-family: 'Material icons';
-          content: '\ef49';
-          vertical-align: text-bottom;
-          margin-inline-end: 1ex;
-          color: white;
-          opacity: 1;
-        }
-
-      }
-
-      .fastest { color: purple }
-      .invalidated { color: var(--gelbe)}
-    }
-
-    &.team {
-      right: 1ex;
-      top: 50%;
-      translate: 0 -50%;
-      & .radio{ 
-        display: flex;
-        flex-wrap: wrap;
-
-        &:before {
-          font-family: 'Material icons';
-          content: '\f0e2';
-          vertical-align: text-bottom;
-          margin-inline-end: 1ex;
-          color: white;
-          opacity: 1;
-        }
-        b, span {
-          margin-inline-start: .6ex;
-        }
-        .pitbox {
-          color: var(--rode)
-        }
-        .pitlane {
-          color: var(--gelbe)
-        }
-        .racetrack {
-          color: var(--gront);
-        }
-      }
-    }
-
-    &.car {
-      right: 1ex;
-      bottom: 1ex;
-    }
-
-    &.help {
-      bottom: 1ex;
-      left: 1ex;
-    }
-    & .competitors li {
-      text-align: start;
-      position: relative;
-      
-      --text-color: white;
-
-      &.ferrari {--bg-color: rgb(255, 17, 0); }
-      &.lamborghini {--bg-color: rgb(234, 175, 26); --text-color: black; }
-      &.porsche {--bg-color: white; --text-color: #d61b1b; }
-      &.ford {--bg-color: darkblue }
-
-      &:before {
-        content: attr(data-carnumber);
-        font-weight: bold;
-        margin-inline-end: 1ex;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        padding-inline: .5ex;
-        height: 2rem;
-        display: inline-block;
-        line-height: 1.5; 
-        border-radius: .3ex;
-        min-width: 1.2rem;
-        text-align: center;
-      }
-
-
-      &:after {
-        content: attr(data-shortname);
-        text-transform: uppercase;
-        position: absolute;
-        right: 0;
-        top: 0;
-      }
-    }
-    
-    
-    
-    & [data-fps^="3"] { color: var(--gront)}
-    & [data-fps^="2"] { color: var(--gelbe)}
-    & [data-fps^="1"] { color: var(--rode)}
-
-  }
+  & th, td {display: table-cell;text-align: end;} 
 }
 
 body.busy {
@@ -633,7 +494,7 @@ body.busy {
 }
 
 [data-screen="lobby-menu"] {
-  #worldmap {
+  & #worldmap {
       
       /* Start in the center (50% 50%)          */
       /* Use sin() for X-axis, cos() for Y-axis */

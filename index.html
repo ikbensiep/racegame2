@@ -6,6 +6,7 @@
   <title>RAECGAEM2</title>
   <link rel="stylesheet" href="css/style.css" type="text/css"/>
   <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+  <script src="/js/lib/html2canvas-pro.min.js"></script>
   <link rel="shortcut icon" href="favicon.svg" type="image/svg" />
   <!-- G fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,17 +17,24 @@
 </head>
 
 <body data-screen="lobby-menu">
+  <!-- game view -->
   <section id="camera-viewport" data-post-processing="crt">
+    <!-- 📺 -->
     <main id="canvas" class="world">
+      
+      <div class="highlighter"></div>
+      <!-- 💡 -->
       <div id="light-layer">
         <b class="vehicle-lights player"></b>
       </div>
+      
+      <!-- 🗺️ -->
       <div id="worldmap" style="transition: filter 1s linear; background-position: center;"></div>
     </main>
   </section>
 
   <article id="hud">
-        
+
       <span class="session">
         <span class="status">free practice</span>
         <span class="time">10:00</span>
@@ -50,19 +58,24 @@
         <span class="status"></span>
       </span>
 
-      
+      <menu class="tweak" type="toolbar">
+        <button type="button" popovertarget="garage-menu"><span class="material-icons">car_repair</span> garage</button>
+        <button type="button" popovertarget="timing-menu"><span class="material-icons">timer</span> timing</button>
+        <button type="button" popovertarget="camera-menu"><span class="material-icons">video_settings</span> tweaker</button>
+        <button type="button" popovertarget="invite-menu"><span class="material-icons">sports_esports</span> invite</button>
+      </menu>
   </article>
 
-  <label for="debugger" style="position: fixed; z-index: 10000; padding: 1ex; filter:brightness(.25) invert(.5);">
-    🛠️ debugger
-  </label>
-  <input type="checkbox" name="debugger" id="debugger" />
-  <aside id="debug">
-
+  
+  <!-- todo: delete dis 🥳 -->
+  <aside id="debug" popover>
+    <form action=""></form>
   </aside>
   
+  <!-- main menu -->
   <dialog id="lobby-menu">
     <form method="dialog" id="player-settings">
+
       <details name="game-settings" open>
         <summary>
           <div><span class="material-icons">badge</span> Driver details</div>
@@ -96,7 +109,7 @@
             <label for="player-color">
               <span>Paint</span>
               <div>
-                <input type="color" id="player-color" value="" list="color-palette" name="player-color" style="opacity: .01;"/>
+                <input type="color" id="player-color" value="#B4D455" list="color-palette" name="player-color" style="opacity: .01;"/>
                 <datalist id="color-palette">
                   
                   <!-- Retro Vibes -->
@@ -199,8 +212,24 @@
           <div><span class="material-icons">sports_motorsports</span> Track &amp; Session</div>
         </summary>
         <article class="grid" style="grid-template-columns: 1fr 1fr ;">
+          
+          <fieldset class="time">
+            <legend>Time of Day</legend>
+            <label for="time-of-day">
+                <input type="range" name="time-of-day" id="time-of-day" value="0.325" min="0" max="1" step=".0125" list="hours" />
+                <datalist id="hours">
+                  <option value="0">12 am</option>
+                  <option value=".25">6 am</option>
+                  <option value=".5">12 pm</option>
+                  <option value=".75">6 pm</option>
+                  <option value="1">12 am</option>
+                </datalist>
+                <output for="time-of-day"></output>
+            </label>
+          </fieldset>
 
           <fieldset class="track grid">
+            <label for="singapore"><span>Marina Bay, singapore</span><input required type="radio" id="singapore" value="singapore" name="track"/></label>
             <label for="groningen"><span>Stad, Groningen</span><input required type="radio" id="groningen" value="groningen" name="track"/></label>
             <label for="austin"><span>COTA &ndash; Austin, TX</span><input required type="radio" id="austin" value="austin" name="track"/></label>
             <label for="assen"><span>TT Circuit, Assen</span><input required type="radio" id="assen" value="assen" name="track"/></label>
@@ -208,6 +237,7 @@
             <label for="sachsenring"><span>Sachsenring, DE</span><input required type="radio" id="sachsenring" value="sachsenring" name="track"/></label>
             <label for="st-petersburg"><span>st. Petersburg GP, FL</span><input required type="radio" id="st-petersburg" value="st-petersburg" name="track"/></label>
           </fieldset>
+
           <fieldset class="track grid" style="place-content: center">
             <div class="track-preview">
               <img alt="track preview">
@@ -229,16 +259,11 @@
               })
             </script>
           </fieldset>
-          <fieldset>
-            <label for="join">
-              <span>Join session</span>
-              <div><input type="text" name="join" id="join" placeholder="0000-0000-0000"/></div>
-            </label>
-          </fieldset>
+          
         </article>
       </details>
+
       <details name="game-settings">
-        
         <summary>
           <div><span class="material-icons">sports_esports</span> Options</div>
         </summary>
@@ -271,7 +296,7 @@
       let carBody = previewCar.querySelector('fieldset .car-body');
 
       const handlePlayerInput = (e) => {
-        // console.log(e.target.value);
+        console.log(e.target.value);
         let target = e.target;
         let value = target.value;
         previewCar.dataset.state = 'garage';
@@ -316,11 +341,177 @@
       let trackInput = document.querySelector(`input[name="track"][value=${lastTrack}]`);
       trackInput.checked = true;
       let checkEvent = new Event('change')
-      trackInput.dispatchEvent(checkEvent)
+      trackInput.dispatchEvent(checkEvent);
 
     </script>
   </dialog>
 
+  <!-- garage menu -->
+  <dialog id="garage-menu" popover>
+    <form method="dialog">
+      <details name="player-garage" open>
+        <summary><div><span class="material-icons">car_repair</span> Garage</div></summary>
+        <fieldset>
+          <legend><span class="material-icons">local_gas_station</span> Fuel</legend>
+          <label for="refuel">
+            <input type="checkbox" name="refuel" id="refuel" /><span>refuel</span>
+          </label>
+          <label>
+            <span>Refuel to</span>
+            <output></output>
+            <span>
+            <input type="range" name="refuelLimit" value="" min="10" max="100.0" step=".5" placeholder="25"/>
+            liters</span>
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend><span class="material-icons">plumbing</span>Damage &amp; repairs</legend>
+          <label for="repair">
+            <input type="checkbox" name="repair" id="repair" />
+            <span>repair vehicle damage</span>
+          </label>
+        </fieldset>
+      </details>
+      <details name="player-garage">
+        <summary><div><span class="material-icons">carpenter</span> Car setup</div></summary>
+        <fieldset id="car-dynamics">
+
+        </fieldset>
+      </details>
+      <details name="player-garage">
+        <summary><div><span class="material-icons">directions_bike</span>Surface dynamics (dev tools)</div></summary>
+        <fieldset id="surface-dynamics">
+
+        </fieldset>
+      </details>
+      <details open>
+        <summary>
+          <button type="button" popovertarget="garage-menu">close</button>
+        </summary>
+      </details>
+    </form>
+  </dialog>
+
+  <!-- timing menu -->
+  <dialog id="timing-menu" popover>
+    <form method="dialog">
+      <details name="session-times" open>
+        <summary><div><span class="material-icons">timer</span> Lap times</div></summary>
+        <fieldset>
+          <table id="my-laptimes">
+            <thead>
+              <tr>
+                <td>Lap</td>
+                <td>Time</td> 
+                <td>sector 1</td>
+                <td>sector 2</td>
+                <td>sector 3</td>
+                <td><small>penalties</small></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="text-align: center; padding-block: 2rem;">no laptimes recorded yet.</td></tr>
+            </tbody>
+          </table>
+        </fieldset>
+      </details>
+      <details name="session-times">
+        <summary><div><span class="material-icons">leaderboard</span> Session times</div></summary>
+        <fieldset>
+          <table id="laptimes-leaderboard">
+            <thead>
+              <tr>
+                <td>Lap</td>
+                <td>Time</td> 
+                <td>sector 1</td>
+                <td>sector 2</td>
+                <td>sector 3</td>
+                <td><small>penalties</small></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="text-align: center; padding-block: 2rem;">no laptimes recorded yet.</td></tr>
+            </tbody>
+          </table>
+        </fieldset>
+      </details>
+      <details open>
+        <summary>
+          <button type="button" popovertarget="timing-menu">close</button>
+        </summary>
+      </details>
+    </form>
+  </dialog>
+  
+  <!-- camera menu -->
+  <dialog id="camera-menu" popover>
+    <form method="dialog">
+      <details name="camera">
+        <summary><div><span class="material-icons">camera</span> Camera</div></summary>
+        <fieldset id="camera-zoom">
+          <legend>Zoom</legend>
+
+          <legend>Camera target</legend>
+          <label class="tweak-field">
+            <input type="checkbox" id="cam-freeroam">
+            <span>Free Roam Mode</span>
+          </label>
+          <ul class="target-list"></ul>
+        </fieldset>
+      </details>
+
+      <details open name="camera">
+        <summary><div><span class="material-icons">camera_enhance</span> Post processing</div></summary>
+        <fieldset id="post-processing"><legend>compositing</legend>
+          
+          <label><input type="radio" name="postProcessing" value="" /> OFF</label>
+          <label><input type="radio" name="postProcessing" value="on" checked/> ON</label>
+          <label><input type="radio" name="postProcessing" value="crt" checked/> CRT</label>
+      
+          <label for="opacity"><span>opacity</span><input type="range" name="opacity" id="opacity" value="0.5" min="0" max="1" step=".1" /><output for="opacity">0.6</output></label>
+          <label for="blur"><span>blur</span><input type="range" name="blur" id="blur" value="1" min="0" max="64" step="1" /><output for="blur">16</output></label>
+          <label for="saturate"><span>saturate</span><input type="range" name="saturate" id="saturate" value="1.4" min="0" max="5" step=".1"/><output for="saturate">2</output></label>
+          <label for="brightness"><span>brightness</span><input type="range" name="brightness" id="brightness" value=".9" min="0" max="5" step=".05"/><output for="brightness">0.8</output></label>
+          <label for="contrast"><span>contrast</span><input type="range" name="contrast" id="contrast" value="1.2" min="0" max="5" step=".01"/><output for="contrast">1.7</output></label>
+          <label for="hue"><span>hue</span><input type="range" name="hue" id="hue" value="0" min="0" max="360" step="1" /><output for="hue">0</output></label>
+        </fieldset>
+      </details>
+      <details open>
+        <summary>
+          <button type="button" popovertarget="camera-menu">close</button>
+        </summary>
+      </details>
+    </form>
+  </dialog>
+
+  <!-- invite menu -->
+  <dialog id="invite-menu" popover>
+    <form method="dialog">
+      <details name="session-invite" open>
+        <summary><div><span class="material-icons">sports_esports</span> Invite</div></summary>
+        <fieldset>
+          <legend>Session URL</legend>
+          
+            <div style="grid-column: 1 / -1; justify-self: start; inline-size: -webkit-fill-available; inline-size: -moz-available; display: flex;">
+              <input type="text" name="join" id="join" placeholder="0000-0000-0000" style="flex-grow:1;"/>
+              <button type="button">copy</button>
+            </div>
+          
+        </fieldset>
+        <fieldset>
+          <legend>Social</legend>
+          <button id="inviteButton">Share on Bluesky</button>
+        </fieldset>
+      </details>
+      <details open>
+        <summary>
+          <button type="button" popovertarget="invite-menu">close</button>
+        </summary>
+      </details>
+    </form>
+  </dialog>
+
+  <!-- preload assets, markup template container etc (rotzooi)-->
   <article id="logic-folder">
     <template id="racecar">
       <div class="vehicle car racecar">
@@ -355,7 +546,7 @@
             <meter low="10" high="20" optimum="100" min="0" max="100" class="fuel"></meter>
           </label>
           <label  class="health">
-            <meter low="25" high="50" optimum="100" min="0" max="100" class="health"></meter>
+            <meter low="25" high="50" optimum="100" min="0" max="100" class="health" style="scale: -1 1"></meter>
             <span class="material-icons">minor_crash</span>
           </label>
           </div>

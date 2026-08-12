@@ -35,7 +35,8 @@ export default class HeadsupDisplay {
       const container = this.getContainer(section, type);
       if (container) {
           container.innerHTML = message;
-          // if (type === 'status') container.dataset.status = message;
+          // we use this dataset as a CSS hook (ie style purple on fastest lap status, yellow/red flag session status etc)
+          if (type === 'status') container.dataset.status = message;
 
           if (autohideMilliseconds) {
               setTimeout(() => {

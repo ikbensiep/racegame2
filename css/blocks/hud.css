@@ -1,16 +1,18 @@
 #hud {
   position: absolute;
-  inset: 0;
+  inset: 1.33rem;
   line-height: 2;
   color: #fffc;
   font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  user-select: text;
 
   & ul {
     list-style: none;
     display: flex;
     flex-flow: column;
     align-items: start;
-    margin: 0;
+    
     & li {
       width: 100%;
     }
@@ -19,21 +21,52 @@
   & > * {    
     display: flex;
     flex-flow: column;
-    width: 22ch;
+    width: clamp(8rem, 24ch, 40ch);
+    gap: 1px;
     position: absolute;
     display: inline-flex;
     padding-inline: 0;
-    transition: opacity .25s;
+    transition-behavior: allow-discrete;
+    
+    transition: 
+      opacity .75s,
+      translate .5s .25s, 
+      height .5s .25s,
+      border-radius .5s;
     overflow: clip;
+    pointer-events: all;
+    
+    --box-radius: .8ex;
 
-    /* transition in elements only when they have content to display */
-    &:empty {
-      opacity: 0;
+
+    /* Target the first VISIBLE item */
+    & > *:nth-child(1 of *:not(:empty)) {
+      border-top-left-radius: var(--box-radius);
+      border-top-right-radius: var(--box-radius);
     }
 
-    /* lekker duidelijke selectors, vriend */
-    & > * {
-      background: rgb(0 0 0 / 0.5);
+    /* Target the last VISIBLE item */
+    & > *:nth-last-child(1 of *:not(:empty)) {
+      border-bottom-left-radius: var(--box-radius);
+      border-bottom-right-radius: var(--box-radius);
+    }
+
+    &:empty {
+      opacity: 0;
+      height:0;
+      padding: 0;
+      transition: 
+      opacity .25s .25s,
+      translate .5s .25s, 
+      height .25s .25s;
+    }
+
+    /* lekker duidelijke selectors, vriend    */
+    /* direct descendants of HUD ui sections (usually spans, occasional button) */
+    & > *:not(button) {
+      background: rgb(0 0 0 / 0.15);
+      backdrop-filter: blur(4px);
+      
       margin-block-end: 1px;
       padding-inline: 1ex;
       
@@ -45,7 +78,7 @@
       /* move HUD elements with no content to display           */
       /* out of the way so they'll transition in when appropes  */
       &:empty {
-        translate: calc(100% - 2.7rem) 0;
+        translate: 100% 0;
         color: transparent;
         margin-block: 0;
 
@@ -123,39 +156,59 @@
       top: 1ex;
       translate: -50% 0;
 
-      > :empty {
+      & > :empty {
         translate: 0 calc(-100% - 2rem);
+        opacity: 0;
+        height: 0;
+        padding: 0;
       }
-      
-      & .notice {
-        display: flex;
+
+      & > * { padding-block: 1ex; }
+
+      & .notice,
+      & .warning {
+        display: inline;
+        padding-inline-start: 3rem;
 
         &:before {
+          content: var(--icon);
           font-family: 'Material icons';
-          content: '\ef49';
           vertical-align: text-bottom;
           margin-inline-end: 1ex;
           color: white;
           opacity: 1;
+          position: absolute;
+          inset: 0.8ex auto auto 1ex;
         }
-
       }
+      & .notice { --icon: '\ef49'; }
+      & .warning { --icon: '\e002'; }
     }
 
     &.team {
       right: 1ex;
       top: 50%;
       translate: 0 -50%;
-      & .radio{ 
-        display: flex;
+      width: clamp(12rem, 34ch, 60ch);
+
+      & .radio, .status { 
+        
+        padding-block: .75ex;
+        padding-inline-start: 3rem;
+        white-space: pre-line;
 
         &:before {
           font-family: 'Material icons';
           content: '\f0e2';
-          vertical-align: text-bottom;
-          margin-inline-end: 1ex;
           color: white;
           opacity: 1;
+          position: absolute;
+          inset: 0.8ex auto auto 1ex;
+        }
+      }
+      & .status {
+        &::before {
+          content: '\ef48';
         }
       }
     }
@@ -168,6 +221,24 @@
     &.help {
       bottom: 1ex;
       left: 1ex;
+    }
+
+    &:is(menu) {
+      flex-direction: row;
+      bottom: 1ex;
+      left: 50%;
+      translate: -50%;
+      width: max-content;
+
+      /* Target the first VISIBLE item */
+      & > *:nth-child(1 of *:not(:empty)) {
+        border-radius: var(--box-radius) 0 0 var(--box-radius);
+      }
+
+      /* Target the last VISIBLE item */
+      & > *:nth-last-child(1 of *:not(:empty)) {
+        border-radius: 0 var(--box-radius) var(--box-radius) 0;
+      }
     }
 
     & .competitors li {
@@ -195,5 +266,13 @@
         top: 0;
       }
     }
+  }
+}
+
+#camera-viewport:has(.player[data-state="pitbox"]) {
+  & ~ #hud menu button[popovertarget="garage-menu"] {
+    color: var(--player-color) !important;
+    transition-duration: .25s;
+    transition-delay: 1s
   }
 }
