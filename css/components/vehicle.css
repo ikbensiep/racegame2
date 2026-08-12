@@ -40,7 +40,7 @@
 
   &[data-state="colliding"] {
     --transition-duration: .1s;
-    --collider-color: black !important;
+    --collider-color: var(--player-color) !important;
     
   & > div {
       /* transition: rotate .5s linear !important; */
@@ -56,9 +56,13 @@
   & form {
     position: absolute;
     bottom: 0;
-    opacity: 0;
-    transition: opacity .5s 2s;
+    left: 50%;
+    translate: -50%;
+    transition: .5s;
+    transition-property: background-color, clip-path;
     pointer-events: none;
+    background-color: #0001;
+    clip-path: inset(50%);
 
     & fieldset {
       margin: 0;
@@ -70,8 +74,12 @@
         padding: 0;
         pointer-events: none;
         opacity: 0;
-        transition: .5s 2s ease-out;
-        transition-property: color, opacity;
+        width: 0;
+        overflow: clip;
+        transition: .5s .5s ease-out;
+        transition-property: color, opacity, width;
+        interpolate-size: allow-keywords;
+
         & > * {
           font-size: 2rem;
           color: currentColor;
@@ -80,7 +88,8 @@
 
       & div {
         display: flex;
-        gap: 2rem;
+        gap: 1ex;
+        padding: .5ex;
       }
 
       & meter {
@@ -126,9 +135,9 @@
   &[data-state="collision"],
   &[data-state="colliding"] {
     & form {
-      opacity: 1;
-      transition-delay: 0s;
 
+      background: #0002;
+      clip-path: inset(0 round .5ex);
       & label {
         transition-delay: .5s;
         color: white;
@@ -139,9 +148,10 @@
   &[data-low-fuel], 
   &[data-state="pitbox"],
   &[data-state="pitlane"] {
-    
+
     & label.fuel {
       opacity: 1;
+      width: fit-content;
     }
   }
 
@@ -152,6 +162,7 @@
   &[data-state="colliding"] {
     & label.health {
       opacity: 1;
+      width: fit-content;
     }
   }
 }

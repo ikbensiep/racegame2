@@ -13,6 +13,9 @@
   inset: 0% auto auto 50%;
   translate: -50% 0;
 
+  display: flex;
+  gap: .5ex;
+  line-height: 1.5;
   border-radius: .4ex;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -29,9 +32,10 @@
     flex-direction: column;
     place-content: center;
     letter-spacing: -1px;
-    padding: .2ex .4ex;
+    text-indent: -2px;
+    padding: 0 .4ex;
     border-radius: .2ex;
-    width: 3.3ex;
+    width: 3ch;
 
     &:empty::after {
       content: '67';
@@ -63,8 +67,10 @@
 [data-state="pitlane"] {
   
   & .player-tag {
+    background: #0001;
     transition-delay: 0s;
     opacity: 1;
+    backdrop-filter: blur(4px);
     & i::after {
       content: var(--message);
       font-size: small;

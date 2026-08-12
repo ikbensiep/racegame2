@@ -118,7 +118,7 @@ export default class LapTimer {
   // Bouw de paddock tabel op op basis van de laps array structuur
   updateSessionLaptimesTable () {
     if (!this.sessionTimesTable) return;
-    console.log('laptime table')
+
     let laptimesListMarkup = '';
     this.laps.forEach((lap, index) => {
       const isBest = lap.totalTime === this.bestLapTime;

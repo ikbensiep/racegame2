@@ -1,7 +1,7 @@
 @property --rot {
   syntax: "<angle>";
   inherits: true;
-  initial-value: 0;
+  initial-value: 0deg;
 }
 
 @property --animation-iteration {
@@ -99,7 +99,7 @@
 
       --animation-iteration: infinite;
       animation: 
-        blur 2s 0s cubic-bezier(.6,.04,.98,.34) forwards var(--animation-iteration),
+        /* blur 2s 0s cubic-bezier(.6,.04,.98,.34) forwards var(--animation-iteration), */
         smokeRotateScale 2s 0s linear forwards var(--animation-iteration),
         fadeSprite 1s 1s linear forwards var(--animation-iteration)  !important;
 

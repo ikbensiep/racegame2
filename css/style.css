@@ -63,6 +63,7 @@ body {
   /* this may seem like a drastic sweeping measure  but you really don't want people  */
   /* selecting every item in the world. bit immersion breaking, that                  */
   /* We'll allow on a case-by case basis for meow.                                    */
+  /* FIXME: move this to everything inside #camera-viewport?                          */
   user-select: none;
 
 }
