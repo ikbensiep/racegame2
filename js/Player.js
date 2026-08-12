@@ -10,10 +10,11 @@ export default class Player extends Vehicle {
   constructor(game, id, name, driverNumber = 0, color = 'red', team = 'porsche', livery = '', isLocal = false) {
     super(game, id, name, driverNumber, color, team, livery, isLocal);
     this.game = game;
+
     this.x = null;
     this.y = null;
-    this.radius = 64;
-    
+    this.radius = 32;
+
     this.dynamics = {};
     Object.assign(this.dynamics, Presets.DefaultDynamics);
     this.speed = 0;
@@ -23,11 +24,11 @@ export default class Player extends Vehicle {
     this.steerInput = 0;
     this.movementAngle = 0;
 
-    this.vehicleTweaker = new TweakManager(this.dynamics, "🚗 Dynamics");
+    this.vehicleTweaker = new TweakManager(this.dynamics, "🚗 Dynamics", '#car-dynamics');
     this.vehicleTweaker._addPresetDropdown(Presets);
 
     this.SurfaceData = SurfaceModule.Surfaces;
-    this.surfaceTweaker = new TweakManager(this.SurfaceData.asphalt, "🚛 Surface");
+    this.surfaceTweaker = new TweakManager(this.SurfaceData.asphalt, "🚛 Surface", '#surface-dynamics');
     this.surfaceTweaker._addPresetDropdown(this.SurfaceData);
 
     this.xp = 0;
@@ -39,9 +40,18 @@ export default class Player extends Vehicle {
 
     this.inputHandler = new InputHandler();
     this.intervalUpdateTimer = 0;
-    this.engineShutDownTimer = 0;
+    this.engineShutDownTimer = 500;
+
+    let esoUrl = '/assets/sound/570258__fritzsounds__engine_shutdown.ogg';
+    this.engineShutDownSound = this.game.soundManager.load('engine-shutoff', esoUrl);
 
     this.fik = null;
+
+    this.garageRules = {
+      'refuel': false,
+      'refuelLimit': 50,
+      'repair': false
+    }
 
     this.init();
   }
@@ -59,7 +69,44 @@ export default class Player extends Vehicle {
 
     this.fik = this.getSmoke('fire');
     this.element.style.setProperty('--max-speed', this.dynamics.maxSpeed);
-    this.game.hud.addCompetitor(this)
+    this.game.hud.addCompetitor(this);
+    this.engineRunning = true;
+
+    this.garageDialog = document.querySelector('dialog#garage-menu');
+    this.garageSettingsForm = this.garageDialog.querySelector('form')
+    this.initGarageSettings();
+
+  }
+
+  initGarageSettings () {
+
+    this.garageDialog.addEventListener('toggle', (e) => {
+      const dialogState = e.newState;
+
+      switch (dialogState) {
+        case 'open' :
+          this.garageSettingsForm.refuelLimit.value = this.fuel;
+          break;
+
+        case 'closed':
+          // hol mal den Wagen
+          const formData = new FormData(this.garageSettingsForm);
+          const formEntries = Object.fromEntries(formData.entries());
+          this.updateGarageSettings(formEntries);
+          break;
+      }
+    });
+  }
+
+  updateGarageSettings (settingsData) {
+    
+    this.garageRules = {
+      ...this.garageRules,
+      ...settingsData
+    }
+
+    this.game.hud.postMessage('team','status',`Alright, let's get to work!`, 3000);
+    
   }
 
   createTireTracks () {
@@ -320,7 +367,7 @@ export default class Player extends Vehicle {
 
     lapTimer.currentLap.sectors.push(sectorEntry);
     
-    console.log(lapTimer.currentLap)
+    // console.log(lapTimer.currentLap)
 
     // Finishlijn gepasseerd (Sector 0)
     if (num === 0) { 
@@ -329,8 +376,9 @@ export default class Player extends Vehicle {
       if (previousSector === 2) { 
         const lapTime = now - this.lapStartTime;
         this.xp += 100; // Bonus voor voltooide ronde
+        this.game.hud.postMessage('team', 'radio',  '+ 100xp', 1500);
+
         lapTimer.holdSectorTime = true;
-        console.log(`Ronde voltooid in: ${(lapTime/1000).toFixed(3)}s`);
         
         // only after 1 (install) lap?
         if(this.game.world.lapTimer.currentLap.startTime) {
@@ -347,7 +395,6 @@ export default class Player extends Vehicle {
         }
         this.lapStartTime = now;
         lapTimer.currentLap = { sectors: [], startTime: now};
-        console.table(lapTimer.laps)
       }
     } else {
       this.xp += 50; // Kleine XP bonus voor tussen-sector
@@ -355,6 +402,7 @@ export default class Player extends Vehicle {
       // show sector split times
       lapTimer.holdSectorTime = true;
       this.game.hud.postMessage('timing', 'thislap',  (splitTime/1000).toFixed(3));
+      this.game.hud.postMessage('team', 'radio',  '+ 50xp', 1500);
     }
 
     this.currentSector = num;
@@ -388,14 +436,9 @@ export default class Player extends Vehicle {
   }
 
   onLevelUp() {
-    // Voorbeeld: elke 500 XP gaat je topsnelheid omhoog
+    // Voorbeeld: elke 500 XP gaat je ranking omhoog
     const level = Math.floor(this.xp / 500);
-    this.maxSpeed = 10 + (level * 0.5);
-    
-    // Update eventueel de visual van de auto
-    if (level > 2) {
-        this.element.classList.add('pro-spoiler');
-    }
+    this.game.hud.postMessage('racecontrol','notice', `Level up! ${level} (${this.xp}xp)`)
   }
 
   update(dt) {
@@ -445,7 +488,7 @@ export default class Player extends Vehicle {
           this.health -= 0.001;
           haptics.strongMagnitude = this.speed / 20;
           playHaptics = true;
-          this.game.hud.postMessage('team','radio', 'Lap invalidated, track limits', true);
+          this.game.hud.postMessage('team','radio', 'Lap invalidated, track limits', 3500);
           break;
         case 'asphalt':
           haptics.weakMagnitude = this.speed / 100;
@@ -454,10 +497,20 @@ export default class Player extends Vehicle {
           break;
         case 'pitbox':
           if(Math.abs(this.speed) < 1) this.speed = 0;
-          if((this.fuel < this.maxFuel) && Math.floor(this.speed) == 0) {
+          
+          // this is a bit houtje towtje checking for standing still and 
+          // then if we're allowed to refuel and then if we're below the 
+          // desired refuel limit. Probably better ways to handle this..
+          // we're only setting refuel to {not falsy} using the dialog close
+          // (toggle) event just so that the pit crew doesnt start refueling right away
+          if((this.fuel < this.maxFuel) && (Math.floor(this.speed) == 0)) {
+            if(this.garageRules.refuel && this.garageRules.refuelLimit > this.fuel){
             this.fuel += 2.5;
+            }
           }
-          if((this.health < this.maxFuel) && Math.floor(this.speed) == 0) {
+
+          // this needs to be implemented for repairs as well.. manjaana.
+          if((this.health < this.maxFuel) && Math.floor(this.speed) == 0 && this.garageRules.repair) {
             this.health += .25;
           }
           break;
@@ -688,6 +741,43 @@ export default class Player extends Vehicle {
     if (input.highbeamPressed) {
       this.highbeam = !this.highbeam;
       this.toggleHighbeam();
+    }
+
+    // 1. Check if the player is "stopped"
+    const isStopped = this.speed > -0.5 && this.speed < 0.5;
+
+    if (isStopped) {
+      if (this.engineRunning) {
+        // Count down using game delta time (assuming dt is in milliseconds, e.g., ~16.6ms)
+        // If your game uses seconds for dt (e.g., 0.016), use: this.engineShutDownTimer -= dt;
+
+        this.engineShutDownTimer -= dt; 
+
+        if (this.engineShutDownTimer <= 0) {
+          this.engineRunning = false;
+          
+          // Play the shutoff sound
+          this.game.soundManager.play('engine-shutoff', { volume: 1, loop: false, pitch: 1 });
+          
+          // Safely stop the idle/running sound immediately without setTimeout
+          if (this.engineSound) {
+            setTimeout(()=>{
+              this.engineSound.stop();
+            }, 500)
+          }
+        }
+      }
+    } else {
+      // 2. Player is moving. Reset everything.
+      this.engineShutDownTimer = 500; // Reset to 5 seconds (or 5.0 if using seconds)
+      
+      // ONLY start the sound if it wasn't already running (prevents per-frame spamming)
+      if (!this.engineRunning) {
+        this.engineRunning = true;
+        if (this.engineSound) {
+          this.engineSound.start();
+        }
+      }
     }
   }
 

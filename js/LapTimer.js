@@ -18,7 +18,7 @@ export default class LapTimer {
 
     // Haal referentie naar de speler en HUD op
     this.player = this.game.localPlayer;
-    this.sessionTimesTable = window.sessionmenu?.querySelector('table');
+    this.sessionTimesTable = document.querySelector('table#my-laptimes');
   }
 
   // Tijdnotatie helpers die strings teruggeven die je oude HUD verwacht
@@ -98,7 +98,7 @@ export default class LapTimer {
       this.game.hud.postMessage('timing', 'bestlap', this.formatFullTime(this.bestLapTime));
       this.game.hud.domBestLap.dataset.lap = 1 + bestlapNumber;
 
-      this.game.hud.postMessage('team','radio', 'Nice. That\'s your fastest lap so far!')
+      this.game.hud.postMessage('team','radio', 'Nice. That\'s your fastest lap so far!', 3000)
 
       let announce = `${this.player.name} (car ${this.player.driverNumber}) set a new personal best lap time!`
       this.game.network.send({
@@ -109,16 +109,16 @@ export default class LapTimer {
 
       // Update ook de lap times tabel als er een nieuwe lap is bijgekomen
       // TODO: 2 tabellen, 1 met iedereen's beste tijd, 1 met al mijn lap times
-      // this.updateSessionLaptimesTable();
+       this.updateSessionLaptimesTable();
     } else {
       // ? niks
     }
   }
 
   // Bouw de paddock tabel op op basis van de laps array structuur
-  updateSessionLaptimesTable() {
+  updateSessionLaptimesTable () {
     if (!this.sessionTimesTable) return;
-
+    console.log('laptime table')
     let laptimesListMarkup = '';
     this.laps.forEach((lap, index) => {
       const isBest = lap.totalTime === this.bestLapTime;
@@ -130,7 +130,7 @@ export default class LapTimer {
 
       laptimesListMarkup += `
         <tr class="${isBest ? 'fastest' : ''}">
-          <td><strong>Ronde ${index + 1}</strong></td>
+          <td>${index + 1}.</td>
           <td><strong>${this.formatFullTime(lap.totalTime)}</strong></td> 
           <td>${s0}</td>
           <td>${s1}</td>
