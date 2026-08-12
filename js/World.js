@@ -9,7 +9,7 @@ export default class World {
     this.scene = game.scene;
     this.width = 0;
     this.height = 0;
-    this.element = document.querySelector('main#canvas');
+    this.element = document.querySelector('#canvas');
     this.lightLayer = this.element.querySelector('#light-layer')
     this.svgElement = undefined;
 
@@ -26,6 +26,7 @@ export default class World {
     this.trackPath = null; // The racetrack path
     this.trackElement = null;
     this.structures = [];
+    
     this.buildingFactory = new BuildingFactory(this.game);
 
     this.marshals = [];
@@ -98,8 +99,8 @@ export default class World {
     // this.element.querySelector('#worldmap svg').remove();
     
     try {
-      let rows = 2;
-      let cols = 2;
+      let rows = 4;
+      let cols = 4;
       let mapElement = this.element.querySelector('#worldmap');
       for (let i = 0; i<rows; i++) {
         for (let j = 0; j<cols; j++) {
@@ -122,20 +123,19 @@ export default class World {
   
   async findSurfaces () {
     console.log('🧭 finding surfaces...')
-    const timingGroup = this.svgElement.getElementById('timing');
 
-      this.paths.worldBG =     new Path2D(this.svgElement.querySelector('#world-bg').getAttribute('d')) // fill, car dynamics
-      this.paths.fuelStation = new Path2D(this.svgElement.querySelector('#fuel-station')?.getAttribute('d')) // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
-      this.paths.grandstands = new Path2D(this.svgElement.querySelector('#grandstands')?.getAttribute('d') || "")  // fill, sfx (crowd noise) detection
-      this.paths.gravel =      new Path2D(this.svgElement.querySelector('#sand')?.getAttribute('d')) // fill, vehicle dynamics / sfx
-      this.paths.gravel =      new Path2D(this.svgElement.querySelector('#gravel')?.getAttribute('d')) // fill, vehicle dynamics / sfx
-      this.paths.paddock =     new Path2D(this.svgElement.querySelector('#paddock').getAttribute('d')) // fill, in this area player is allowed to enter 'RPG mode' (ie, exit car)
+      this.paths.worldBG =     new Path2D(this.svgElement.querySelector('#world-bg').getAttribute('d')); // fill, car dynamics
+      this.paths.paddock =     new Path2D(this.svgElement.querySelector('#paddock').getAttribute('d')); // fill, in this area player is allowed to enter 'RPG mode' (ie, exit car)
       this.paths.racetrack =   new Path2D(this.svgElement.querySelector('#racetrack').getAttribute('d')); // stroke, (AI) vehicle pathinding
       this.paths.pitlane =     new Path2D(this.svgElement.querySelector('#pitlane').getAttribute('d'));  // stroke, vehicle dynamics (speed limiter)
+      this.paths.gravel =      new Path2D(this.svgElement.querySelector('#gravel')?.getAttribute('d')); // fill, vehicle dynamics / sfx
+      this.paths.fuelStation = new Path2D(this.svgElement.querySelector('#fuel-station')?.getAttribute('d')); // fill, garage may be directly off the pitlane or (a party tent) in the paddock depending on {some variable tbd}
+      this.paths.grandstands = new Path2D(this.svgElement.querySelector('#grandstands')?.getAttribute('d') || "");  // fill, sfx (crowd noise) detection
+      this.paths.sand =        new Path2D(this.svgElement.querySelector('#sand')?.getAttribute('d')); // fill, vehicle dynamics / sfx
       this.paths.tunnel =      new Path2D(this.svgElement.querySelector('#tunnel')?.getAttribute('d'));  // fill, sfx (ie, reverb) detection
-      this.paths.sectors =     new Map(); // timing sectors
-      this.paths.pitbox =      undefined; // fill, (tune car settings) a personal service area directly off the pitlane
+      this.paths.sectors =     new Map(); // timing sector`s
 
+      const timingGroup = this.svgElement.getElementById('timing');
       const sectors = timingGroup.querySelectorAll('path');
       sectors.forEach(path => {
           this.paths.sectors.set(path.id, new Path2D(path.getAttribute('d')));
@@ -361,11 +361,13 @@ export default class World {
       post.id = 'post-' + (postIndex + 1);
       let cx = post.getAttribute('cx');
       let cy = post.getAttribute('cy');
+      let rx = post.getAttribute('rx');
+      let ry = post.getAttribute('ry');
       
       // add a light
       let postlamp = lamp.cloneNode();
-      postlamp.style.left = cx + 'px';
-      postlamp.style.top = cy + 'px';
+      postlamp.style.left = (cx - rx) + 'px';
+      postlamp.style.top = (cy - ry) + 'px';
       this.lightLayer.appendChild(postlamp);
 
       this.game.camera.cullingObserver.observe(postlamp);
@@ -432,12 +434,12 @@ export default class World {
   // We checken de 'kleine' vlakken eerst.
   const pitboxPath = this.getPitboxPath(player);
   const surfaceRules = [
+    { path: this.paths.racetrack,   type: 'asphalt',     method: 'stroke', width: 520 }, 
     { path: pitboxPath,            type: 'pitbox',      method: 'fill'   },
     { path: this.paths.fuelStation, type: 'fuel',        method: 'fill'   },
     { path: this.paths.paddock,     type: 'paddock',     method: 'fill'   },
     { path: this.paths.tunnel,      type: 'tunnel',      method: 'fill'   },
     { path: this.paths.pitlane,     type: 'pitlane',     method: 'stroke', width: 280 }, 
-    { path: this.paths.racetrack,   type: 'asphalt',     method: 'stroke', width: 520 }, 
     { path: this.paths.gravel,      type: 'gravel',      method: 'fill'   },
     { path: this.paths.worldBG,     type: 'grass',       method: 'fill'   }
   ];

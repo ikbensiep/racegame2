@@ -10,6 +10,30 @@
   initial-value: 8192px;
 }
 
+@property --player-x {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
+@property --player-y{
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
+@property --pp-time-of-day {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
+@property --time-remapped {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
 #canvas.world {
   
   --animation-duration: 1;
@@ -37,8 +61,8 @@
 
   & #worldmap {
     display: grid;
-    grid-template-columns: calc(var(--world-size) / 2) calc(var(--world-size) / 2);
-    grid-template-rows: calc(var(--world-size) / 2) calc(var(--world-size) / 2);
+    grid-template-columns: repeat(4, calc(var(--world-size) / 4));
+    grid-template-rows: repeat(4, calc(var(--world-size) / 4));
     width: 100vw;
     height: 100vh;
     & svg {
@@ -47,7 +71,8 @@
 
     & img {
         aspect-ratio: 1;
-        width: calc(var(--world-size) / 2);
+        width: calc(var(--world-size) / 4);
+        image-rendering: pixelated;
     }
   }
 
@@ -82,7 +107,8 @@
     top: 0;
     --time:  var(--pp-time-of-day, 0);
     --time-remapped: calc((var(--time) * 2) - 1);
-    opacity: abs(var(--time-remapped, 0));
+    opacity: max(abs(var(--time-remapped, 0)), 0);
+    transition: opacity .5s .5s;
   }
 }
 
