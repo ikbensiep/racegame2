@@ -538,7 +538,7 @@ export default class Player extends Vehicle {
             source: this,
             listener: this,
             screenSpace: !!this.game.settings.audioPanScreenSpace,
-            maxDistance: 8192
+            maxDistance: this.game.world.width / 2
           }
         );
         // compute target gain safely — guard against divide-by-zero or missing dynamics
@@ -673,7 +673,7 @@ export default class Player extends Vehicle {
           source: opp, 
           listener: this,
           screenSpace: !!this.game.settings.audioPanScreenSpace,
-          maxDistance: 8192
+          maxDistance: this.game.world.width / 2
         });
       }
 
