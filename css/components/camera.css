@@ -5,7 +5,7 @@
 }
 
 @property --perspective-factor {
-  syntax: "<length>";
+  syntax: "<number>";
   initial-value: 1;
   inherits: true;
 }
@@ -28,12 +28,75 @@
   height: 100vh;
   overflow: hidden;
   position: relative;
+  background-color: var(--player-color);
 
-  & #canvas.world {
+  & #canvas {
     transform-origin: var(--player-position);
     scale: var(--camera-zoom);
-  }
+  
+    /* had to remove `overflow: scroll` as it had some
+    impact on 3D elements being clipped, forgot where I
+    learned this (google) */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE/Edge */
 
+    &::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
+
+    & .highlighter {
+      position: absolute; 
+      translate: -50% -50%;
+      display: grid;
+      place-content: center;
+      width: 64px;
+      height: 64px;
+      animation: 
+        highlighter 1.3s linear forwards infinite;
+      z-index: 100;
+      transform: translateZ(64px);
+      
+      backdrop-filter: blur(4px);
+      background: #0003;
+      border-radius: 50%;
+      
+      filter: blur(0px);
+      transition-property: filter, opacity scale;
+      transition: 1.5s, 1.5s .5s, 1.5s .5s;
+
+      &:empty {
+        opacity: 0;
+        filter: blur(16px);
+        scale: 2;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 2px;
+        border-radius: 50%;
+        outline: 8px dashed;
+        outline-color: contrast-color(var(--player-color));
+        outline-color: var(--player-color);
+        outline-offset: -2px;
+        mask-image: conic-gradient( from var(--rotation-angle), transparent 0deg, white 180deg, #ffffff00 180deg );
+        animation: rotate 5s linear reverse infinite;
+        
+      }
+    }
+  }
+}
+
+@property --rotation-angle {
+  syntax: "<angle>"; /* Registered directly as an angle */
+  initial-value: 0deg;
+  inherits: true;
+}
+
+@keyframes highlighter {
+  to {
+    --rotation-angle: 360deg;
+  }
 }
 
 body[data-screen="lobby-menu"] {
@@ -43,6 +106,7 @@ body[data-screen="lobby-menu"] {
   & #canvas.world {
     
     & > #light-layer {
+        opacity: 0;
         background-color: transparent !important;
     }
   }

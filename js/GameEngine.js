@@ -18,7 +18,7 @@ export default class GameEngine {
       this.maxBots = 2;
       
       this.settings = settings;
-      this.settings.audioPanScreenSpace = true;
+
       this.lastTime = 0;
       this.scene = settings.track || 'assen';
       this.world = new World(this, this.scene);
@@ -32,7 +32,7 @@ export default class GameEngine {
       this.cameraTweaker = {};
       this.audioManager = null;
 
-      this.sessionTime = 300000;
+      this.sessionTime = 900000;
       this.hud = new RaceHUD(this);
 
 
@@ -50,7 +50,7 @@ export default class GameEngine {
       // 💡 Could be cool to initialize at 0,0 and then pan towards the player when loading's done, ie
       // opacity: 0; blur(32px) -> pan2playr, opacity: 1, blur(0)
       this.camera = new CameraManager(this, document.querySelector('#camera-viewport'))
-       
+
       const possibleSpawnpoints = await this.world.load();
 
       // 0. Chart the area, note interesting areas/surfaces
@@ -115,13 +115,13 @@ export default class GameEngine {
       
       // Initialize audio manager (Tuna optional). Keep non-blocking: try to create and load minimal assets.
       try {
-       const AudioManager = (await import('./AudioManager.js')).default;
-       this.audioManager = new AudioManager(this.soundManager, this.world, this);
-       await this.audioManager.init();
-       // try to load the crowd amb file if present; ignore failures
-       this.audioManager.loadCrowd('/assets/sound/crowd.ogg').catch(() => {});
+        const AudioManager = (await import('./AudioManager.js')).default;
+        this.audioManager = new AudioManager(this.soundManager, this.world, this);
+        await this.audioManager.init();
+        // try to load the crowd amb file if present; ignore failures
+        this.audioManager.loadCrowd('/assets/sound/crowd.ogg').catch(() => {});
       } catch (e) {
-       console.warn('GameEngine: AudioManager not initialized', e);
+        console.warn('GameEngine: AudioManager not initialized', e);
       }
 
       // Detach the SVG now that all geometry measurements have been collected.
@@ -137,6 +137,13 @@ export default class GameEngine {
 
       let dialog = document.querySelector('dialog#lobby-menu');
       dialog.close();
+
+      this.pitBoxHighlighter = document.querySelector('.highlighter');
+
+      let pitBoxLocation = this.world.garages[this.localPlayer.garageIndex ? this.localPlayer.garageIndex : 0].rectangleCenter;
+      this.pitBoxHighlighter.style.left = `${pitBoxLocation?.x || 0}px`; 
+      this.pitBoxHighlighter.style.top = `${pitBoxLocation?.y || 0 }px`; 
+
     }
 
     async spawnBots (game) {
@@ -238,6 +245,10 @@ export default class GameEngine {
       return null;
     }
 
+    getShortName (player) {
+      return player.name.toUpperCase().replace(' ','').substring(0,3);
+    }
+
     handleNetworkData(data) {
 
       const opp = this.opponents.get(data.id) || null;
@@ -297,13 +308,21 @@ export default class GameEngine {
             } else {
               console.warn('cameraTweaker not ready yet; skipping refresh on join');
             }
-            console.log(`${data.name} joined the race!`);
-            
-            let msg = `${data.name} (car ${data.driverNumber}) joined.`;
-            console.log(this.hud, msg)
+
+            let msg = `${data.name} (car ${data.driverNumber}) entered the paddock.`;
             this.hud?.postMessage('racecontrol', 'notice', msg, true);
           }
           break;
+        
+        case 'player-info': 
+        console.log('player-info', {data});
+          if(opp) {
+            opp.color = data.color;
+          }
+          if(data.livery) {
+            opp.livery = data.livery;
+          }
+          opp.updateStyle()
 
         case 'update':
           if (opp) {
@@ -390,8 +409,8 @@ export default class GameEngine {
         case 'daytime':
           if (data.value !== undefined) {
             console.log('[network] daytime sync received:', data.value);
-            if (this.cameraTweaker?.setTimeOfDay) {
-              this.cameraTweaker.setTimeOfDay(data.value);
+            if (this.camera?.setTimeOfDay) {
+              this.camera?.updateSunPosition(data.value);
             }
           }
           break;
@@ -401,11 +420,25 @@ export default class GameEngine {
           break;
 
         case 'bang' :
-          if (data.type === 'bang' && opp) {
+          // TODO: iffy on who's who in this scenario. 
+          // ALSO: maybe the HUD announcement below should be a network call like
+          // the case above this one?
+          if (opp) {
             opp.health = data.health;
             console.log(`🚑 Collision with ${data.id}`);
+
+            let naam = this.getShortName(opp);
+            let rugnummer = opp.driverNumber;
+
+            this.hud.postMessage(
+              'racecontrol', 
+              'notice', 
+              `NOTED: driver ${naam} (car ${rugnummer}) ALLEGEDLY caused a collision`, true
+            )
+              
             // Trigger visual effects
             this.effects.trigger(opp, 'colliding', 300);
+            
             // Opbokke boeke
             this.effects.trigger(this.localPlayer, 'colliding', 100);
             this.effects.trigger(this.camera, 'colliding', 300);
@@ -419,10 +452,8 @@ export default class GameEngine {
 
       this.localPlayer.update(dt);
 
-
       if (this.network.isHost) {
         this.opponents.forEach(opp => {
-          
           if (opp instanceof AIOpponent) {
             opp.update();
 
@@ -436,7 +467,7 @@ export default class GameEngine {
                   garageIndex: opp.garageIndex,
                   health: opp.health
               });
-              }
+          }
         });
       }
 
@@ -464,41 +495,162 @@ export default class GameEngine {
 
     start() {
 
-        console.groupCollapsed(`starting game loop`)
-        console.log(this);
-        console.groupEnd()
-        console.log(this.inviteLink ? this.inviteLink : '🫩 no PeerJS connection ig 🙄')
+      // Guard against multiple start() calls
+      if (this.loopRunning) {
+          console.warn('Game loop already running, ignoring duplicate start() call');
+          return;
+      }
+
+      console.groupCollapsed(`starting game loop`)
+      console.log(this);
+      console.groupEnd()
+      console.log(this.inviteLink ? this.inviteLink : '🫩 no PeerJS connection ig 🙄')
+      
+      document.querySelector('#join').value = this.inviteLink;
+
+      this.createInviteStuff();
+
+      if(this.network.isHost) {
+        setTimeout( () => {
+          this.hud.postMessage(
+            'racecontrol', 
+            'warning', 
+            this.inviteLink 
+              ? `🕹️ Use the <button popovertarget="invite-menu">invite</button> menu to invite your friends!` 
+              : '🫩 no PeerJS connection ig 🙄',
+              7000
+          )
+        }, 2000);
+      }
+
+      setTimeout( () => { this.hud.postMessage( 'team', 'radio', 
+          `Hey <strong style='color: var(--player-color);'>${this.localPlayer.name}</strong>, 
+          welcome to the ${this.world.scene} <b>paddock</b>! 
+          
+          Before going out to the racetrack, stop in your <b>pitbox</b> to fill up on <b>⛽ gas</b>. It\'s right here outside your garage. 
+          
+          Use the <button popovertarget="garage-menu">garage</button> Fuel menu to tell the mechanic to fill 'er up.
+          `
+          ,15000)
+      }, 2500);
+      
+      setTimeout( () => { this.pitBoxHighlighter.textContent = '⛽';
+      }, 7500 )
+
+      setTimeout( () => { this.hud.postMessage( 'team',  'radio', 
+          `Your pitbox is also the <b>🚧 service area</b>. 
+          
+          The <b style='color: var(--player-color)'>team mechanics</b> will <b>repair</b> any vehicle <b>damage</b> if told to do so in the <button popovertarget="garage-menu">garage</button> Damage &amp; Repairs menu.
+          
+          Be careful out there though: repairs take a <b>lot of ⏱️ time</b>.`
+          , 15000)
+        this.pitBoxHighlighter.textContent = '🚧';
+      }, 20000);
+
+      setTimeout( () => { this.hud.postMessage('team', 'radio', 
+          `Oh yeah, almost forgot.. 
+          Beware of the 👷 <b>track marshals</b>! 
+          
+          Bless their hearts: MFs are fast as hell and with a <b>total disregard</b> for <b>🦺 safety</b>, they\'ll stop at <i>nothing</i> to come to your rescue!
+
+          When they do, they'll drop you off right here in your garage. 
+
+        `, 15000)
+        this.pitBoxHighlighter.textContent = '';
+      }, 37000);
+
+      setTimeout( () => {
+        this.hud.postMessage('team', 'radio', 
+          `Now then. 
+          Let's go 🏎️💨 <b>racing</b>!
+        `, 3000)
         
-        // Guard against multiple start() calls
-        if (this.loopRunning) {
-            console.warn('Game loop already running, ignoring duplicate start() call');
-            return;
+      }, 55000);
+
+
+      this.loopRunning = true;
+      
+      let frameCount = 0;
+      
+      const loop = () => {
+        frameCount++;
+        const currentTime = performance.now(); 
+        let frameTime = (currentTime - this.lastTime) / 16.66;
+
+        this.lastTime = currentTime;
+        
+        // Log frame updates for debugging
+        if (this.debug && frameCount % 60 === 0) {
+            const playerUpdates = window.__playerUpdateCount || 0;
+            const getInputsCalls = window.__getInputsCount || 0;
+            console.log(`Frame ${frameCount}: update called ${playerUpdates} times, getInputs called ${getInputsCalls} times`);
+            window.__playerUpdateCount = 0;
+            window.__getInputsCount = 0;
         }
-        this.loopRunning = true;
         
-        let frameCount = 0;
-        
-        const loop = () => {
-          frameCount++;
-          const currentTime = performance.now(); 
-          let frameTime = (currentTime - this.lastTime) / 16.66;
+        this.update(frameTime);
+        this.draw();
 
-          this.lastTime = currentTime;
-          
-          // Log frame updates for debugging
-          if (this.debug && frameCount % 60 === 0) {
-              const playerUpdates = window.__playerUpdateCount || 0;
-              const getInputsCalls = window.__getInputsCount || 0;
-              console.log(`Frame ${frameCount}: update called ${playerUpdates} times, getInputs called ${getInputsCalls} times`);
-              window.__playerUpdateCount = 0;
-              window.__getInputsCount = 0;
-          }
-          
-          this.update(frameTime);
-          this.draw();
-
-          requestAnimationFrame(loop);
-        };
         requestAnimationFrame(loop);
+      };
+
+      requestAnimationFrame(loop);
+      document.body.dataset['screen'] = 'game';
+
     }
-}
+
+    /* SHARING IS CARING */
+
+    createInviteStuff () {
+
+      const copySessionURLElement = document.querySelector('input#join');
+      const copySessionURLButton = document.querySelector('input#join + button');
+      const shareButton = document.querySelector('#inviteButton');
+
+      copySessionURLElement.addEventListener('focus', () => { copySessionURLElement.select()});
+
+      copySessionURLButton.addEventListener('click', async (e) => {
+        try {
+          await navigator.clipboard.writeText(copySessionURLElement.value);
+          this.hud.postMessage('racecontrol','notice', "Copied invite link to clipboard ✅", 5000);
+        } catch (clipboardErr) {
+          console.error("Clipboard copy failed: ", clipboardErr);
+        }
+
+      })
+
+      // 1. Define the game data you want to share
+      const shareData = {
+        title: 'Join my session!',
+        text: `I am driving on the ${this.world.scene} racetrack, think you can beat my lap time?`,
+        url: this.inviteLink 
+      };
+
+      // 2. Format the custom text string (combining (emoji-laden) text and url)
+      const fullShareString = `${shareData.text} ${shareData.url}`;
+
+      shareButton.addEventListener('click', async () => {
+    
+        // OPTION A: Try using the native Web Share API (iOS, Android, Chrome, Safari)
+        if (navigator.share && navigator.canShare(shareData)) {
+          try {
+            await navigator.share(shareData);
+            this.hud.postMessage('racecontrol','notice', "Shared session successfully ✅", 5000);
+            return;
+          } catch (err) {
+            // AbortError means the user just dismissed the menu manually
+            if (err.name !== 'AbortError') console.error('Share failed:', err);
+          }
+        }
+
+        // If there's no web Share API available, use Bluesky Post Composer Intent URL
+        const bskyUrl = `https://bsky.app/intent/compose/?text=${encodeURIComponent(fullShareString)}`;
+        
+        // Open the Bluesky composer in a new browser window
+        window.open(bskyUrl, '_blank', 'noopener,noreferrer');
+        
+      });
+    }
+
+
+  }
